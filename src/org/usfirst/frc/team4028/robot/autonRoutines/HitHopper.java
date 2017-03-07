@@ -1,7 +1,6 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
-import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
@@ -11,47 +10,47 @@ import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-//this class implements the logic for the simple "Hang the Gear on the Boiler Side Peg and then Shoot" auton
+// this class implements the logic for the "Hit the Hopper and Shoot" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
-//0			Sebas	 	6.Mar.2017	Initial Version
+//0			Sebas	 	7.Mar.2017	Initial Version
 //------------------------------------------------------
 //=====> For Changes see Sebas
-public class HangBoilerGearAndShoot {
+public class HitHopper {
 	// define class level variables for Robot subsystems
-	private GearHandler _gearHandler;
 	private Chassis _chassis;
+	private GearHandler _gearHandler;
 	private NavXGyro _navX;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
-	private HangGearController _hangGearController;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
-		MOVE_TO_TARGET,
-		RUN_GEAR_SEQUENCE,
-		MOVE_TO_BOILER,
+		MOVE_TO_BOILER_HELLA_FAST,
+		WAIT,
+		MOVE_TO_SHOOTING_POSITION,
 		SHOOT
 	}
 	
 	// define class level working variables
 	private long _autonStartedTimeStamp;
+	private long _waitStartedTimeStamp;
 	private boolean _isStillRunning;
 	
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
+	private static final int WAIT_TIME_MSEC = 3000;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, Shooter shooter) {
+	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter) {
 		// these are the subsystems that this auton routine needs to control
-		_gearHandler = gearHandler;
 		_chassis = chassis;
+		_gearHandler = gearHandler;
 		_navX = navX;
-		_hangGearController = hangGear;
 		_shooter = shooter;
 		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
 		_trajController.startTrajectoryController();
@@ -65,13 +64,12 @@ public class HangBoilerGearAndShoot {
 	public void Initialize() {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
-		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
+		_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+		_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, false);
 		_trajController.enable();
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
+		
+		DriverStation.reportWarning("===== Entering CrossBaseLine Auton =====", false);
 	}
 	
 	// execute the auton routine, return = true indicates auton is still running
@@ -81,51 +79,47 @@ public class HangBoilerGearAndShoot {
 		// =======================================
 		// if not complete, this must run concurrently with all auton routines
 		// =======================================
-		if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
-    	} else {
-    		DriverStation.reportError("Zeroed", false);
-    		_gearHandler.MoveGearToScorePosition();
-    	}
-      	
-      	switch (_autonState) {
-      		case MOVE_TO_TARGET:
-      			if (_trajController.onTarget()) {
-      				_trajController.disable();
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				_hangGearController.Initialize();
-      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
-      			}
-      			break;
-      			
-      		case RUN_GEAR_SEQUENCE:
-      			boolean isStillRunning = _hangGearController.ExecuteRentrant();
-      			if (!isStillRunning) {
-      				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_BOILER, false);
-      				_trajController.enable();
-      				_autonState = AUTON_STATE.MOVE_TO_BOILER;
-      			}
-      			break;
-      			
-      		case MOVE_TO_BOILER:
-      			if(_trajController.onTarget()) {
-      				_trajController.disable();
-      				_autonState = AUTON_STATE.SHOOT;
-      			}
-      			break;
-      			
-      		case SHOOT:
-      			break;
-      			
-      		case UNDEFINED:
-      			break;
       	}
+      	
+		switch(_autonState) {
+			case MOVE_TO_BOILER_HELLA_FAST:
+				if(_trajController.onTarget()) {
+					_trajController.disable();
+					_waitStartedTimeStamp = System.currentTimeMillis();
+					_autonState = AUTON_STATE.WAIT;
+				}
+				break;
+				
+			case WAIT:
+				if((System.currentTimeMillis() - _waitStartedTimeStamp) > WAIT_TIME_MSEC) {
+					_trajController.loadProfile(MOTION_PROFILE.HOPPER_TO_SHOOTING_POSITION, false);
+					_trajController.enable();
+					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
+				}
+				break;
+				
+			case MOVE_TO_SHOOTING_POSITION:
+				if (_trajController.onTarget()) {
+					_trajController.disable();
+					_autonState = AUTON_STATE.SHOOT;
+				}
+				break;
+				
+			case SHOOT:
+				break;
+				
+			case UNDEFINED:
+				break;
+		}
+		
 		// cleanup
 		if(!_isStillRunning) {
-			DriverStation.reportWarning("===== Completed HangBoilerGear Auton =====", false);
+			DriverStation.reportWarning("===== Completed CrossBaseLine Auton =====", false);
 		}
 		
 		return _isStillRunning; 

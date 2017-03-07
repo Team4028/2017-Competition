@@ -11,13 +11,11 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 //This class implements all functionality for the GEAR Subsystem
-//
 //------------------------------------------------------
 //	Rev		By		 	D/T			Desc
 //	===		========	===========	=================================
 //  1.0		Seabass		25.Feb.2017		Initial 
 //------------------------------------------------------
-//
 //=====> For Changes see Sebastian Rodriguez
 public class Chassis {
 	// =====================================================================
@@ -72,9 +70,7 @@ public class Chassis {
 	public Chassis(int talonLeftMasterCanBusAddr, int talonLeftSlave1CanBusAddr,
 					int talonRightMasterCanBusAddr, int talonRightSlave1CanBusAddr,
 					int pcmCanBusAddress, 
-					int shifterSolenoidHighGearPCMPort, int shifterSolenoidLowGearPCMPort)
-		
-	{
+					int shifterSolenoidHighGearPCMPort, int shifterSolenoidLowGearPCMPort) {
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================

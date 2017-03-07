@@ -7,7 +7,6 @@ import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public class ChassisAutoAimController {
-	
 	PIDCalculator _autoAimPID;
 	Chassis _chassis;
 	NavXGyro _navX;

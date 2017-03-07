@@ -96,6 +96,9 @@ public class TrajectoryDriveController {
 				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
 				break;
 				
+			case HOPPER_TO_SHOOTING_POSITION:
+				break;
+				
 			case MOVE_TO_BOILER:
 				if (isBlueAlliance) {
 					_leftMotionProfile = MoveToBoilerTrajectory.RightPoints;
@@ -108,6 +111,9 @@ public class TrajectoryDriveController {
 				}
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				break;
+				
+			case MOVE_TO_HOPPER:
 				break;
 				
 			case RETRIEVAL_GEAR:

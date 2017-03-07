@@ -13,8 +13,7 @@ import edu.wpi.first.wpilibj.Joystick;
 // ===========================================================================
 //	  TALK TO SEBAS or MR. BRUNS BEFORE you edit this file !
 // ===========================================================================
-abstract class BaseDriversStation 
-{
+abstract class BaseDriversStation {
 	// ===================================
 	// define robot objects for Driver & Operator station gamepads
 	// ===================================
@@ -32,20 +31,17 @@ abstract class BaseDriversStation
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	protected BaseDriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort)
-	{
+	protected BaseDriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort) {
 		_driverGamepad = new Joystick(driverGamePadUsbPort);				// std Logitech F310 Gamepad  
 		_operatorGamepad = new Joystick(operatorGamePadUsbPort);			// std Logitech F310 Gamepad  
 	}
 
 	// Refreshes the locally cached copy of the Current (this scan) Driver's Station Input Values
-	public void ReadCurrentScanCycleValues()
-	{
+	public void ReadCurrentScanCycleValues() {
 		// always set previousValues object to null (so that object can be gc'd)
 		_previousValues = null;
 		
-		if(_currentValues != null)
-		{
+		if(_currentValues != null) {
 			// if we have _currentValues (From the last scan) push them into _previosuValues
 			_previousValues = _currentValues;
 		}
@@ -53,8 +49,7 @@ abstract class BaseDriversStation
 		// update _currentValues by reading from the gamepads
 		_currentValues = new DriversStationInputs();
 		
-		if(_previousValues == null)
-		{
+		if(_previousValues == null) {
 			// if we DO NOT have _previousValues (From the last scan) set it equal to _currentValues
 			_previousValues = _currentValues;
 		}
@@ -66,262 +61,213 @@ abstract class BaseDriversStation
 	// ======================================================
 	
 	// === driver buttons ===============================================
-	protected boolean getIsDriverGreenBtnAJustPressed()
-	{
+	protected boolean getIsDriverGreenBtnAJustPressed() {
 		return(_currentValues.getIsDriverGreenBtnAPressed()
     				&& !_previousValues.getIsDriverGreenBtnAPressed());
 	}
 	
-	protected boolean getIsDriverRedBtnBJustPressed()
-	{
+	protected boolean getIsDriverRedBtnBJustPressed() {
 		return(_currentValues.getIsDriverRedBtnBPressed()
     				&& !_previousValues.getIsDriverRedBtnBPressed());
 	}
 	
-	protected boolean getIsDriverBlueBtnXJustPressed()
-	{
+	protected boolean getIsDriverBlueBtnXJustPressed() {
 		return(_currentValues.getIsDriverBlueBtnXPressed()
     				&& !_previousValues.getIsDriverBlueBtnXPressed());
 	}
 	
-	protected boolean getIsDriverYellowBtnYJustPressed()
-	{
+	protected boolean getIsDriverYellowBtnYJustPressed() {
 		return(_currentValues.getIsDriverYellowBtnYPressed()
     				&& !_previousValues.getIsDriverYellowBtnYPressed());
 	}
 
-	protected boolean getIsDriverLeftBumperBtnJustPressed()
-	{
+	protected boolean getIsDriverLeftBumperBtnJustPressed() {
 		return(_currentValues.getIsDriverLeftBumperBtnPressed()
     				&& !_previousValues.getIsDriverLeftBumperBtnPressed());
 	}
 	
-	protected boolean getIsDriverRightBumperBtnJustPressed()
-	{
+	protected boolean getIsDriverRightBumperBtnJustPressed() {
 		return(_currentValues.getIsDriverRightBumperBtnPressed()
     				&& !_previousValues.getIsDriverRightBumperBtnPressed());
 	}
 
-	protected boolean getIsDriverBackBtnJustPressed()
-	{
+	protected boolean getIsDriverBackBtnJustPressed() {
 		return(_currentValues.getIsDriverBackBtnPressed()
     				&& !_previousValues.getIsDriverBackBtnPressed());
 	}
 
-	protected boolean getIsDriverStartBtnJustPressed()
-	{
+	protected boolean getIsDriverStartBtnJustPressed() {
 		return (_currentValues.getIsDriverStartBtnPressed()
     				&& !_previousValues.getIsDriverStartBtnPressed());
 	}
 	
-	protected boolean getIsDriverPovUpBtnJustPressed()
-	{
+	protected boolean getIsDriverPovUpBtnJustPressed() {
 		return (_currentValues.getIsDriverPovUpBtnPressed()
     				&& !_previousValues.getIsDriverPovUpBtnPressed());
 	}
 	
 	// Instantaneous Driver Buttons
-	protected boolean getIsDriverGreenBtnAPressed()
-	{
+	protected boolean getIsDriverGreenBtnAPressed() {
 		return _currentValues.getIsDriverGreenBtnAPressed();
 	}
 	
-	protected boolean getIsDriverRedBtnBPressed()
-	{
+	protected boolean getIsDriverRedBtnBPressed() {
 		return _currentValues.getIsDriverRedBtnBPressed();
 	}
 	
-	protected boolean getIsDriverBlueBtnXPressed()
-	{
+	protected boolean getIsDriverBlueBtnXPressed() {
 		return _currentValues.getIsDriverBlueBtnXPressed();
     }
 	
-	protected boolean getIsDriverYellowBtnYPressed()
-	{
+	protected boolean getIsDriverYellowBtnYPressed() {
 		return _currentValues.getIsDriverYellowBtnYPressed();
     }
 
-	protected boolean getIsDriverLeftBumperBtnPressed()
-	{
+	protected boolean getIsDriverLeftBumperBtnPressed() {
 		return _currentValues.getIsDriverLeftBumperBtnPressed();
     }
 	
-	protected boolean getIsDriverRightBumperBtnPressed()
-	{
+	protected boolean getIsDriverRightBumperBtnPressed() {
 		return _currentValues.getIsDriverRightBumperBtnPressed();
     };
 
-    protected boolean getIsDriverBackBtnPressed()
-	{
+    protected boolean getIsDriverBackBtnPressed() {
 		return _currentValues.getIsDriverBackBtnPressed();
     }
 
-	protected boolean getIsDriverStartBtnPressed()
-	{
+	protected boolean getIsDriverStartBtnPressed() {
 		return _currentValues.getIsDriverStartBtnPressed();
 	}
 	
 	// === operator buttons ===============================================
 	
-	protected boolean getIsOperatorGreenBtnAJustPressed()
-	{
+	protected boolean getIsOperatorGreenBtnAJustPressed() {
 		return(_currentValues.getIsOperatorGreenBtnAPressed()
     				&& !_previousValues.getIsOperatorGreenBtnAPressed());
 	}
 	
-	protected boolean getIsOperatorRedBtnBJustPressed()
-	{
+	protected boolean getIsOperatorRedBtnBJustPressed() {
 		return(_currentValues.getIsOperatorRedBtnBPressed()
     				&& !_previousValues.getIsOperatorRedBtnBPressed());
 	}
 	
-	protected boolean getIsOperatorBlueBtnXJustPressed()
-	{
+	protected boolean getIsOperatorBlueBtnXJustPressed() {
 		return(_currentValues.getIsOperatorBlueBtnXPressed()
     				&& !_previousValues.getIsOperatorRedBtnBPressed());
 	}
 	
-	protected boolean getIsOperatorYellowBtnYJustPressed()
-	{
+	protected boolean getIsOperatorYellowBtnYJustPressed() {
 		return(_currentValues.getIsOperatorYellowBtnYPressed()
     				&& !_previousValues.getIsOperatorYellowBtnYPressed());
 	}
 
-	protected boolean getIsOperatorLeftBumperBtnJustPressed()
-	{
+	protected boolean getIsOperatorLeftBumperBtnJustPressed() {
 		return(_currentValues.getIsOperatorLeftBumperBtnPressed()
     				&& !_previousValues.getIsOperatorLeftBumperBtnPressed());
 	}
 	
-	protected boolean getIsOperatorRightBumperBtnJustPressed()
-	{
+	protected boolean getIsOperatorRightBumperBtnJustPressed() {
 		return(_currentValues.getIsOperatorRightBumperBtnPressed()
     				&& !_previousValues.getIsOperatorRightBumperBtnPressed());
 	}
 
-	protected boolean getIsOperatorBackBtnJustPressed()
-	{
+	protected boolean getIsOperatorBackBtnJustPressed() {
 		return(_currentValues.getIsOperatorBackBtnPressed()
     				&& !_previousValues.getIsOperatorBackBtnPressed());
 	}
 
-	protected boolean getIsOperatorStartBtnJustPressed()
-	{
+	protected boolean getIsOperatorStartBtnJustPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed()
     				&& !_previousValues.getIsOperatorStartBtnPressed());
 	}
 	
 	//Instantaneous Operator Buttons
-	protected boolean getIsOperatorGreenBtnAPressed()
-	{
+	protected boolean getIsOperatorGreenBtnAPressed() {
 		return(_currentValues.getIsOperatorGreenBtnAPressed());
 	}
 	
-	protected boolean getIsOperatorRedBtnBPressed()
-	{
+	protected boolean getIsOperatorRedBtnBPressed() {
 		return(_currentValues.getIsOperatorRedBtnBPressed());
 	}
 	
-	protected boolean getIsOperatorBlueBtnXPressed()
-	{
+	protected boolean getIsOperatorBlueBtnXPressed() {
 		return(_currentValues.getIsOperatorBlueBtnXPressed());
 	}
 	
-	protected boolean getIsOperatorYellowBtnYPressed()
-	{
+	protected boolean getIsOperatorYellowBtnYPressed() {
 		return(_currentValues.getIsOperatorYellowBtnYPressed());
 	}
 
-	protected boolean getIsOperatorLeftBumperBtnPressed()
-	{
+	protected boolean getIsOperatorLeftBumperBtnPressed() {
 		return(_currentValues.getIsOperatorLeftBumperBtnPressed());
 	}
 	
-	protected boolean getIsOperatorRightBumperBtnPressed()
-	{
+	protected boolean getIsOperatorRightBumperBtnPressed() {
 		return(_currentValues.getIsOperatorRightBumperBtnPressed());
 	}
 
-	protected boolean getIsOperatorBackBtnPressed()
-	{
+	protected boolean getIsOperatorBackBtnPressed() {
 		return(_currentValues.getIsOperatorBackBtnPressed());
 	}
 
-	protected boolean getIsOperatorStartBtnPressed()
-	{
+	protected boolean getIsOperatorStartBtnPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed());
 	}
 	
 	// === driver joysticks ===============================================
-	protected double getDriverLeftXAxisCmd()
-	{
+	protected double getDriverLeftXAxisCmd() {
 		return _currentValues.getDriverLeftXAxisCmd();
 	}
 	
-	protected double getDriverLeftYAxisCmd()
-	{
+	protected double getDriverLeftYAxisCmd() {
 		return _currentValues.getDriverLeftYAxisCmd();
 	}
 
-	protected double getDriverLeftTriggerCmd()
-	{
+	protected double getDriverLeftTriggerCmd() {
 		return _currentValues.getDriverLeftTriggerCmd();
 	}
 
-	protected double getDriverRightTriggerCmd()
-	{
+	protected double getDriverRightTriggerCmd() {
 		return _currentValues.getDriverRightTriggerCmd();
 	}
 
-	protected double getDriverRightXAxisCmd()
-	{
+	protected double getDriverRightXAxisCmd() {
 		return _currentValues.getDriverRightXAxisCmd();
 	}
 
-	protected double getDriverRightYAxisCmd()
-	{
+	protected double getDriverRightYAxisCmd() {
 		return _currentValues.getDriverRightYAxisCmd();
 	}
 	
 	// === operator joysticks ===============================================
-	protected double getOperatorLeftXAxisCmd()
-	{
+	protected double getOperatorLeftXAxisCmd() {
 		return _currentValues.getOperatorLeftXAxisCmd();
 	}
 	
-	protected double getOperatorLeftYAxisCmd()
-	{
+	protected double getOperatorLeftYAxisCmd() {
 		return _currentValues.getOperatorLeftYAxisCmd();
 	}
 
-	protected double getOperatorLeftTriggerCmd()
-	{
+	protected double getOperatorLeftTriggerCmd() {
 		return _currentValues.getOperatorLeftTriggerCmd();
 	}
 
-	protected double getOperatorRightTriggerCmd()
-	{
+	protected double getOperatorRightTriggerCmd() {
 		return _currentValues.getOperatorRightTriggerCmd();
 	}
 
-	protected double getOperatorRightXAxisCmd()
-	{
+	protected double getOperatorRightXAxisCmd() {
 		return _currentValues.getOperatorRightXAxisCmd();
 	}
 
-	protected double getOperatorRightYAxisCmd()
-	{
+	protected double getOperatorRightYAxisCmd() {
 		return _currentValues.getOperatorRightYAxisCmd();
 	}
-	
-	
-	
 	
 	/************************************************************
 	 * Immutable class to hold data read from the gamepads
 	 ************************************************************/
-	public final class DriversStationInputs
-	{
+	public final class DriversStationInputs {
 		// =============================
 		// private backing fields
 		// =============================
@@ -367,8 +313,7 @@ abstract class BaseDriversStation
 		 * @param driverGamepad
 		 * @param operatorGamepad
 		 */
-		protected DriversStationInputs()
-		{
+		protected DriversStationInputs() {
 	    	// ==========================
 	    	// get values from the gamepads
 	    	// ==========================
@@ -411,235 +356,171 @@ abstract class BaseDriversStation
 		}
 		
 		// === driver buttons ====================================
-		public boolean getIsDriverGreenBtnAPressed()
-    	{
+		public boolean getIsDriverGreenBtnAPressed() {
     		return _isDriverGreenBtnAPressed;
     	}
 		
-		public boolean getIsDriverRedBtnBPressed()
-    	{
+		public boolean getIsDriverRedBtnBPressed() {
     		return _isDriverRedBtnBPressed;
     	}
 		
-		public boolean getIsDriverBlueBtnXPressed()
-    	{
+		public boolean getIsDriverBlueBtnXPressed() {
     		return _isDriverBlueBtnXPressed;
     	}
 		
-		public boolean getIsDriverYellowBtnYPressed()
-    	{
+		public boolean getIsDriverYellowBtnYPressed() {
     		return _isDriverYellowBtnYPressed;
     	}
 
-		public boolean getIsDriverLeftBumperBtnPressed()
-    	{
+		public boolean getIsDriverLeftBumperBtnPressed() {
     		return _isDriverLeftBumperBtnPressed;
     	}
 
-		public boolean getIsDriverRightBumperBtnPressed()
-    	{
+		public boolean getIsDriverRightBumperBtnPressed() {
     		return _isDriverRightBumperBtnPressed;
     	}
 		
-		public boolean getIsDriverBackBtnPressed()
-    	{
+		public boolean getIsDriverBackBtnPressed() {
     		return _isDriverBackBtnPressed;
     	}
 
-		public boolean getIsDriverStartBtnPressed()
-    	{
+		public boolean getIsDriverStartBtnPressed() {
     		return _isDriverStartBtnPressed;
     	}
 		
-		public boolean getIsDriverPovUpBtnPressed() //HERE
-		{
+		public boolean getIsDriverPovUpBtnPressed() {
 			return _isDriverPovUpBtnPressed;
 		}
 		// === operator buttons ====================================
-		public boolean getIsOperatorGreenBtnAPressed()
-    	{
+		public boolean getIsOperatorGreenBtnAPressed() {
     		return _isOperatorGreenBtnAPressed;
     	}
 		
-		public boolean getIsOperatorRedBtnBPressed()
-    	{
+		public boolean getIsOperatorRedBtnBPressed() {
     		return _isOperatorRedBtnBPressed;
     	}
 		
-		public boolean getIsOperatorBlueBtnXPressed()
-    	{
+		public boolean getIsOperatorBlueBtnXPressed() {
     		return _isOperatorBlueBtnXPressed;
     	}
 		
-		public boolean getIsOperatorYellowBtnYPressed()
-    	{
+		public boolean getIsOperatorYellowBtnYPressed() {
     		return _isOperatorYellowBtnYPressed;
     	}
 
-		public boolean getIsOperatorLeftBumperBtnPressed()
-    	{
+		public boolean getIsOperatorLeftBumperBtnPressed() {
     		return _isOperatorLeftBumperBtnPressed;
     	}
 
-		public boolean getIsOperatorRightBumperBtnPressed()
-    	{
+		public boolean getIsOperatorRightBumperBtnPressed() {
     		return _isOperatorRightBumperBtnPressed;
     	}
 		
-		public boolean getIsOperatorBackBtnPressed()
-    	{
+		public boolean getIsOperatorBackBtnPressed() {
     		return _isOperatorBackBtnPressed;
     	}
 
-		public boolean getIsOperatorStartBtnPressed()
-    	{
+		public boolean getIsOperatorStartBtnPressed() {
     		return _isOperatorStartBtnPressed;
     	}
 		
 		// === driver joysticks ====================================
 		
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
-    	public double getDriverLeftXAxisCmd()
-    	{
-    		if(Math.abs(_driverLeftXAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getDriverLeftXAxisCmd() {
+    		if(Math.abs(_driverLeftXAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return (_driverLeftXAxisCmd);
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 		
-    	public double getDriverLeftYAxisCmd()
-    	{
+    	public double getDriverLeftYAxisCmd() {
     		if(Math.abs(_driverLeftYAxisCmd) > JOYSTICK_THRESHHOLD)
     		{
     			return _driverLeftYAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getDriverLeftTriggerCmd()
-    	{
-    		if(Math.abs(_driverLeftTriggerCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getDriverLeftTriggerCmd() {
+    		if(Math.abs(_driverLeftTriggerCmd) > JOYSTICK_THRESHHOLD) {
     			return _driverLeftTriggerCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getDriverRightTriggerCmd()
-    	{
-    		if(Math.abs(_driverRightTriggerCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getDriverRightTriggerCmd() {
+    		if(Math.abs(_driverRightTriggerCmd) > JOYSTICK_THRESHHOLD) {
     			return _driverRightTriggerCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getDriverRightXAxisCmd()
-    	{
-    		if(Math.abs(_driverRightXAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getDriverRightXAxisCmd() {
+    		if(Math.abs(_driverRightXAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return _driverRightXAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
     	
-    	public double getDriverRightYAxisCmd()
-    	{
-    		if(Math.abs(_driverRightYAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getDriverRightYAxisCmd() {
+    		if(Math.abs(_driverRightYAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return _driverRightYAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
     	
 		// === operator joysticks ====================================
-    	public double getOperatorLeftXAxisCmd()
-    	{
-    		if(Math.abs(_operatorLeftXAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorLeftXAxisCmd() {
+    		if(Math.abs(_operatorLeftXAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return (_operatorLeftXAxisCmd);
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 		
-    	public double getOperatorLeftYAxisCmd()
-    	{
-    		if(Math.abs(_operatorLeftYAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorLeftYAxisCmd() {
+    		if(Math.abs(_operatorLeftYAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return _operatorLeftYAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getOperatorLeftTriggerCmd()
-    	{
-    		if(Math.abs(_operatorLeftTriggerCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorLeftTriggerCmd() {
+    		if(Math.abs(_operatorLeftTriggerCmd) > JOYSTICK_THRESHHOLD) {
     			return _operatorLeftTriggerCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getOperatorRightTriggerCmd()
-    	{
-    		if(Math.abs(_operatorRightTriggerCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorRightTriggerCmd() {
+    		if(Math.abs(_operatorRightTriggerCmd) > JOYSTICK_THRESHHOLD) {
     			return _operatorRightTriggerCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
 
-    	public double getOperatorRightXAxisCmd()
-    	{
-    		if(Math.abs(_operatorRightXAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorRightXAxisCmd() {
+    		if(Math.abs(_operatorRightXAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return _operatorRightXAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}
     	
-    	public double getOperatorRightYAxisCmd()
-    	{
-    		if(Math.abs(_operatorRightYAxisCmd) > JOYSTICK_THRESHHOLD)
-    		{
+    	public double getOperatorRightYAxisCmd() {
+    		if(Math.abs(_operatorRightYAxisCmd) > JOYSTICK_THRESHHOLD) {
     			return _operatorRightYAxisCmd;
-    		}
-    		else
-    		{
+    		} else {
     			return 0.0;
     		}
     	}	    	

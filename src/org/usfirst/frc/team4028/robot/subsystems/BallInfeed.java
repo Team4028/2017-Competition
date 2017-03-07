@@ -7,12 +7,10 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //This class implements all functionality for the Infeed Subsystem
-//
 //------------------------------------------------------
 //	Rev		By		 	D/T			Desc
 //	===		========	===========	=================================
 //------------------------------------------------------
-//
 //=====> For Changes see TBD
 public class BallInfeed {
 	// =====================================================================
@@ -49,8 +47,7 @@ public class BallInfeed {
 
 	public void FullStop() {
 		_fuelInfeedSolenoid.set(false);				//retract Solenoid
-		_fuelInfeedMtr.set(0);						//stop motors
-		
+		_fuelInfeedMtr.set(0);						//stop motors	
 	}
 	
 	public void InfeedFuelAndExtendSolenoid() {

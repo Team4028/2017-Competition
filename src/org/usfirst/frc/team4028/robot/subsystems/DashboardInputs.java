@@ -14,11 +14,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //	===		========	===========	=================================
 //	0		Sydney	 	15.Feb.2017	Initial Version
 //	1		TomB		26.Feb.2017	Updated w/ new Auton Options
+//  2 		Sebas		6.Mar.2017	Updated w/ more Auton Options
 //------------------------------------------------------
 //
 //=====> For Changes see Sydney
-public class DashboardInputs
-{ 
+public class DashboardInputs { 
 	
 	private AUTON_MODE _autonModeChoice;
 	private ALLIANCE _alliance;
@@ -29,16 +29,14 @@ public class DashboardInputs
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public DashboardInputs()
-	{
+	public DashboardInputs() {
 		ConfigAutonModeChoosers();
 	}
 	
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
-	private void ConfigAutonModeChoosers()
-	{
+	private void ConfigAutonModeChoosers() {
 		//============================
 		// Autonomous Mode Choice
 		//============================
