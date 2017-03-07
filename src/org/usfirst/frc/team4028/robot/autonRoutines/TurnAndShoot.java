@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
@@ -17,7 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 //0			Sebas	 	25.Feb.2017	Initial Version
 //1.0 		Sebas 		6.Mar.2017	Added Motion Profile
 //------------------------------------------------------
-//
 //=====> For Changes see Sebas
 public class TurnAndShoot {
 	// define class level variables for Robot subsystems
@@ -44,7 +44,7 @@ public class TurnAndShoot {
 		_chassis = chassis;
 		_navX = navX;
 		_autoAim = new ChassisAutoAimController(_chassis, _navX);
-		_trajController = new TrajectoryDriveController(_chassis, _navX);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -58,7 +58,7 @@ public class TurnAndShoot {
 		_isStillRunning = true;
 		
 		_autoAim.loadNewTarget(135.0);
-		_trajController.loadProfile(TurnAndShootTrajectory.LeftPoints, TurnAndShootTrajectory.RightPoints, 1.0, 1.0, TurnAndShootTrajectory.kNumPoints);
+		_trajController.loadProfile(MOTION_PROFILE.TURN_AND_SHOOT, false);
 		_trajController.enable();
 		DriverStation.reportWarning("===== Entering TurnAndShoot Auton =====", false);
 	}

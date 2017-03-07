@@ -6,6 +6,7 @@ import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.util.TwoGearLong;
 import org.usfirst.frc.team4028.robot.util.TwoGearShort;
@@ -64,7 +65,7 @@ public class TwoGear {
 		_navX = navX;
 		_hangGearController = hangGear;
 		_autoAim = new ChassisAutoAimController(_chassis, _navX);
-		_trajController = new TrajectoryDriveController(_chassis, _navX);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -79,6 +80,7 @@ public class TwoGear {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET_1;
 		
 		_autoAim.loadNewTarget(90.0);
+		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
@@ -121,7 +123,7 @@ public class TwoGear {
       			
       		case TURN_RIGHT_1:
       			_autoAim.update();
-      			_trajController.loadProfile(TwoGearLong.LeftPoints, TwoGearLong.RightPoints, 1.0, 1.0, TwoGearLong.kNumPoints);
+      			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_ACROSS;
@@ -138,7 +140,7 @@ public class TwoGear {
       		case TURN_RIGHT_2:
       			_autoAim.update();
       			_gearHandler.MoveGearToFloorPositionReentrant();
-      			_trajController.loadProfile(TwoGearShort.LeftPoints, TwoGearShort.RightPoints, 1.0, 1.0, TwoGearShort.kNumPoints);
+      			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_TO_GEAR;
@@ -149,7 +151,7 @@ public class TwoGear {
       			_gearHandler.SpinInfeedWheelsVBus(1.0);
       			if (_trajController.onTarget()) {
       				_trajController.disable();
-      				_trajController.loadProfile(TwoGearShort.LeftPoints, TwoGearShort.RightPoints, -1.0, 1.0, TwoGearShort.kNumPoints);
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_REV, false);
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_FROM_GEAR;
       			}
@@ -167,7 +169,7 @@ public class TwoGear {
       			_gearHandler.SpinInfeedWheelsVBus(0.0);
       			_autoAim.update();
       			_gearHandler.MoveGearToScorePosition();
-      			_trajController.loadProfile(TwoGearLong.LeftPoints, TwoGearLong.LeftPoints, 1.0, 1.0, TwoGearLong.kNumPoints);
+      			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_ACROSS_2;
@@ -183,7 +185,7 @@ public class TwoGear {
       			
       		case TURN_RIGHT_4:
       			_autoAim.update();
-      			_trajController.loadProfile(TwoGearSuperShort.LeftPoints, TwoGearSuperShort.LeftPoints, 1.0, 1.0, TwoGearSuperShort.kNumPoints);
+      			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_TO_TARGET_2;

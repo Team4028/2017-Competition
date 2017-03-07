@@ -4,17 +4,18 @@ import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-// this class implements the logic for the simple "Cross the Baseline" auton
+// this class implements the logic for the "Cross the Baseline" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
 //0			Sebas	 	25.Feb.2017	Initial Version
+//1.0 		Sebas		6.Mar.2017	Added Motion Profile
 //------------------------------------------------------
-//
 //=====> For Changes see Sebas
 public class CrossBaseLine {
 	// define class level variables for Robot subsystems
@@ -37,7 +38,7 @@ public class CrossBaseLine {
 		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_navX = navX;
-		_trajController = new TrajectoryDriveController(_chassis, _navX);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -50,6 +51,7 @@ public class CrossBaseLine {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
+		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		
@@ -68,8 +70,6 @@ public class CrossBaseLine {
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
-      	} else {
-      		_gearHandler.MoveGearToScorePosition();
       	}
       	
 		if (_trajController.onTarget()) {

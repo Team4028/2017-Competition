@@ -38,11 +38,16 @@ public class TrajectoryDriveController {
 	private int _currentSegment;
 	private int _trajectoryNumPoints;
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX) {
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear) {
 		_chassis = chassis;
 		_navX = navX;
-		_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
-		_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+		if(isHighGear) {
+			_leftFollower.configure(0.0, 0.0, 0.0, 0.0, 0.0);
+			_rightFollower.configure(0.0, 0.0, 0.0, 0.0, 0.0);
+		} else {
+			_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+			_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+		}
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
 	}
