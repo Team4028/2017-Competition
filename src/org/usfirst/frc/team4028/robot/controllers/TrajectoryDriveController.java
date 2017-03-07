@@ -1,12 +1,14 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
+import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
+import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.Trajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
 
 import java.util.TimerTask;
 
 import org.usfirst.frc.team4028.robot.Robot;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
@@ -17,19 +19,21 @@ public class TrajectoryDriveController extends Robot {
 	private Chassis _chassis;
 	private NavXGyro _navX;
 	private UpdaterTask _updaterTask;
-	private double[][] _leftMotionProfile;
-	private double[][] _rightMotionProfile;
 	private TrajectoryFollower _leftFollower = new TrajectoryFollower("left");
 	private TrajectoryFollower _rightFollower = new TrajectoryFollower("right");
 	private java.util.Timer _updaterTimer;
+	private double _angleDiff;
 	private double _direction;
 	private double _heading;
 	private double _kTurnGyro = -0.01;  // Should be a constant
 	private double _kTurnVision = 0.0;
-	private boolean _isEnabled = false;
+	private double[][] _leftMotionProfile;
+	private double[][] _rightMotionProfile;
+	private boolean _isEnabled;
 	private boolean _isUpdaterTaskRunning;
-	private double _angleDiff;
+	private boolean _isVisionTrackingEnabled;
 	private int _currentSegment;
+	private int _trajectoryNumPoints;
 	
 	public TrajectoryDriveController(Chassis chassis, NavXGyro navX) {
 		_chassis = chassis;
@@ -41,25 +45,66 @@ public class TrajectoryDriveController extends Robot {
 	}
 	
 	public boolean onTarget() {
-		if(_currentSegment == (GeneratedTrajectory.kNumPoints - 1)) {
+		if(_currentSegment == (_trajectoryNumPoints - 1)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	public void loadProfile(double[][] leftProfile, double[][] rightProfile, double direction, double heading) {
+	public void loadProfile(double[][] leftProfile, double[][] rightProfile, double direction, double heading, int numPoints) {
 		reset();
 		_leftMotionProfile = leftProfile;
 		_rightMotionProfile = rightProfile;
 		_direction = direction;
 		_heading = heading;
+		_trajectoryNumPoints = numPoints;
 		_angleDiff = 0.0;
 	}
 	
-	public void loadProfileNoReset(Trajectory leftProfile, Trajectory rightProfile) {
-		_leftFollower.setTrajectory(leftProfile);
-		_rightFollower.setTrajectory(rightProfile);
+	public void loadProfile(AUTON_MODE autonMode, boolean isBlueAlliance) {
+		reset();
+		_angleDiff = 0.0;
+		switch(autonMode) {
+			case CROSS_BASE_LINE:
+				break;
+				
+			case HANG_BOILER_GEAR:
+				if (isBlueAlliance) {
+					_leftMotionProfile = SideGearTrajectory.LeftPoints;
+					_rightMotionProfile = SideGearTrajectory.RightPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = SideGearTrajectory.RightPoints;
+					_rightMotionProfile = SideGearTrajectory.LeftPoints;
+					_heading = -1.0;
+				}
+				_direction = 1.0;
+				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				break;
+				
+			case HANG_CENTER_GEAR: 
+				_leftMotionProfile = CenterGearTrajectory.LeftPoints;
+				_rightMotionProfile = CenterGearTrajectory.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				break;
+				
+			case HANG_RETRIEVAL_GEAR: 
+				if (isBlueAlliance) {
+					_leftMotionProfile = SideGearTrajectory.RightPoints;
+					_rightMotionProfile = SideGearTrajectory.LeftPoints;
+					_heading = -1.0;
+				} else {
+					_leftMotionProfile = SideGearTrajectory.LeftPoints;
+					_rightMotionProfile = SideGearTrajectory.RightPoints;
+					_heading = 1.0;
+				}
+				_direction = 1.0;
+				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				break;
+		}
 	}
 	
 	public void reset() {
@@ -102,6 +147,8 @@ public class TrajectoryDriveController extends Robot {
 	}
 	
 	public void enable() {
+		_leftFollower.setTrajectoryNumPoints(_trajectoryNumPoints);
+		_rightFollower.setTrajectoryNumPoints(_trajectoryNumPoints);
 		_leftFollower.reset();
 		_rightFollower.reset();
 		_chassis.ZeroDriveEncoders();
@@ -116,6 +163,10 @@ public class TrajectoryDriveController extends Robot {
 	
 	public boolean isEnable() {
 		return _isEnabled;
+	}
+	
+	public void isVisionTrackingEnabled(boolean isEnabled) {
+		_isVisionTrackingEnabled = isEnabled;
 	}
 	
 	public int getCurrentSegment() {
@@ -135,14 +186,11 @@ public class TrajectoryDriveController extends Robot {
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
 	}
 	
-	private class UpdaterTask extends TimerTask
-	{
+	private class UpdaterTask extends TimerTask {
 		public void run() {
 			while(_isUpdaterTaskRunning) {
-				// update method here
 				if (_isEnabled) {
-					//DriverStation.reportError(Integer.toString(_currentSegment), false);
-					if (_currentSegment != (GeneratedTrajectory.kNumPoints - 1)) {
+					if (_currentSegment != (_trajectoryNumPoints - 1)) {
 						update(_currentSegment);
 						_currentSegment = _currentSegment + 1;
 					}	

@@ -1,15 +1,15 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-//this class implements the logic for the simple "Hang the Gear on the Key Side" auton
+//this class implements the logic for the simple "Hang the Gear on the Retrieval Side" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 //1.0		Sebas		4.Mar.2017	Added Motion Profile + Hang Gear
 //------------------------------------------------------
 //=====> For Changes see Sebas
-public class HangKeySideGear {
+public class HangRetrievalGear {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
@@ -43,7 +43,7 @@ public class HangKeySideGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangKeySideGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangRetrievalGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
@@ -63,7 +63,7 @@ public class HangKeySideGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(GeneratedTrajectory.LeftPoints, GeneratedTrajectory.RightPoints, 1.0, -1.0);
+		_trajController.loadProfile(AUTON_MODE.HANG_RETRIEVAL_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangKeySideGear Auton =====", false);

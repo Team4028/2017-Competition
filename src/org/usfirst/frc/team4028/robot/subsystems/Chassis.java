@@ -2,7 +2,6 @@ package org.usfirst.frc.team4028.robot.subsystems;
 
 import java.util.TimerTask;
 
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;

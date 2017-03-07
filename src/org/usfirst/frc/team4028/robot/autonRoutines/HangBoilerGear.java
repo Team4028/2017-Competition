@@ -9,15 +9,15 @@ import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-//this class implements the logic for the simple "Hang the Gear on the Center Peg" auton
+//this class implements the logic for the simple "Hang the Gear on the Boiler Side Peg" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
 //0			Sebas	 	25.Feb.2017	Initial Version
-//1.0 		Sebas		4.Mar.2017	Added Motion Profile + Hang Gear
+//1.0 		Sebas 		4.Mar.2017	Added Motion Profile + Hang Gear
 //------------------------------------------------------
 //=====> For Changes see Sebas
-public class HangCenterGear {
+public class HangBoilerGear {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
@@ -26,7 +26,7 @@ public class HangCenterGear {
 	private HangGearController _hangGearController;
 	
 	private enum AUTON_STATE {
-		UNDEFINED, 
+		UNDEFINED,
 		MOVE_TO_TARGET,
 		INIT_GEAR_SEQUENCE,
 		RUN_GEAR_SEQUENCE
@@ -43,7 +43,7 @@ public class HangCenterGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangBoilerGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
@@ -63,10 +63,10 @@ public class HangCenterGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(AUTON_MODE.HANG_CENTER_GEAR, false);
+		_trajController.loadProfile(AUTON_MODE.HANG_BOILER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
+		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
 	}
 	
 	// execute the auton routine, return = true indicates auton is still running
@@ -76,7 +76,7 @@ public class HangCenterGear {
 		// =======================================
 		// if not complete, this must run concurrently with all auton routines
 		// =======================================
-      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+		if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
@@ -112,7 +112,7 @@ public class HangCenterGear {
       	}
 		// cleanup
 		if(!_isStillRunning) {
-			DriverStation.reportWarning("===== Completed HangCenterGear Auton =====", false);
+			DriverStation.reportWarning("===== Completed HangBoilerGear Auton =====", false);
 		}
 		
 		return _isStillRunning; 

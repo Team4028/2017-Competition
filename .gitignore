@@ -31,3 +31,4 @@ build/jars/cscore.jar
 *.jar
 *.class
 *.class
+/bin/

@@ -1,6 +1,5 @@
 package org.usfirst.frc.team4028.robot.util;
 
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
 import org.usfirst.frc.team4028.robot.util.Trajectory;
 
 public class TrajectoryFollower {
@@ -13,6 +12,7 @@ public class TrajectoryFollower {
 	private double _currentHeading;
 	private double _lastError;
 	private int _currentSegment;
+	private int _trajectoryNumPoints;
 	private Trajectory _profile;	
 	public String _followerName;
 	
@@ -34,7 +34,7 @@ public class TrajectoryFollower {
 	}
 	
 	public double calculate(double distanceSoFar, double[][] motionProfile, int currentSegment) {
-		if (currentSegment < GeneratedTrajectory.kNumPoints) {
+		if (currentSegment < _trajectoryNumPoints) {
 	      double error = motionProfile[currentSegment][0] - distanceSoFar;
 	      double output = _kp * error + _kd * ((error - _lastError)
 	              / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]) + (_kv * motionProfile[currentSegment][1]
@@ -50,11 +50,11 @@ public class TrajectoryFollower {
 	}
 	
 	public boolean isTrajectoryFinished() {
-		return _currentSegment >= GeneratedTrajectory.kNumPoints;
+		return _currentSegment >= _trajectoryNumPoints;
 	}
-	
-	public void setTrajectory(Trajectory profile) {
-		_profile = profile;
+
+	public void setTrajectoryNumPoints(int numPoints) {
+		_trajectoryNumPoints = numPoints;
 	}
 	
 	public double getHeading() {

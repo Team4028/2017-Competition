@@ -9,15 +9,14 @@ import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-//this class implements the logic for the simple "Hang the Gear on the Center Peg" auton
+//this class implements the logic for the simple "Hang the Gear on the Center Peg And Shoot" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
-//0			Sebas	 	25.Feb.2017	Initial Version
-//1.0 		Sebas		4.Mar.2017	Added Motion Profile + Hang Gear
+//0			Sebas	 	6.Mar.2017	Initial Version
 //------------------------------------------------------
 //=====> For Changes see Sebas
-public class HangCenterGear {
+public class HangCenterGearAndShoot {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
@@ -43,7 +42,7 @@ public class HangCenterGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangCenterGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;

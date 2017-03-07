@@ -2,10 +2,13 @@ package org.usfirst.frc.team4028.robot;
 
 import org.usfirst.frc.team4028.robot.autonRoutines.CrossBaseLine;
 import org.usfirst.frc.team4028.robot.autonRoutines.DoNothing;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerSideGear;
+import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGear;
+import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGearAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGear;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangKeySideGear;
+import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGearAndShoot;
+import org.usfirst.frc.team4028.robot.autonRoutines.HangRetrievalGear;
 import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
+import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
@@ -75,10 +78,13 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	CrossBaseLine _crossBaseLineAuton;
 	DoNothing _doNothingAuton;
-	HangBoilerSideGear _hangBoilerSideGearAuton;
+	HangBoilerGear _hangBoilerGearAuton;
+	HangBoilerGearAndShoot _hangBoilerGearAndShootAuton;
 	HangCenterGear _hangCenterGearAuton;
-	HangKeySideGear _hangKeySideGear;
+	HangCenterGearAndShoot _hangCenterGearAndShootAuton;
+	HangRetrievalGear _hangRetrievalGear;
 	TurnAndShoot _turnAndShoot;
+	TwoGear _twoGearAuton;
 	
 	// ----------------------------------------------------------------------
 	// Code executed 1x at robot startup
@@ -135,63 +141,68 @@ public class Robot extends IterativeRobot {
 	// called each time the robot enters disabled mode from either telop or auton mode
 	// ----------------------------------------------------------------------
 	@Override
-	public void disabledPeriodic() 
-	{
+	public void disabledPeriodic() {
 
 		// if logging was enabled, make sure we close the file
-    	if(_dataLogger != null) 
-    	{
+    	if(_dataLogger != null) {
 	    	_dataLogger.close();
 	    	_dataLogger = null;
     	}
     	
     	// stop lidar polling
-    	if(_lidar != null)	
-    	{ 
+    	if(_lidar != null) { 
     		_lidar.stop();
     	}
     	
     	// cleanup auton resources, since they are not needed in Telop Mode
-    	if(_crossBaseLineAuton != null) 
-    	{
+    	if(_crossBaseLineAuton != null) {
     		_crossBaseLineAuton.Disabled();
     		_crossBaseLineAuton = null;
     	}
     	
-		if(_doNothingAuton != null) 
-		{
+		if(_doNothingAuton != null) {
 			_doNothingAuton = null;
     	}
 		
-		if(_hangBoilerSideGearAuton != null) 
-		{
-			_hangBoilerSideGearAuton.Disabled();
-			_hangBoilerSideGearAuton = null;
+		if(_hangBoilerGearAuton != null) {
+			_hangBoilerGearAuton.Disabled();
+			_hangBoilerGearAuton = null;
     	}
 		
-		if(_hangCenterGearAuton != null) 
-		{
+		if(_hangBoilerGearAndShootAuton != null) {
+			_hangBoilerGearAndShootAuton.Disabled();
+			_hangBoilerGearAndShootAuton = null;
+		}
+		
+		if(_hangCenterGearAuton != null) {
 			_hangCenterGearAuton.Disabled();
 			_hangCenterGearAuton = null;
     	}
 		
-		if(_hangKeySideGear != null) 
-		{
-			_hangKeySideGear = null;
+		if(_hangCenterGearAndShootAuton != null) {
+			_hangCenterGearAndShootAuton.Disabled();
+			_hangCenterGearAndShootAuton = null;
     	}
 		
-		if(_turnAndShoot != null)
-		{
+		if(_hangRetrievalGear != null) {
+			_hangRetrievalGear = null;
+    	}
+		
+		if(_turnAndShoot != null) {
 			_turnAndShoot = null;
     	}
+		
+		if(_twoGearAuton != null) {
+			_twoGearAuton.Disabled();
+			_twoGearAuton = null;
+		}
 	}
 		
 	// ----------------------------------------------------------------------
 	// code executed 1x when entering AUTON Mode
 	// ----------------------------------------------------------------------
 	@Override
-	public void autonomousInit() 
-	{
+	public void autonomousInit() {
 		// =====================================
     	// Step 1: pre-state cleanup
 		// =====================================
@@ -206,8 +217,6 @@ public class Robot extends IterativeRobot {
     	// =====================================
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
-
-    	// TODO: add this code
     	//_autonMode = _dashboardInputs.get_autonMode();
     	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
 
@@ -229,9 +238,14 @@ public class Robot extends IterativeRobot {
 				_doNothingAuton.Initialize();
 				break;
 				
-			case HANG_BOILER_SIDE_GEAR:
-				_hangBoilerSideGearAuton = new HangBoilerSideGear(_gearHandler, _chassis, _navX, _hangGearController);
-				_hangBoilerSideGearAuton.Initialize();
+			case HANG_BOILER_GEAR:
+				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangBoilerGearAuton.Initialize();
+				break;
+			
+			case HANG_BOILER_GEAR_AND_SHOOT:
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR:
@@ -239,15 +253,23 @@ public class Robot extends IterativeRobot {
 				_hangCenterGearAuton.Initialize();
 				break;
 				
-			case HANG_KEY_SIDE_GEAR:
-				_hangKeySideGear = new HangKeySideGear(_gearHandler, _chassis, _navX, _hangGearController);
-				_hangKeySideGear.Initialize();
+			case HANG_CENTER_GEAR_AND_SHOOT:
+				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangCenterGearAuton.Initialize();
+				break;
+				
+			case HANG_RETRIEVAL_GEAR:
+				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangRetrievalGear.Initialize();
 				break;
 				
 			case TURN_AND_SHOOT:
 				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _shooter);
 				_turnAndShoot.Initialize();
 				break;
+				
+			case TWO_GEAR:
+				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _navX, _hangGearController);
 				
 			case UNDEFINED:
 			default:
@@ -292,9 +314,15 @@ public class Robot extends IterativeRobot {
 				}
 				break;
 				
-			case HANG_BOILER_SIDE_GEAR:
-				if(_hangBoilerSideGearAuton.getIsStillRunning()) {
-					_hangBoilerSideGearAuton.ExecuteRentrant();
+			case HANG_BOILER_GEAR:
+				if(_hangBoilerGearAuton.getIsStillRunning()) {
+					_hangBoilerGearAuton.ExecuteRentrant();
+				}
+				break;
+				
+			case HANG_BOILER_GEAR_AND_SHOOT:
+				if(_hangBoilerGearAndShootAuton.getIsStillRunning()) {
+					_hangBoilerGearAndShootAuton.ExecuteRentrant();
 				}
 				break;
 				
@@ -304,9 +332,15 @@ public class Robot extends IterativeRobot {
 				}
 				break;
 				
-			case HANG_KEY_SIDE_GEAR:
-				if(_hangKeySideGear.getIsStillRunning()) {
-					_hangKeySideGear.ExecuteRentrant();
+			case HANG_CENTER_GEAR_AND_SHOOT:
+				if(_hangCenterGearAndShootAuton.getIsStillRunning()) {
+					_hangCenterGearAndShootAuton.ExecuteRentrant();
+				}
+				break;
+				
+			case HANG_RETRIEVAL_GEAR:
+				if(_hangRetrievalGear.getIsStillRunning()) {
+					_hangRetrievalGear.ExecuteRentrant();
 				}
 				break;
 				
@@ -394,19 +428,15 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	// Step 1: execute different steps based on current "telop mode"
     	// =====================================
-    	switch (_telopMode) 
-    	{
+    	switch (_telopMode) {
     		case STANDARD:	    			
 				//=====================
 		    	// Chassis Gear Shift
 				//=====================
-		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) 
-		    	{
-		    		if (_chassis.getGearShiftPosition() == GearShiftPosition.HIGH_GEAR) 
-		    		{
+		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
+		    		if (_chassis.getGearShiftPosition() == GearShiftPosition.HIGH_GEAR) {
 		    			_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-		    		}
-		    		else {
+		    		} else {
 		    			_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 					}
 		    	}
@@ -428,44 +458,36 @@ public class Robot extends IterativeRobot {
     			//============================================================================
     			// Fuel Infeed Cmd
     			//===========================================================================   			
-    			if(_driversStation.getIsOperator_FuelInfeed_BtnPressed()) 
-    			{
+    			if(_driversStation.getIsOperator_FuelInfeed_BtnPressed()) {
     				_ballInfeed.InfeedFuelAndExtendSolenoid();
-    			} 
-    			else 
-    			{
+    			} else {
     				_ballInfeed.FullStop();
     			}
     				
     			//=====================
     			// Handle Shooter Slider
     			//=====================			
-    			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) {
     				_shooter.ActuatorMoveUp();
     			}
-    			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) {
     				_shooter.ActuatorMoveDown();
     			}
     			
     			//===========================================================================
     			//Switchable Cameras
     			//=======================================================================			
-    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed()) {
     				_switchableCameraServer.ChgToNextCamera();
     			}
     			
     			//=====================
     			// Handle Shooter Slider
     			//=====================		
-    			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) 
-    			{
+    			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) {
     				_shooter.ActuatorMoveUp();
     			}
-    			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) 
-    			{
+    			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) {
     				_shooter.ActuatorMoveDown();
     			}
     			
@@ -473,41 +495,34 @@ public class Robot extends IterativeRobot {
     			// Run Shooter Motors
     			//=====================
 				// Stg 1 Bump Up / Down
-    			if(_driversStation.getIsDriver_ShooterStg1StepRPMUp_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsDriver_ShooterStg1StepRPMUp_BtnJustPressed()) {
     				_shooter.Stg1MtrBumpRPMUp();
     			}
-    			else if (_driversStation.getIsDriver_ShooterStg1StepRPMDown_BtnJustPressed())
-				{
+    			else if (_driversStation.getIsDriver_ShooterStg1StepRPMDown_BtnJustPressed()) {
     				_shooter.Stg1MtrBumpRPMDown();
 				}
 
     			// Stg 2 Bump Up / Down
-    			if(_driversStation.getIsDriver_ShooterStg2StepRPMUp_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsDriver_ShooterStg2StepRPMUp_BtnJustPressed()) {
     				_shooter.Stg2MtrBumpRPMUp();
     			}
-    			else if (_driversStation.getIsDriver_ShooterStg2StepRPMDown_BtnJustPressed())
-				{
+    			else if (_driversStation.getIsDriver_ShooterStg2StepRPMDown_BtnJustPressed()) {
     				_shooter.Stg2MtrBumpRPMDown();
 				}
     			
     			// Stg 1 & 2 Full Stop
-    			if(_driversStation.getIsDriver_FullShooterStop_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsDriver_FullShooterStop_BtnJustPressed()) {
     				_shooter.FullShooterStop();
     			}
     			   			      			
     			//=====================
     			// Blender and Feeder Motors
     			//=====================
-    			if(_driversStation.getIsDriver_ToggleBlenderAndFeederMtrs_BtnJustPressed()) 
-    			{
+    			if(_driversStation.getIsDriver_ToggleBlenderAndFeederMtrs_BtnJustPressed()) {
     				_shooter.ToggleSpinBlender();
     				_shooter.ToggleSpinFeeder();
     			}
-    			else if (_driversStation.getIsDriver_BlenderCycleRPM_BtnJustPressed())
-    			{
+    			else if (_driversStation.getIsDriver_BlenderCycleRPM_BtnJustPressed()) {
     				_shooter.BlenderMtrCycleVBus();
     			}   			
 		
@@ -516,31 +531,26 @@ public class Robot extends IterativeRobot {
 		    	// Gear Tilt Cmd
 		    	//	Note: All of the Gear Handler sequences are interruptable except for Zero!
 				//=====================
-		      	if(!_gearHandler.hasTiltAxisBeenZeroed()) 
-		      	{
+		      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
 		      		// 1st priority is zeroing
 		      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
 		      		//			we must treat it as a Reentrant function
 		      		//			and automatically recall it until complete
 		    		_gearHandler.ZeroGearTiltAxisReentrant();
 		    	}
-		      	else if (_driversStation.getIsOperator_GearReZero_BtnJustPressed()) 
-		      	{
+		      	else if (_driversStation.getIsOperator_GearReZero_BtnJustPressed()) {
 		      		// 2nd priority is operator request to rezero
 		      		_gearHandler.ZeroGearTiltAxisInit();	// zeroing will start on next scan
 		      	}
-		      	else if (Math.abs(_driversStation.getOperator_GearTiltFeed_JoystickCmd()) > 0.0) 
-		      	{
+		      	else if (Math.abs(_driversStation.getOperator_GearTiltFeed_JoystickCmd()) > 0.0) {
 		      		// 3rd priority is joystick control
 		      		_gearHandler.MoveTiltAxisVBus(_driversStation.getOperator_GearTiltFeed_JoystickCmd());
 		      	}
-		      	else if (_driversStation.getIsOperator_GearGoToHome_BtnJustPressed()) 
-		      	{
+		      	else if (_driversStation.getIsOperator_GearGoToHome_BtnJustPressed()) {
 		      		// 4th priority is Goto Home
 		      		_gearHandler.MoveGearToHomePosition();
 		      	}
-		      	else if (_driversStation.getIsOperator_GearGoToScore_BtnJustPressed()) 
-		      	{
+		      	else if (_driversStation.getIsOperator_GearGoToScore_BtnJustPressed()) {
 		      		// 5th priority is Goto Score
 		      		_gearHandler.MoveGearToScorePosition();
 		      	}
@@ -561,8 +571,7 @@ public class Robot extends IterativeRobot {
 		    	//=======================================
 		    	// Switchable Cameras
 		    	//=====================================
-				if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed())
-				{
+				if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed()) {
 					_switchableCameraServer.ChgToNextCamera();
 				}
 		    	
@@ -570,8 +579,7 @@ public class Robot extends IterativeRobot {
 		    	// Check the climber
 		    	// =====================================
 		    	
-		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed())
-		    	{
+		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {
 		    		_telopMode = TELEOP_MODE.CLIMBING;
 		    		_climber.RunClimberReentrant();
 		    	}
@@ -579,16 +587,12 @@ public class Robot extends IterativeRobot {
 				//=====================
 		    	// Enter Gear Hang Mode
 				//=====================
-    			if(_driversStation.getIsOperator_GearStartSequence_BtnJustPressed())
-    			{
+    			if(_driversStation.getIsOperator_GearStartSequence_BtnJustPressed()) {
     				// make sure Gear Tilt has completed zeroing before entering this mode!
-    				if(_gearHandler.hasTiltAxisBeenZeroed()) 
-    				{
+    				if(_gearHandler.hasTiltAxisBeenZeroed()) {
 	    				_telopMode = TELEOP_MODE.HANG_GEAR_SEQUENCE_MODE;
 	    				_hangGearController.Initialize();
-    				}
-    				else 
-    				{
+    				} else {
     					DriverStation.reportWarning("=!=!= Cannot chg to Hang Gear Seq, Tilt is NOT finished zeroing yet =!=!=", false);
     				}
     			}	
@@ -596,8 +600,7 @@ public class Robot extends IterativeRobot {
     	    	// =====================================
     	    	// Enter Gear Climb Mode
     	    	// =====================================
-    	    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) 
-    	    	{
+    	    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {
     	    		_telopMode = TELEOP_MODE.CLIMBING;
     	    		_climber.RunClimberReentrant();
     	    	}
@@ -619,14 +622,11 @@ public class Robot extends IterativeRobot {
     			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE
     			
     		case CLIMBING:
-		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed())
-		    	{	
+		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {	
 		    		// cancel climbing
 	    			_climber.FullStop();
 	    			_telopMode = TELEOP_MODE.STANDARD;
-		    	}
-		    	else 
-		    	{
+		    	} else {
 		    		// keep calling this method
 		    		_climber.RunClimberReentrant();
 		    	}
@@ -666,8 +666,7 @@ public class Robot extends IterativeRobot {
 	
     // utility method that calls the outputToSmartDashboard method on all subsystems
 
-    private void OutputAllToSmartDashboard()
-    {
+    private void OutputAllToSmartDashboard() {
     	if(_ballInfeed != null)		{ _ballInfeed.OutputToSmartDashboard(); }
     	
     	if(_chassis != null) 		{ _chassis.OutputToSmartDashboard(); }
@@ -686,10 +685,8 @@ public class Robot extends IterativeRobot {
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
-    private void WriteLogData() 
-    {    	
-    	if(_dataLogger != null) 
-    	{    	
+    private void WriteLogData() {    	
+    	if(_dataLogger != null) {    	
 	    	// create a new, empty logging class
         	LogData logData = new LogData();
 	    	
