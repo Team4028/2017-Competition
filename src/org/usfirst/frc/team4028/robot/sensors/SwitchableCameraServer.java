@@ -99,7 +99,14 @@ public class SwitchableCameraServer
 	
 	public void ChgToNextCamera()
 	{		
-		ChgToCamera(_camList.getNext());
+		if(!_camList.isEmpty())
+		{
+			ChgToCamera(_camList.getNext());
+		}
+		else
+		{
+			DriverStation.reportError("No Cameras Available", false);
+		}
 	}
 	
 	//============================================================================================
