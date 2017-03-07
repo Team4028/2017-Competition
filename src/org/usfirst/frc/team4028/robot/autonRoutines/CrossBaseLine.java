@@ -4,6 +4,7 @@ import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
+import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -50,7 +51,7 @@ public class CrossBaseLine
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
-		//_trajController.loadProfile(GeneratedTrajectory.LeftPoints, GeneratedTrajectory.RightPoints, 1.0, 0);
+		_trajController.loadProfile(CenterGearTrajectory.LeftPoints, CenterGearTrajectory.RightPoints, 1.0, 0, CenterGearTrajectory.kNumPoints);
 		_trajController.enable();
 		
 		DriverStation.reportWarning("===== Entering CrossBaseLine Auton =====", false);

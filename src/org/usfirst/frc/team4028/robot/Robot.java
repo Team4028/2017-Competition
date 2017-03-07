@@ -218,7 +218,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
+    	_autonMode = AUTON_MODE.TURN_AND_SHOOT;
 
     	
     	// =====================================
@@ -264,7 +264,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _shooter);
+				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _navX, _shooter);
 				_turnAndShoot.Initialize();
 				break;
 				
