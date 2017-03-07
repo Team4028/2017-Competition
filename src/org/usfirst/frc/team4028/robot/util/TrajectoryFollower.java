@@ -1,7 +1,5 @@
 package org.usfirst.frc.team4028.robot.util;
 
-import org.usfirst.frc.team4028.robot.util.Trajectory;
-
 public class TrajectoryFollower {
 	
 	private double _kp;
@@ -12,8 +10,7 @@ public class TrajectoryFollower {
 	private double _currentHeading;
 	private double _lastError;
 	private int _currentSegment;
-	private int _trajectoryNumPoints;
-	private Trajectory _profile;	
+	private int _trajectoryNumPoints;	
 	public String _followerName;
 	
 	public TrajectoryFollower(String name) {
@@ -63,9 +60,5 @@ public class TrajectoryFollower {
 	
 	public int getCurrentSegment() {
 		return _currentSegment;
-	}
-	
-	public int getNumSegments() {
-		return _profile.getNumSegments();
 	}
 }

@@ -1,11 +1,13 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
+import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
+import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -21,14 +23,18 @@ public class HangCenterGearAndShoot {
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
 	private NavXGyro _navX;
+	private ChassisAutoAimController _autoAim;
+	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
 	
 	private enum AUTON_STATE {
 		UNDEFINED, 
 		MOVE_TO_TARGET,
-		INIT_GEAR_SEQUENCE,
-		RUN_GEAR_SEQUENCE
+		RUN_GEAR_SEQUENCE,
+		MOVE_BACK,
+		TURN,
+		SHOOT
 	}
 	
 	// define class level working variables
@@ -42,12 +48,14 @@ public class HangCenterGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangCenterGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, Shooter shooter) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
+		_shooter = shooter;
+		_autoAim = new ChassisAutoAimController(_chassis, _navX);
 		_trajController = new TrajectoryDriveController(_chassis, _navX);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
@@ -62,7 +70,7 @@ public class HangCenterGearAndShoot {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(AUTON_MODE.HANG_CENTER_GEAR, false);
+		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
@@ -90,20 +98,35 @@ public class HangCenterGearAndShoot {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				_autonState = AUTON_STATE.INIT_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
-      			break;
-      			
-      		case INIT_GEAR_SEQUENCE:
-      			_hangGearController.Initialize();
-      			_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			break;
       			
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			if (!isStillRunning) {
-      				DriverStation.reportError("Done", false);
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
+      				_trajController.enable();
+      				_autonState = AUTON_STATE.MOVE_BACK;
       			}
+      			break;
+      			
+      		case MOVE_BACK:
+      			if (_trajController.onTarget()) {
+      				_trajController.disable();
+      				_autoAim.loadNewTarget(90.0);
+      				_autonState = AUTON_STATE.TURN;
+      			}
+      			
+      		case TURN:
+      			_autoAim.update();
+      			if (_autoAim.onTarget()) {
+      				_autonState = AUTON_STATE.SHOOT;
+      			}
+      			break;
+      			
+      		case SHOOT:
       			break;
       			
       		case UNDEFINED:

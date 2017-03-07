@@ -1,20 +1,23 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
-import org.usfirst.frc.team4028.robot.util.Trajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
+import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
+import org.usfirst.frc.team4028.robot.util.TwoGearLong;
+import org.usfirst.frc.team4028.robot.util.TwoGearShort;
+import org.usfirst.frc.team4028.robot.util.TwoGearSuperShort;
 
 import java.util.TimerTask;
 
-import org.usfirst.frc.team4028.robot.Robot;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class TrajectoryDriveController extends Robot {
+public class TrajectoryDriveController {
 	
 	private Chassis _chassis;
 	private NavXGyro _navX;
@@ -62,14 +65,11 @@ public class TrajectoryDriveController extends Robot {
 		_angleDiff = 0.0;
 	}
 	
-	public void loadProfile(AUTON_MODE autonMode, boolean isBlueAlliance) {
+	public void loadProfile(MOTION_PROFILE motionProfile, boolean isBlueAlliance) {
 		reset();
 		_angleDiff = 0.0;
-		switch(autonMode) {
-			case CROSS_BASE_LINE:
-				break;
-				
-			case HANG_BOILER_GEAR:
+		switch(motionProfile) {
+			case BOILER_GEAR:
 				if (isBlueAlliance) {
 					_leftMotionProfile = SideGearTrajectory.LeftPoints;
 					_rightMotionProfile = SideGearTrajectory.RightPoints;
@@ -83,7 +83,7 @@ public class TrajectoryDriveController extends Robot {
 				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
 				break;
 				
-			case HANG_CENTER_GEAR: 
+			case CENTER_GEAR:
 				_leftMotionProfile = CenterGearTrajectory.LeftPoints;
 				_rightMotionProfile = CenterGearTrajectory.RightPoints;
 				_direction = 1.0;
@@ -91,7 +91,21 @@ public class TrajectoryDriveController extends Robot {
 				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
 				break;
 				
-			case HANG_RETRIEVAL_GEAR: 
+			case MOVE_TO_BOILER:
+				if (isBlueAlliance) {
+					_leftMotionProfile = MoveToBoilerTrajectory.RightPoints;
+					_rightMotionProfile = MoveToBoilerTrajectory.LeftPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = MoveToBoilerTrajectory.LeftPoints;
+					_rightMotionProfile = MoveToBoilerTrajectory.RightPoints;
+					_heading = -1.0;
+				}
+				_direction = -1.0;
+				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				break;
+				
+			case RETRIEVAL_GEAR:
 				if (isBlueAlliance) {
 					_leftMotionProfile = SideGearTrajectory.RightPoints;
 					_rightMotionProfile = SideGearTrajectory.LeftPoints;
@@ -104,20 +118,52 @@ public class TrajectoryDriveController extends Robot {
 				_direction = 1.0;
 				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
 				break;
+				
+			case TURN_AND_SHOOT:
+				_leftMotionProfile = TurnAndShootTrajectory.LeftPoints;
+				_rightMotionProfile = TurnAndShootTrajectory.RightPoints;
+				_direction = -1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
+				break;
+				
+			case TWO_GEAR_LONG:
+				_leftMotionProfile = TwoGearLong.LeftPoints;
+				_rightMotionProfile = TwoGearLong.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearLong.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SHORT_FWD:
+				_leftMotionProfile = TwoGearShort.LeftPoints;
+				_rightMotionProfile = TwoGearShort.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SHORT_REV:
+				_leftMotionProfile = TwoGearShort.LeftPoints;
+				_rightMotionProfile = TwoGearShort.RightPoints;
+				_direction = -1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SUPER_SHORT:
+				_leftMotionProfile = TwoGearSuperShort.LeftPoints;
+				_rightMotionProfile = TwoGearSuperShort.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
+				break;
 		}
 	}
 	
 	public void reset() {
 		_leftFollower.reset();
 		_rightFollower.reset();
-	}
-	
-	public int getFollowerCurrentSegment() {
-		return _leftFollower.getCurrentSegment();
-	}
-	
-	public int getNumSegments() {
-		return _leftFollower.getNumSegments();
 	}
 	
 	public void update(int currentSegment) {
@@ -169,6 +215,10 @@ public class TrajectoryDriveController extends Robot {
 		_isVisionTrackingEnabled = isEnabled;
 	}
 	
+	public double getAngleDiff() {
+		return _angleDiff;
+	}
+	
 	public int getCurrentSegment() {
 		return _leftFollower.getCurrentSegment();
 	}
@@ -177,8 +227,8 @@ public class TrajectoryDriveController extends Robot {
 		return _navX.getYaw();
 	}
 	
-	public double getAngleDiff() {
-		return _angleDiff;
+	public int getFollowerCurrentSegment() {
+		return _leftFollower.getCurrentSegment();
 	}
 	
 	public void startTrajectoryController() {

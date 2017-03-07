@@ -1,6 +1,6 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
@@ -28,7 +28,6 @@ public class HangCenterGear {
 	private enum AUTON_STATE {
 		UNDEFINED, 
 		MOVE_TO_TARGET,
-		INIT_GEAR_SEQUENCE,
 		RUN_GEAR_SEQUENCE
 	}
 	
@@ -63,7 +62,7 @@ public class HangCenterGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(AUTON_MODE.HANG_CENTER_GEAR, false);
+		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
@@ -91,13 +90,9 @@ public class HangCenterGear {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				_autonState = AUTON_STATE.INIT_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
-      			break;
-      			
-      		case INIT_GEAR_SEQUENCE:
-      			_hangGearController.Initialize();
-      			_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			break;
       			
       		case RUN_GEAR_SEQUENCE:

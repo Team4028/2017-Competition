@@ -36,11 +36,11 @@ import edu.wpi.first.wpilibj.SerialPort;
  * The is the main code for:
  * 	    Team:	4028 "The Beak Squad"
  * 		Season: FRC 2017 "First Steamworks"
- * 		Robot:	Alpha Chassis
+ * 		Robot:	Competition Chassis
  */
 public class Robot extends IterativeRobot {
 	// this value is printed on the Driver's Station message window on startup
-	private static final String ROBOT_NAME = "ALPHA Chassis";
+	private static final String ROBOT_NAME = "COMPETITION Chassis";
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Runtime objects  
@@ -185,10 +185,12 @@ public class Robot extends IterativeRobot {
     	}
 		
 		if(_hangRetrievalGear != null) {
+			_hangRetrievalGear.Disabled();
 			_hangRetrievalGear = null;
     	}
 		
 		if(_turnAndShoot != null) {
+			_turnAndShoot.Disabled();
 			_turnAndShoot = null;
     	}
 		
@@ -222,14 +224,14 @@ public class Robot extends IterativeRobot {
 
     	
     	// =====================================
-		// Step 2.1: Create the correct autom routine
+		// Step 2.1: Create the correct auton routine
     	//				since we have quite a few auton routines we only create the one we need
     	//				NOTE: each "real" auton routine is responsible to call the ZeroGearTiltAxisReentrant
     	//						as many times as required
     	// =====================================
     	switch (_autonMode) {
 			case CROSS_BASE_LINE:
-				_crossBaseLineAuton = new CrossBaseLine(_gearHandler, _chassis, _navX);
+				_crossBaseLineAuton = new CrossBaseLine(_chassis, _gearHandler, _navX);
 				_crossBaseLineAuton.Initialize();
 				break;
 				
@@ -244,7 +246,7 @@ public class Robot extends IterativeRobot {
 				break;
 			
 			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter);
 				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
@@ -254,8 +256,8 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController);
-				_hangCenterGearAuton.Initialize();
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter);
+				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_RETRIEVAL_GEAR:
@@ -370,19 +372,11 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	// Step 1: Setup Robot Defaults
     	// =====================================
-		
 		// #### Chassis ####
-    	//Stop motors
-    	_chassis.FullStop();
-  	
-    	//Zero drive encoders
-    	_chassis.ZeroDriveEncoders();
-    	
-    	//Set shifter to HIGH gear
-    	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
-    	
-    	// disable acc/dec mode
-    	_chassis.setIsAccDecModeEnabled(true);
+    	_chassis.FullStop(); 								// Stop Motors
+    	_chassis.ZeroDriveEncoders(); 						// Zero drive encoders
+    	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);    // Set shifter to HIGH gear
+    	_chassis.setIsAccDecModeEnabled(true);				// Disable acc/dec mode
 		_chassis.setDriveSpeedScalingFactor(1.0);
     	
     	// #### Climber ####
@@ -440,14 +434,6 @@ public class Robot extends IterativeRobot {
 		    			_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 					}
 		    	}
-		    	
-		    	//=====================
-		    	// Acc/Dec Mode Toggle
-				//=====================
-		    	//if(_driversStation.getIsDriver_ToggleBlenderAndFeederMtrs_BtnJustPressed())  // TODO: fix this
-		    	//{    		
-		    	//	_chassis.setIsAccDecModeEnabled(!_chassis.getIsAccDecModeEnabled());
-		    	//}
 
 		    	//=====================
 		    	// Chassis Throttle Cmd
@@ -604,7 +590,6 @@ public class Robot extends IterativeRobot {
     	    		_telopMode = TELEOP_MODE.CLIMBING;
     	    		_climber.RunClimberReentrant();
     	    	}
-    			
 		      	break;	// end of _telopMode = STANDARD
       		
     		case HANG_GEAR_SEQUENCE_MODE:
@@ -646,13 +631,6 @@ public class Robot extends IterativeRobot {
     	// Step N: Optionally Log Data
     	// =====================================
     	WriteLogData();
-	}
-
-	// ----------------------------------------------------------------------
-	// Code executed every scan cycle (about every 20 mSec or 50x / sec) in TEST Mode
-	// ----------------------------------------------------------------------
-	@Override
-	public void testPeriodic() {
 	}
 	
 	// ==================================================================================

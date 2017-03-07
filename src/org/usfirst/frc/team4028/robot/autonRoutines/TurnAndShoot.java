@@ -91,6 +91,10 @@ public class TurnAndShoot {
 		return _isStillRunning; 
 	}
 	
+	public void Disabled() {
+		_trajController.disable();
+	}
+	
 	//============================================================================================
 	// Properties follow
 	//============================================================================================

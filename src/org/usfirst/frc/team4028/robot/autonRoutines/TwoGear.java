@@ -1,6 +1,6 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
@@ -79,7 +79,7 @@ public class TwoGear {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET_1;
 		
 		_autoAim.loadNewTarget(90.0);
-		_trajController.loadProfile(AUTON_MODE.HANG_CENTER_GEAR, false);
+		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);

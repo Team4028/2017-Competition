@@ -6,7 +6,7 @@ import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class ChassisAutoAimController{
+public class ChassisAutoAimController {
 	
 	PIDCalculator _autoAimPID;
 	Chassis _chassis;
@@ -26,7 +26,7 @@ public class ChassisAutoAimController{
 	}
 	
 	public void loadNewTarget(double angle) {
-		_autoAimPID.reset();
+		_autoAimPID.reset();			// Reset the PID Calculator
 		_autoAimPID.setSetpoint(angle); // Set a new target angle
 		DriverStation.reportError("New Setpoint Loaded", false);
 	}

@@ -1,11 +1,12 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
+import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -21,14 +22,16 @@ public class HangBoilerGearAndShoot {
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
 	private NavXGyro _navX;
+	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
 		MOVE_TO_TARGET,
-		INIT_GEAR_SEQUENCE,
-		RUN_GEAR_SEQUENCE
+		RUN_GEAR_SEQUENCE,
+		MOVE_TO_BOILER,
+		SHOOT
 	}
 	
 	// define class level working variables
@@ -42,12 +45,13 @@ public class HangBoilerGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, Shooter shooter) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
+		_shooter = shooter;
 		_trajController = new TrajectoryDriveController(_chassis, _navX);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
@@ -62,7 +66,7 @@ public class HangBoilerGearAndShoot {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(AUTON_MODE.HANG_BOILER_GEAR, false);
+		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
@@ -90,20 +94,28 @@ public class HangBoilerGearAndShoot {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				_autonState = AUTON_STATE.INIT_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
-      			break;
-      			
-      		case INIT_GEAR_SEQUENCE:
-      			_hangGearController.Initialize();
-      			_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			break;
       			
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			if (!isStillRunning) {
-      				DriverStation.reportError("Done", false);
+      				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_BOILER, false);
+      				_trajController.enable();
+      				_autonState = AUTON_STATE.MOVE_TO_BOILER;
       			}
+      			break;
+      			
+      		case MOVE_TO_BOILER:
+      			if(_trajController.onTarget()) {
+      				_trajController.disable();
+      				_autonState = AUTON_STATE.SHOOT;
+      			}
+      			break;
+      			
+      		case SHOOT:
       			break;
       			
       		case UNDEFINED:

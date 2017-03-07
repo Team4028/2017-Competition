@@ -1,10 +1,10 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
-import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -12,15 +12,14 @@ import edu.wpi.first.wpilibj.DriverStation;
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
-//0			Sebas	 	25.Feb.2071	Initial Version
+//0			Sebas	 	25.Feb.2017	Initial Version
 //------------------------------------------------------
 //
 //=====> For Changes see Sebas
-public class CrossBaseLine 
-{
+public class CrossBaseLine {
 	// define class level variables for Robot subsystems
-	private GearHandler _gearHandler;
 	private Chassis _chassis;
+	private GearHandler _gearHandler;
 	private NavXGyro _navX;
 	private TrajectoryDriveController _trajController;
 	
@@ -33,10 +32,10 @@ public class CrossBaseLine
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public CrossBaseLine(GearHandler gearHandler, Chassis chassis, NavXGyro navX) {
+	public CrossBaseLine(Chassis chassis, GearHandler gearHandler, NavXGyro navX) {
 		// these are the subsystems that this auton routine needs to control
-		_gearHandler = gearHandler;
 		_chassis = chassis;
+		_gearHandler = gearHandler;
 		_navX = navX;
 		_trajController = new TrajectoryDriveController(_chassis, _navX);
 		_trajController.startTrajectoryController();
@@ -51,7 +50,7 @@ public class CrossBaseLine
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
-		_trajController.loadProfile(CenterGearTrajectory.LeftPoints, CenterGearTrajectory.RightPoints, 1.0, 0, CenterGearTrajectory.kNumPoints);
+		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		
 		DriverStation.reportWarning("===== Entering CrossBaseLine Auton =====", false);
@@ -69,13 +68,12 @@ public class CrossBaseLine
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
-      	}   
-      	else {
+      	} else {
       		_gearHandler.MoveGearToScorePosition();
       	}
       	
 		if (_trajController.onTarget()) {
-			_trajController.disable();
+			_trajController.disable();	// Disable Motion Profile Controller once it has completed
 		}
 		
 		// cleanup
