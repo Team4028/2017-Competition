@@ -7,6 +7,7 @@ import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -52,7 +53,7 @@ public class HitHopper {
 		_gearHandler = gearHandler;
 		_navX = navX;
 		_shooter = shooter;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, true);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -65,11 +66,12 @@ public class HitHopper {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
+		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
 		_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
-		_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, false);
+		_trajController.loadProfile(MoveToHopperTrajectory.LeftPoints, MoveToHopperTrajectory.RightPoints, 1.0, 1.0, MoveToHopperTrajectory.kNumPoints);
 		_trajController.enable();
 		
-		DriverStation.reportWarning("===== Entering CrossBaseLine Auton =====", false);
+		DriverStation.reportWarning("===== Entering Hit Hopper Auton =====", false);
 	}
 	
 	// execute the auton routine, return = true indicates auton is still running
@@ -90,8 +92,8 @@ public class HitHopper {
 			case MOVE_TO_BOILER_HELLA_FAST:
 				if(_trajController.onTarget()) {
 					_trajController.disable();
-					_waitStartedTimeStamp = System.currentTimeMillis();
-					_autonState = AUTON_STATE.WAIT;
+					//_waitStartedTimeStamp = System.currentTimeMillis();
+					//_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				

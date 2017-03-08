@@ -1,7 +1,7 @@
 package org.usfirst.frc.team4028.robot.util;
 
 public class TrajectoryFollower {
-	
+	private boolean _isFeedbackDisabled;
 	private double _kp;
 	private double _ki; // Likely will not be used, currently not implemented
 	private double _kd;
@@ -9,6 +9,8 @@ public class TrajectoryFollower {
 	private double _ka;
 	private double _currentHeading;
 	private double _lastError;
+	private double _positionOutput;
+	private double _velocityOutput;
 	private int _currentSegment;
 	private int _trajectoryNumPoints;	
 	public String _followerName;
@@ -23,6 +25,7 @@ public class TrajectoryFollower {
 		_kd = kd;
 		_kv = kv;
 		_ka = ka;
+		_isFeedbackDisabled = false;
 	}
 	
 	public void reset() {
@@ -33,9 +36,14 @@ public class TrajectoryFollower {
 	public double calculate(double distanceSoFar, double[][] motionProfile, int currentSegment) {
 		if (currentSegment < _trajectoryNumPoints) {
 	      double error = motionProfile[currentSegment][0] - distanceSoFar;
-	      double output = _kp * error + _kd * ((error - _lastError)
-	              / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]) + (_kv * motionProfile[currentSegment][1]
-	              + _ka * motionProfile[currentSegment][2]);
+	      if(_isFeedbackDisabled) {
+	    	  _positionOutput = 0;
+	      } else {
+	    	  _positionOutput = _kp * error + _kd * ((error - _lastError) / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]);
+	      }
+	      _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      
+	      double output = _positionOutput + _velocityOutput;
 	
 	      _lastError = error;
 	      _currentHeading = motionProfile[currentSegment][3];
@@ -48,6 +56,10 @@ public class TrajectoryFollower {
 	
 	public boolean isTrajectoryFinished() {
 		return _currentSegment >= _trajectoryNumPoints;
+	}
+	
+	public void setIsFeedbackDisabled(boolean isDisabled) {
+		_isFeedbackDisabled = isDisabled;
 	}
 
 	public void setTrajectoryNumPoints(int numPoints) {

@@ -7,6 +7,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGearAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGear;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGearAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangRetrievalGear;
+import org.usfirst.frc.team4028.robot.autonRoutines.HitHopper;
 import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
@@ -83,6 +84,7 @@ public class Robot extends IterativeRobot {
 	HangCenterGear _hangCenterGearAuton;
 	HangCenterGearAndShoot _hangCenterGearAndShootAuton;
 	HangRetrievalGear _hangRetrievalGear;
+	HitHopper _hitHopper;
 	TurnAndShoot _turnAndShoot;
 	TwoGear _twoGearAuton;
 	
@@ -189,6 +191,11 @@ public class Robot extends IterativeRobot {
 			_hangRetrievalGear = null;
     	}
 		
+		if(_hitHopper != null) {
+			_hitHopper.Disabled();
+			_hitHopper = null;
+		}
+		
 		if(_turnAndShoot != null) {
 			_turnAndShoot.Disabled();
 			_turnAndShoot = null;
@@ -220,7 +227,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.TURN_AND_SHOOT;
+    	_autonMode = AUTON_MODE.HIT_HOPPER;
 
     	
     	// =====================================
@@ -265,6 +272,11 @@ public class Robot extends IterativeRobot {
 				_hangRetrievalGear.Initialize();
 				break;
 				
+			case HIT_HOPPER:
+				_hitHopper = new HitHopper(_chassis, _gearHandler, _navX, _shooter);
+				_hitHopper.Initialize();
+				break;
+				
 			case TURN_AND_SHOOT:
 				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _navX, _shooter);
 				_turnAndShoot.Initialize();
@@ -272,6 +284,8 @@ public class Robot extends IterativeRobot {
 				
 			case TWO_GEAR:
 				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_twoGearAuton.Initialize();
+				break;
 				
 			case UNDEFINED:
 			default:
@@ -343,6 +357,12 @@ public class Robot extends IterativeRobot {
 			case HANG_RETRIEVAL_GEAR:
 				if(_hangRetrievalGear.getIsStillRunning()) {
 					_hangRetrievalGear.ExecuteRentrant();
+				}
+				break;
+				
+			case HIT_HOPPER:
+				if(_hitHopper.getIsStillRunning()) {
+					_hitHopper.ExecuteRentrant();
 				}
 				break;
 				
@@ -511,7 +531,6 @@ public class Robot extends IterativeRobot {
     			else if (_driversStation.getIsDriver_BlenderCycleRPM_BtnJustPressed()) {
     				_shooter.BlenderMtrCycleVBus();
     			}   			
-		
 
 		    	//=====================
 		    	// Gear Tilt Cmd
@@ -603,7 +622,6 @@ public class Robot extends IterativeRobot {
     			if(!isStillRunning) {
     				_telopMode = TELEOP_MODE.STANDARD;
     			}
-    			
     			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE
     			
     		case CLIMBING:
@@ -615,7 +633,6 @@ public class Robot extends IterativeRobot {
 		    		// keep calling this method
 		    		_climber.RunClimberReentrant();
 		    	}
-	    		
     			break;
     			
     	}	// end of switch statement

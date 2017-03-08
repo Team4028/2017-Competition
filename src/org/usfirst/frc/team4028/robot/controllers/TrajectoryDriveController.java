@@ -2,6 +2,7 @@ package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
 import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
@@ -26,10 +27,13 @@ public class TrajectoryDriveController {
 	private TrajectoryFollower _rightFollower = new TrajectoryFollower("right");
 	private java.util.Timer _updaterTimer;
 	private double _angleDiff;
+	private double _currentVisionError;
 	private double _direction;
 	private double _heading;
 	private double _kTurnGyro = -0.01;  // Should be a constant
 	private double _kTurnVision = 0.0;
+	private double _setVisionError;
+	private double _turn;
 	private double[][] _leftMotionProfile;
 	private double[][] _rightMotionProfile;
 	private boolean _isEnabled;
@@ -42,8 +46,8 @@ public class TrajectoryDriveController {
 		_chassis = chassis;
 		_navX = navX;
 		if(isHighGear) {
-			_leftFollower.configure(0.0, 0.0, 0.0, 0.0, 0.0);
-			_rightFollower.configure(0.0, 0.0, 0.0, 0.0, 0.0);
+			_leftFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
+			_rightFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
 		} else {
 			_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
 			_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
@@ -114,6 +118,11 @@ public class TrajectoryDriveController {
 				break;
 				
 			case MOVE_TO_HOPPER:
+				_leftMotionProfile = MoveToHopperTrajectory.LeftPoints;
+				_leftMotionProfile = MoveToHopperTrajectory.RightPoints;
+				_heading = 1.0;
+				_direction = -1.0;
+				_trajectoryNumPoints = MoveToHopperTrajectory.kNumPoints;
 				break;
 				
 			case RETRIEVAL_GEAR:
@@ -190,16 +199,26 @@ public class TrajectoryDriveController {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
 			double distanceR = _direction * _chassis.getRightEncoderCurrentPosition();
 			
+			if(_isVisionTrackingEnabled) {
+				setIsFeedbackDisabled(true);
+				// _currentVisionError = 
+				if(_setVisionError != _currentVisionError) {
+					_setVisionError = _currentVisionError;
+				}
+				_turn = _kTurnGyro * _setVisionError;
+			} else {
+				setIsFeedbackDisabled(false);
+				double goalHeading = _leftFollower.getHeading();
+				double goalHeadingInDegrees = _heading * BeefyMath.arctan(goalHeading);
+				double observedHeading = _navX.getYaw();
+
+				_turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
+			}
+			
 			double leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
 			double rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			
-			double goalHeading = _leftFollower.getHeading();
-			double goalHeadingInDegrees = _heading * BeefyMath.arctan(goalHeading);
-			double observedHeading = _navX.getYaw();
-
-			double turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
-			
-			_chassis.TankDrive(leftPower - turn, rightPower + turn);
+			_chassis.TankDrive(leftPower - _turn, rightPower + _turn);
 		}
 	}
 	
@@ -240,6 +259,11 @@ public class TrajectoryDriveController {
 	
 	public int getFollowerCurrentSegment() {
 		return _leftFollower.getCurrentSegment();
+	}
+	
+	public void setIsFeedbackDisabled(boolean isDisabled) {
+		_leftFollower.setIsFeedbackDisabled(isDisabled);
+		_rightFollower.setIsFeedbackDisabled(isDisabled);
 	}
 	
 	public void startTrajectoryController() {
