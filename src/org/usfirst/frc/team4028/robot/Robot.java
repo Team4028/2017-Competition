@@ -12,6 +12,7 @@ import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.sensors.Lidar;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
+import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.sensors.SwitchableCameraServer;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
@@ -55,6 +56,7 @@ public class Robot extends IterativeRobot {
 	private Lidar _lidar;
 	private NavXGyro _navX;
 	private SwitchableCameraServer _switchableCameraServer;
+	private RoboRealmClient _roboRealmClient;
 	
 	// Wrapper around data logging (will be null if logging is not enabled)
 	private DataLogger _dataLogger;
@@ -123,6 +125,7 @@ public class Robot extends IterativeRobot {
 		_lidar = new Lidar(SerialPort.Port.kMXP);
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		_switchableCameraServer = new SwitchableCameraServer(RobotMap.GEAR_CAMERA_NAME);
+		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT);
 		
 		// telop Controller follow
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
