@@ -95,6 +95,6 @@ public class RobotMap {
 	// ======================================
 	// define constants for the Kangaroo & RoboRealm
 	// ======================================
-	public static final String KANGAROO_IPV4_ADDR = "10.40.28.11";
+	public static final String KANGAROO_IPV4_ADDR = "10.40.28.78";
 	public static final int RR_API_PORT = 6060;
 }

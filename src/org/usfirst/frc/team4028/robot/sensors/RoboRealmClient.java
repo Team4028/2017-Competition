@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
+import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
 
 //import uk.co.geolib.geopolygons.*;
@@ -28,23 +29,40 @@ public class RoboRealmClient
 	private java.util.Timer _updaterTimer; 
  	private RoboRealmUpdater _task; 
 
- 	private double _fovCenterToTargetXAngleRawDegrees;
  	private boolean _isConnected;
  	
- 	private static final int NORTHWEST_X_IDX = 0;
- 	private static final int NORTHEAST_X_IDX = 1;
- 	private static final int HIGHESTMIDDLE_Y_IDX = 2;
- 	private static final int BLOB_COUNT_IDX = 3;
+ 	private static final int SOUTHWEST_X_IDX = 0;
+ 	private static final int SOUTHWEST_Y_IDX = 1;
+ 	private static final int SOUTHEAST_X_IDX = 2;
+ 	private static final int SOUTHEAST_Y_IDX = 3;
+ 	private static final int  CALIBRATED_WIDTH_IDX = 4;
+ 	private static final int  CALIBRATED_HEIGHT_IDX = 5;
+ 	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
+ 	//private static final int BLOB_COUNT_IDX = 3;
  	
- 	private static final int EXPECTED_ARRAY_SIZE = 4;
+ 	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
- 	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 58.5;
+ 	private static final int EXPECTED_ARRAY_SIZE = 6;
+ 	
+ 	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
+ 	
+ 	// working variables raised to class level to reduce GC pressure inside update task
+ 	private Dimension _fovDimensions;
+ 	private Vector _vector;
+ 	private long _callElapsedTimeMSec;
+ 	private RawImageData _newTargetRawData;
+ 	private double _fovXCenterPoint;
+ 	private double _targetXCenterPoint;
+ 	private double _fovCenterToTargetXAngleRawDegrees;
  	
  	// Constructor
     public RoboRealmClient(String kangarooIPv4Addr, int portNo) 
     {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
+    	
+    	//Utilities.SimplePingTest(kangarooIPv4Addr);
+    	Utilities.RobustPortTest(kangarooIPv4Addr, portNo);
     	
     	// try to connect
         if (!_rrAPI.connect(kangarooIPv4Addr, portNo))
@@ -67,6 +85,7 @@ public class RoboRealmClient
 		
 		// create a timer to fire events
 		_updaterTimer = new java.util.Timer();
+		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
     }
     
     public void TestConnect()
@@ -88,7 +107,7 @@ public class RoboRealmClient
  		
  		if(isPauseOk)
         {
-        	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
+        	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
         	System.out.println("====> RoboRealm Program Paused succesfully!");
         }
         else
@@ -132,56 +151,64 @@ public class RoboRealmClient
  		long startOfCallTimestamp = new Date().getTime();
  		
  		// get the Field Of View Dimensions
- 		Dimension fovDimensions = _rrAPI.getDimension();
+ 		//_fovDimensions = _rrAPI.getDimension();
  		
  	    // get multiple variables
  		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
- 	    Vector v = _rrAPI.getVariables("NORTHWEST_X,NORTHEAST_X,HIGHEST_MIDDLE_Y,BLOB_COUNT");
+ 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y");
+ 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT");
+ 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
+ 	    _newTargetRawData = null;
  	    
- 	    long callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
- 	    
- 	    if (v==null)
+ 	    if (_vector==null)
  	    {
  	    	DriverStation.reportError("Error in GetVariables, did not return any results", false);
  	    }
- 	        
- 	    RawImageData newTargetRawData = null;
- 	    if(v.size() == EXPECTED_ARRAY_SIZE)
+ 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE)
  	    {
- 	    	newTargetRawData = new RawImageData();
+ 	    	_newTargetRawData = new RawImageData();
  	    	
  	    	// parse the results and build the image data
- 	    	newTargetRawData.Timestamp = new Date().getTime();
- 	    	newTargetRawData.NorthWestX = Integer.parseInt((String)v.elementAt(NORTHWEST_X_IDX));
- 	    	newTargetRawData.NorthEastX = Integer.parseInt((String)v.elementAt(NORTHEAST_X_IDX));
- 	    	newTargetRawData.HighestMiddleY = Integer.parseInt((String)v.elementAt(HIGHESTMIDDLE_Y_IDX));
- 	    	newTargetRawData.BlobCount = Integer.parseInt((String)v.elementAt(BLOB_COUNT_IDX));
- 	    	newTargetRawData.FOVDimensions = fovDimensions;
+ 	    	_newTargetRawData.Timestamp = new Date().getTime();
+ 	    	_newTargetRawData.SouthWestX = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_X_IDX));
+ 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
+ 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
+ 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
  	    	
- 	    	newTargetRawData.ResponseTimeMSec = callElapsedTimeMSec;
+ 	    	_fovDimensions = new Dimension();
+ 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
+ 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(CALIBRATED_HEIGHT_IDX));
+ 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
  	    	
+ 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
+ 	    	
+ 	    	// debug
  	    	/*
- 	    	System.out.println("NWx: " + newTargetRawData.NorthWestX 
- 	    						+ " NEx: " + newTargetRawData.NorthEastX 
- 	    						+ " HMY: " + newTargetRawData.HighestMiddleY 
- 	    						+ " Blob: " + newTargetRawData.BlobCount
- 	    						+ " mSec: " + newTargetRawData.ResponseTimeMSec);
+ 	    	System.out.println("FOVh: " + _fovDimensions.height 
+								+ " FOVw: " + _fovDimensions.width 
+								+ " SWx: " + _newTargetRawData.SouthWestX 
+ 	    						+ " SWy: " + _newTargetRawData.SouthWestY 
+ 	    						+ " SEx: " + _newTargetRawData.SouthEastX 
+ 	    						+ " SEy: " + _newTargetRawData.SouthEastY
+ 	    						+ " mSec: " + _newTargetRawData.ResponseTimeMSec);    	
  	    	*/
  	    	
- 	    	// create a point at the center of the field of view
- 	    	int fovXCenterPoint = fovDimensions.width / 2;
+ 	    	// calc the horiz center of the image
+ 	    	_fovXCenterPoint = _fovDimensions.width / 2;
  	    	
- 	    	// calc target center point
- 	    	int targetXCenterPoint = (newTargetRawData.NorthEastX - newTargetRawData.NorthWestX) / 2;
- 	    		
- 	    	double fovCenterToTargetXAngleRawDegrees = (fovXCenterPoint / fovDimensions.width) * CAMERA_FOV_HORIZONTAL_DEGREES;
- 	    		
- 	    		_fovCenterToTargetXAngleRawDegrees = Math.round(fovCenterToTargetXAngleRawDegrees * 100.0)/ 100.0;
- 	    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + newTargetRawData.ResponseTimeMSec);
+ 	    	// calc the target center point
+ 	    	_targetXCenterPoint = Math.round((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0);
+ 	    	
+ 	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
+ 	    	// round to 2 decimal places
+ 	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
+ 	    	
+    		//System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec);
  	    }
  	    else
  	    {
- 	    	newTargetRawData = null;
+ 	    	System.out.println("Unexpected Array Size: " + _vector.size());
+ 	    	_newTargetRawData = null;
  	    }
  	} 
  	
@@ -205,4 +232,12 @@ public class RoboRealmClient
  			} 
  		} 
  	}
+    
+    // =========================================================
+    // Property Accessors
+    // =========================================================
+    public double get_fovCenterToTargetXAngleRawDegrees()
+    {
+    	return _fovCenterToTargetXAngleRawDegrees;
+    }
 }
