@@ -12,6 +12,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
+import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.sensors.Lidar;
@@ -57,7 +58,7 @@ public class Robot extends IterativeRobot {
 	private DriversStation _driversStation;
 	
 	// sensors
-	private Lidar _lidar;
+	//private Lidar _lidar;
 	private NavXGyro _navX;
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
@@ -68,12 +69,13 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	//   Define class level instance variables for Robot State
 	// ===========================================================
-	private TELEOP_MODE _telopMode;
+	private TELEOP_MODE _teleopMode;
 	private AUTON_MODE _autonMode;
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Telep Sequences 
 	// ===========================================================
+	private ChassisAutoAimController _chassisAutoAim;
 	private HangGearController _hangGearController;
 	
 	// ===========================================================
@@ -130,12 +132,13 @@ public class Robot extends IterativeRobot {
 								RobotMap.SHOOTER_SLIDER_PWM_PORT);
 		
 		// sensors follow
-		_lidar = new Lidar(SerialPort.Port.kMXP);
+		//_lidar = new Lidar(SerialPort.Port.kMXP);
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		_switchableCameraServer = new SwitchableCameraServer(RobotMap.GEAR_CAMERA_NAME);
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT);
 		
 		// telop Controller follow
+		_chassisAutoAim = new ChassisAutoAimController(_chassis, _navX);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 				
 		//Update Dashboard Fields (push all fields to dashboard)
@@ -155,9 +158,9 @@ public class Robot extends IterativeRobot {
     	}
     	
     	// stop lidar polling
-    	if(_lidar != null) { 
-    		_lidar.stop();
-    	}
+    	//if(_lidar != null) { 
+    	//	_lidar.stop();
+    	//}
     	
     	// cleanup auton resources, since they are not needed in Telop Mode
     	if(_crossBaseLineAuton != null) {
@@ -230,7 +233,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HIT_HOPPER;
+    	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
 
     	
     	// =====================================
@@ -261,7 +264,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_CENTER_GEAR:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController, _roboRealmClient);
 				_hangCenterGearAuton.Initialize();
 				break;
 				
@@ -421,7 +424,7 @@ public class Robot extends IterativeRobot {
     	_switchableCameraServer.ChgToCamera(RobotMap.BALL_INFEED_CAMERA_NAME);
     	
     	// #### Telop Controller ####
-    	_telopMode = TELEOP_MODE.STANDARD;	// default to std mode
+    	_teleopMode = TELEOP_MODE.STANDARD;	// default to std mode
     	
     	// #### Lidar starts doing ####
     	//if(_lidar != null)	{ _lidar.start(); }	//TODO: reslove timeout
@@ -445,7 +448,7 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	// Step 1: execute different steps based on current "telop mode"
     	// =====================================
-    	switch (_telopMode) {
+    	switch (_teleopMode) {
     		case STANDARD:	    			
 				//=====================
 		    	// Chassis Gear Shift
@@ -456,6 +459,8 @@ public class Robot extends IterativeRobot {
 		    		} else {
 		    			_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 					}
+		    		
+		    		_teleopMode = TELEOP_MODE.AUTO_AIM;
 		    	}
 
 		    	//=====================
@@ -576,29 +581,13 @@ public class Robot extends IterativeRobot {
 				//=====================
 		      	_gearHandler.SpinInfeedWheelsVBus(_driversStation.getOperator_GearInfeedOutFeed_JoystickCmd());
 		      	
-		    	//=======================================
-		    	// Switchable Cameras
-		    	//=====================================
-				if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed()) {
-					_switchableCameraServer.ChgToNextCamera();
-				}
-		    	
-		    	// =====================================
-		    	// Check the climber
-		    	// =====================================
-		    	
-		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {
-		    		_telopMode = TELEOP_MODE.CLIMBING;
-		    		_climber.RunClimberReentrant();
-		    	}
-		      	
 				//=====================
 		    	// Enter Gear Hang Mode
 				//=====================
     			if(_driversStation.getIsOperator_GearStartSequence_BtnJustPressed()) {
     				// make sure Gear Tilt has completed zeroing before entering this mode!
     				if(_gearHandler.hasTiltAxisBeenZeroed()) {
-	    				_telopMode = TELEOP_MODE.HANG_GEAR_SEQUENCE_MODE;
+	    				_teleopMode = TELEOP_MODE.HANG_GEAR_SEQUENCE_MODE;
 	    				_hangGearController.Initialize();
     				} else {
     					DriverStation.reportWarning("=!=!= Cannot chg to Hang Gear Seq, Tilt is NOT finished zeroing yet =!=!=", false);
@@ -609,7 +598,7 @@ public class Robot extends IterativeRobot {
     	    	// Enter Gear Climb Mode
     	    	// =====================================
     	    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {
-    	    		_telopMode = TELEOP_MODE.CLIMBING;
+    	    		_teleopMode = TELEOP_MODE.CLIMBING;
     	    		_climber.RunClimberReentrant();
     	    	}
 		      	break;	// end of _telopMode = STANDARD
@@ -623,7 +612,7 @@ public class Robot extends IterativeRobot {
     			// if not still running, switch back to std teleop mode
     			//	(ie: give control back to the driver & operator)
     			if(!isStillRunning) {
-    				_telopMode = TELEOP_MODE.STANDARD;
+    				_teleopMode = TELEOP_MODE.STANDARD;
     			}
     			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE
     			
@@ -631,11 +620,19 @@ public class Robot extends IterativeRobot {
 		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {	
 		    		// cancel climbing
 	    			_climber.FullStop();
-	    			_telopMode = TELEOP_MODE.STANDARD;
+	    			_teleopMode = TELEOP_MODE.STANDARD;
 		    	} else {
 		    		// keep calling this method
 		    		_climber.RunClimberReentrant();
 		    	}
+    			break;
+    			
+    		case AUTO_AIM:
+    			if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
+    				_teleopMode = TELEOP_MODE.STANDARD;
+    			} else {
+    				_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
+    			}
     			break;
     			
     	}	// end of switch statement
@@ -675,7 +672,7 @@ public class Robot extends IterativeRobot {
     	
     	if(_gearHandler != null)	{ _gearHandler.OutputToSmartDashboard(); }
     		
-    	if(_lidar != null)			{ _lidar.OutputToSmartDashboard(); }
+    	//if(_lidar != null)			{ _lidar.OutputToSmartDashboard(); }
     	
     	if(_navX != null)			{ _navX.OutputToSmartDashboard(); }
     	
@@ -699,7 +696,7 @@ public class Robot extends IterativeRobot {
 	    	
 	    	if(_ballInfeed != null) 	{ _ballInfeed.UpdateLogData(logData); }
 	    	
-	    	if(_lidar != null)			{ _lidar.UpdateLogData(logData); }
+	    	//if(_lidar != null)			{ _lidar.UpdateLogData(logData); }
 	    	
 	    	if(_navX != null) 			{ _navX.UpdateLogData(logData); }
 	    	

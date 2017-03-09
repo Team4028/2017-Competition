@@ -13,6 +13,7 @@ public class ChassisAutoAimController {
 	double _kp = 0.11;
 	double _ki = 0.0;
 	double _kd = 0.0;
+	double _setError = 0.0;
 	
 	public ChassisAutoAimController(Chassis chassis, NavXGyro navX) {
 		_chassis = chassis;
@@ -33,5 +34,19 @@ public class ChassisAutoAimController {
 	public void update() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
 		_chassis.TankDrive(-motorOutput, motorOutput);
+	}
+	
+	public void updateVision(double currentError) {
+		if (_setError != currentError) {
+			_setError = currentError;
+			_autoAimPID.setSetpoint(_navX.getYaw() + _setError);
+		}
+		
+		double motorOutput = _autoAimPID.calculate(_navX.getYaw());
+		_chassis.TankDrive(-motorOutput, motorOutput);
+	}
+	
+	public void zeroVisionError() {
+		_setError = 0.0;
 	}
 }

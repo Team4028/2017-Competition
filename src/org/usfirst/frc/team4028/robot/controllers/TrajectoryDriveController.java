@@ -14,6 +14,7 @@ import java.util.TimerTask;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
+import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,6 +26,7 @@ public class TrajectoryDriveController {
 	private UpdaterTask _updaterTask;
 	private TrajectoryFollower _leftFollower = new TrajectoryFollower("left");
 	private TrajectoryFollower _rightFollower = new TrajectoryFollower("right");
+	private RoboRealmClient _roboRealm;
 	private java.util.Timer _updaterTimer;
 	private double _angleDiff;
 	private double _currentVisionError;
@@ -42,7 +44,7 @@ public class TrajectoryDriveController {
 	private int _currentSegment;
 	private int _trajectoryNumPoints;
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear) {
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear, RoboRealmClient roboRealm) {
 		_chassis = chassis;
 		_navX = navX;
 		if(isHighGear) {
@@ -54,6 +56,11 @@ public class TrajectoryDriveController {
 		}
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
+		_roboRealm = roboRealm;
+	}
+	
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear) {
+		this(chassis, navX, isHighGear, null);
 	}
 	
 	public boolean onTarget() {
@@ -201,11 +208,14 @@ public class TrajectoryDriveController {
 			
 			if(_isVisionTrackingEnabled) {
 				setIsFeedbackDisabled(true);
-				// _currentVisionError = 
+				_currentVisionError = _roboRealm.getAngle();
+				/*
 				if(_setVisionError != _currentVisionError) {
 					_setVisionError = _currentVisionError;
 				}
-				_turn = _kTurnGyro * _setVisionError;
+				_turn = _kTurnVision * _setVisionError;
+				*/
+				_turn = 0.0;
 			} else {
 				setIsFeedbackDisabled(false);
 				double goalHeading = _leftFollower.getHeading();
@@ -258,7 +268,7 @@ public class TrajectoryDriveController {
 	}
 	
 	public int getFollowerCurrentSegment() {
-		return _leftFollower.getCurrentSegment();
+		return _currentSegment;
 	}
 	
 	public void setIsFeedbackDisabled(boolean isDisabled) {

@@ -5,7 +5,8 @@ public class GeneralEnums {
 	public enum TELEOP_MODE {
 		STANDARD,
 		HANG_GEAR_SEQUENCE_MODE,
-		CLIMBING
+		CLIMBING,
+		AUTO_AIM
 	}
 	
 	public enum AUTON_MODE {
