@@ -622,6 +622,11 @@ public class Robot extends IterativeRobot {
     			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE
     			
     		case CLIMBING:
+    			// arcade drive
+		    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
+						_driversStation.getDriver_ChassisTurn_JoystickCmd());
+		    	
+		    	// climber
 		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed())
 		    	{	
 		    		// cancel climbing

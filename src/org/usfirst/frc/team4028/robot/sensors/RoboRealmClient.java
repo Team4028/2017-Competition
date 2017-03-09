@@ -31,6 +31,7 @@ public class RoboRealmClient
 
  	private boolean _isConnected;
  	
+ 	private static final int TARGET_MINIMUM_Y_VALUE = 413;
  	private static final int SOUTHWEST_X_IDX = 0;
  	private static final int SOUTHWEST_Y_IDX = 1;
  	private static final int SOUTHEAST_X_IDX = 2;
@@ -39,7 +40,7 @@ public class RoboRealmClient
  	private static final int  CALIBRATED_HEIGHT_IDX = 5;
  	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
  	//private static final int BLOB_COUNT_IDX = 3;
- 	
+ 	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
  	private static final int EXPECTED_ARRAY_SIZE = 6;
@@ -54,6 +55,7 @@ public class RoboRealmClient
  	private double _fovXCenterPoint;
  	private double _targetXCenterPoint;
  	private double _fovCenterToTargetXAngleRawDegrees;
+ 	private int _badDataCounter;
  	
  	// Constructor
     public RoboRealmClient(String kangarooIPv4Addr, int portNo) 
@@ -67,15 +69,15 @@ public class RoboRealmClient
     	// try to connect
         if (!_rrAPI.connect(kangarooIPv4Addr, portNo))
         {
-        	DriverStation.reportError("Could not connect to RobeRealm!", false);
-        	System.out.println("====> Could not connect to RobeRealm!");
+        	DriverStation.reportError("Could not connect to RoboRealm!", false);
+        	System.out.println("====> Could not connect to RoboRealm!");
         	
         	_isConnected = false;
         }
         else
         {
-        	DriverStation.reportWarning("Connected to RobeRealm!", false);
-        	System.out.println("====> Connected to RobeRealm!");
+        	DriverStation.reportWarning("Connected to RoboRealm!", false);
+        	System.out.println("====> Connected to RoboRealm!");
         	
         	_isConnected = true;
         }
@@ -86,6 +88,9 @@ public class RoboRealmClient
 		// create a timer to fire events
 		_updaterTimer = new java.util.Timer();
 		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
+		
+		//Initialize counter to indicate bad data until proved good
+		_badDataCounter = 10;
     }
     
     public void TestConnect()
@@ -163,6 +168,9 @@ public class RoboRealmClient
  	    if (_vector==null)
  	    {
  	    	DriverStation.reportError("Error in GetVariables, did not return any results", false);
+ 	    	
+ 	    	//Increment bad data counter
+ 	    	_badDataCounter += 1;
  	    }
  	    else if(_vector.size() == EXPECTED_ARRAY_SIZE)
  	    {
@@ -181,7 +189,7 @@ public class RoboRealmClient
  	    	_newTargetRawData.FOVDimensions = _fovDimensions;
  	    	
  	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
- 	    	
+ 	
  	    	// debug
  	    	/*
  	    	System.out.println("FOVh: " + _fovDimensions.height 
@@ -204,11 +212,17 @@ public class RoboRealmClient
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
     		//System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec);
+ 	
+ 	    	//Reset the counter 
+ 	    	_badDataCounter = 0;
  	    }
  	    else
  	    {
  	    	System.out.println("Unexpected Array Size: " + _vector.size());
  	    	_newTargetRawData = null;
+
+ 	    	//Increment bad data counter
+ 	    	_badDataCounter += 1;
  	    }
  	} 
  	
@@ -239,5 +253,30 @@ public class RoboRealmClient
     public double get_fovCenterToTargetXAngleRawDegrees()
     {
     	return _fovCenterToTargetXAngleRawDegrees;
+    }
+    
+    public boolean get_isVisionDataValid()
+    {
+    	if(_badDataCounter >= BAD_DATA_COUNTER_THRESHOLD)
+    	{	
+    		return false;
+    	}
+    	
+    	else 
+    	{
+    		return true;
+    	}
+    }
+    
+    public boolean get_isInGearHangPosition()
+    {
+		if ((_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) && (_newTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
     }
 }

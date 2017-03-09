@@ -44,6 +44,10 @@ public class RobotMap
 	
 	public static final int FUEL_INFEED_MTR_CAN_BUS_ADDR = 3;
 	
+	public static final int MAGIC_CARPET_CAN_BUS_ADDR = 13;
+	public static final int EXTRA_MOTOR_BUS_ADDR = 14;
+	
+	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
