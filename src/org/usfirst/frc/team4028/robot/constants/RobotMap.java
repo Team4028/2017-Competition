@@ -7,8 +7,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 // This class contains id values for the physical elements of the robot so we can use names in the code
 // instead of hardcoded constants
-public class RobotMap 
-{
+public class RobotMap {
 	// ======================================
 	// Driver's station
 	// ======================================

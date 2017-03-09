@@ -42,8 +42,7 @@ public class PIDCalculator {
 			}
 		}
 		
-		if ((_error * _p < _maximumOutput) && (_error *_p > _minimumOutput))
-		{
+		if ((_error * _p < _maximumOutput) && (_error *_p > _minimumOutput)) {
 			_totalError += _error;
 		} else {
 			_totalError = 0.0;
@@ -126,24 +125,6 @@ public class PIDCalculator {
         _result = 0;
         _setpoint = 0;
     }
-
-    public void resetIntegrator() {
-        _totalError = 0;
-    }
-
-    public String getState() {
-        String lState = "";
-
-        lState += "Kp: " + _p + "\n";
-        lState += "Ki: " + _i + "\n";
-        lState += "Kd: " + _d + "\n";
-
-        return lState;
-    }
-
-    public String getType() {
-        return "PIDController";
-    }
 	
 	public double getError() {
         return _error;
@@ -152,19 +133,7 @@ public class PIDCalculator {
 	public double getSetpoint() {
 		return _setpoint;
 	}
-	
-	public double getP() {
-		return _p;
-	}
-	
-	public double getI() {
-		return _i;
-	}
-	
-	public double getD() {
-		return _d;
-	}
-	
+
 	public double get() {
 		return _result;
 	}

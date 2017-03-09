@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 //===		========	===========	=================================
 //0			Sebas	 	25.Feb.2017	Initial Version
 //------------------------------------------------------
-//
 //=====> For Changes see Sebas
 public class DoNothing {
 	// define class level variables for Robot subsystems

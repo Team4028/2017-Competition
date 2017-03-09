@@ -1,11 +1,12 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -17,7 +18,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 //1.0 		Sebas 		4.Mar.2017	Added Motion Profile + Hang Gear
 //------------------------------------------------------
 //=====> For Changes see Sebas
-public class HangBoilerSideGear {
+public class HangBoilerGear {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
@@ -28,7 +29,6 @@ public class HangBoilerSideGear {
 	private enum AUTON_STATE {
 		UNDEFINED,
 		MOVE_TO_TARGET,
-		INIT_GEAR_SEQUENCE,
 		RUN_GEAR_SEQUENCE
 	}
 	
@@ -43,13 +43,13 @@ public class HangBoilerSideGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangBoilerSideGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangBoilerGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
-		_trajController = new TrajectoryDriveController(_chassis, _navX);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -63,7 +63,8 @@ public class HangBoilerSideGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.loadProfile(GeneratedTrajectory.LeftPoints, GeneratedTrajectory.RightPoints, 1.0, -1.0);
+		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
@@ -91,13 +92,9 @@ public class HangBoilerSideGear {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				_autonState = AUTON_STATE.INIT_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
-      			break;
-      			
-      		case INIT_GEAR_SEQUENCE:
-      			_hangGearController.Initialize();
-      			_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			break;
       			
       		case RUN_GEAR_SEQUENCE:
@@ -112,7 +109,7 @@ public class HangBoilerSideGear {
       	}
 		// cleanup
 		if(!_isStillRunning) {
-			DriverStation.reportWarning("===== Completed HangBoilerSideGear Auton =====", false);
+			DriverStation.reportWarning("===== Completed HangBoilerGear Auton =====", false);
 		}
 		
 		return _isStillRunning; 
