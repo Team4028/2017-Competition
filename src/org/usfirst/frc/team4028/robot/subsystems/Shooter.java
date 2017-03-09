@@ -86,9 +86,9 @@ public class Shooter
 	
 	private static final double FEEDER_PERCENTVBUS_COMMAND = -0.7; //This Motor Needs to Run in Reverse
 	
-	private static final double BLENDER_MAX_PERCENTVBUS_COMMAND = 0.7;
-	private static final double BLENDER_DEFAULT_PERCENTVBUS_COMMAND = 0.35;
-	private static final double BLENDER_MIN_PERCENTVBUS_COMMAND = 0.05;
+	private static final double BLENDER_MAX_PERCENTVBUS_COMMAND = -0.7;
+	private static final double BLENDER_DEFAULT_PERCENTVBUS_COMMAND = -0.7;
+	private static final double BLENDER_MIN_PERCENTVBUS_COMMAND = -0.05;
 	
 	private static final double BLENDER_BUMP_PERCENTVBUS_COMMAND = 0.05;
 

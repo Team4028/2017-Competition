@@ -27,7 +27,7 @@ public class BallInfeed {
 	//======================================
 	//define class level constants
 	//=======================================
-	private static final double FUEL_INFEED_MOTOR_SPEED = 1.0;
+	private static final double FUEL_INFEED_MOTOR_SPEED = -1.0;
 	
 	//============================================================================================
 	// constructors follow

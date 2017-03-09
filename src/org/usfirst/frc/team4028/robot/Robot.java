@@ -453,10 +453,14 @@ public class Robot extends IterativeRobot {
 				//=====================
 		    	// Chassis Gear Shift
 				//=====================
-		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
-		    		if (_chassis.getGearShiftPosition() == GearShiftPosition.HIGH_GEAR) {
+		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) 
+		    	{
+		    		if (_chassis.getGearShiftPosition() == GearShiftPosition.HIGH_GEAR) 
+		    		{
 		    			_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-		    		} else {
+		    		} 
+		    		else 
+		    		{	
 		    			_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 					}
 		    		
@@ -466,15 +470,39 @@ public class Robot extends IterativeRobot {
 		    	//=====================
 		    	// Chassis Throttle Cmd
 				//=====================
-		    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
-		    							_driversStation.getDriver_ChassisTurn_JoystickCmd());
+		    	if ((Math.abs(_driversStation.getDriver_ChassisThrottle_JoystickCmd()) > 0.0) 
+		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0))
+		    	{
+		    		// std drive
+			    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
+											_driversStation.getDriver_ChassisTurn_JoystickCmd());
+		    	} 
+		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) > 0.0)
+		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) == 0.0))
+		    	{
+		    		// spin left
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinLeft_JoystickCmd() * 0.5 * -1.0);
+		    	} 
+		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) > 0.0) 
+		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) == 0.0))
+		    	{
+		    		// spin right
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinRight_JoystickCmd() * 0.5);
+		    	} 
+		    	else 
+		    	{
+		    		// full stop
+			    	_chassis.ArcadeDrive(0.0, 0.0);
+		    	}
 		    	
     			//============================================================================
     			// Fuel Infeed Cmd
     			//===========================================================================   			
     			if(_driversStation.getIsOperator_FuelInfeed_BtnPressed()) {
     				_ballInfeed.InfeedFuelAndExtendSolenoid();
-    			} else {
+    			} 
+    			else 
+    			{
     				_ballInfeed.FullStop();
     			}
     				

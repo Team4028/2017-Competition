@@ -54,8 +54,8 @@ public class DriversStation extends BaseDriversStation {
 	--- Operator Joysticks --------
 	OPERATOR_LEFT_X_AXIS
 	OPERATOR_LEFT_Y_AXIS			Gear Tilt
-	OPERATOR_LEFT_TRIGGER
-	OPERATOR_RIGHT_TRIGGER
+	OPERATOR_LEFT_TRIGGER			Chassis Spin Left
+	OPERATOR_RIGHT_TRIGGER			Chassis Spin Right
 	OPERATOR_RIGHT_X_AXIS
 	OPERATOR_RIGHT_Y_AXIS			Gear Infeed/OutFeed
 	
@@ -275,6 +275,14 @@ public class DriversStation extends BaseDriversStation {
 		return super.getOperatorLeftYAxisCmd();
 	}
 	
+	// chassis turret
+	public double getOperator_ChassisSpinLeft_JoystickCmd() {
+		return super.getOperatorLeftTriggerCmd();
+	}
+
+	public double getOperator_ChassisSpinRight_JoystickCmd() {
+		return super.getOperatorRightTriggerCmd();
+	}
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
