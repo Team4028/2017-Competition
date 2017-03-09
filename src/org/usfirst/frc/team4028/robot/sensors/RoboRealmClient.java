@@ -39,11 +39,12 @@ public class RoboRealmClient
  	private static final int  CALIBRATED_WIDTH_IDX = 4;
  	private static final int  CALIBRATED_HEIGHT_IDX = 5;
  	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
- 	//private static final int BLOB_COUNT_IDX = 3;
+ 	private static final int BLOB_COUNT_IDX = 6;
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
- 	private static final int EXPECTED_ARRAY_SIZE = 6;
+ 	private static final int EXPECTED_ARRAY_SIZE = 7;
+ 	private static final int EXPECTED_BLOB_COUNT = 2;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
  	
@@ -161,7 +162,7 @@ public class RoboRealmClient
  	    // get multiple variables
  		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
  	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y");
- 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT");
+ 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT,BLOB_COUNT");
  	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
  	    _newTargetRawData = null;
  	    
@@ -182,6 +183,8 @@ public class RoboRealmClient
  	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
  	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
  	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
+ 	    	
+ 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
  	    	
  	    	_fovDimensions = new Dimension();
  	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
@@ -211,7 +214,7 @@ public class RoboRealmClient
  	    	// round to 2 decimal places
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
-    		//System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec);
+    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec + " Blob Count= " + _newTargetRawData.BlobCount);
  	
  	    	//Reset the counter 
  	    	_badDataCounter = 0;
@@ -257,14 +260,14 @@ public class RoboRealmClient
     
     public boolean get_isVisionDataValid()
     {
-    	if(_badDataCounter >= BAD_DATA_COUNTER_THRESHOLD)
+    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) && (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT))
     	{	
-    		return false;
+    		return true;
     	}
     	
     	else 
     	{
-    		return true;
+    		return false;
     	}
     }
     
