@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //	5		Patrick		3/1	 5:57		Toggle Blender Speed
 //	6		Patrick		3/4	 11:06		Updating to Log %Voltage
 //	7		Patrick		3/4	 1:31		Changing PID Values
+//  8		TomB		9.Mar.2017		Refactor for new infeed 3 motor combo
 //-------------------------------------------------------------
 public class Shooter 
 {
@@ -30,9 +31,9 @@ public class Shooter
 	// 5 DC Motors
 	//		1 Talon w/ Encoder, 	PID V Mode		2nd Stage
 	//		1 Talon w/ Encoder, 	PID V Mode		1st Stage
-	//		1 Talon w/o Encoder,	% VBus Mode		Feed Motor
-	//		1 Talon w/ Encoder,		% VBus Mode		Blender
-	//		1 Talon w/ Encoder,		PID P Mode		Turret
+	//		1 Talon w/o Encoder,	% VBus Mode		Magic Carpet Motor
+	//		1 Talon w/o Encoder,	% VBus Mode		High Speed Infeed Lane
+	//		1 Talon w/o Encoder,	% VBus Mode		High Roller
 	//
 	// 1 Servo
 	// 		I Linear Actuator		PWM				Slider
@@ -41,23 +42,22 @@ public class Shooter
 	// define class level variables for Robot objects`
 	private CANTalon _firstStgMtr;
 	private CANTalon _secondStgMtr;
-	private CANTalon _blenderMtr;
-	private CANTalon _feederMtr;
+	private CANTalon _magicCarpetMtr;
+	private CANTalon _highSpeedInfeedLaneMtr;
+	private CANTalon _highRollerMtr;
 	
 	private Servo _linearActuator;
 	
 	// define class level working variables
 	private double _stg1MtrTargetRPM;
 	private double _stg2MtrTargetRPM;
-	private double _blenderMtrTargetVBus;
-	private double _blenderLastMtrTargetVBus;
-	
 	private boolean _isStg1MtrTargetRPMBumpingUp;
 	private boolean _isStg2MtrTargetRPMBumpingUp;
-	private boolean _isShooterInBangBangMode; 
 	
-	private boolean _isBlenderVBusBumpingUp;
-	
+	private double _magicCarpetMtrTargetVBus;	
+	private double _highSpeedInfeedLaneMtrTargetVBus;
+	private double _highRollerMtrTargetVBus;
+
 	private double _currentSliderPosition;
 	
 	//define class level PID constants
@@ -84,19 +84,20 @@ public class Shooter
 	private static final double FIRST_STAGE_MTR_DEFAULT_RPM = -3500;
 	private static final double SECOND_STAGE_MTR_DEFAULT_RPM = -3200;
 	
-	private static final double FEEDER_PERCENTVBUS_COMMAND = -0.7; //This Motor Needs to Run in Reverse
-	
-	private static final double BLENDER_MAX_PERCENTVBUS_COMMAND = -0.7;
-	private static final double BLENDER_DEFAULT_PERCENTVBUS_COMMAND = -0.7;
-	private static final double BLENDER_MIN_PERCENTVBUS_COMMAND = -0.05;
-	
-	private static final double BLENDER_BUMP_PERCENTVBUS_COMMAND = 0.05;
+	// define class level Ball Infeed Motor Constants
+	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
+	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
+	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = -0.7;
 
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
 	//============================================================================================
-	public Shooter(int firstStgMtrCanBusAddr, int secondStageMtrCanBusAddr, int blenderMtrCanBusAddr, 
-				   int feederMtrCanBusAddr, int sliderPWMPort)
+	public Shooter(int firstStgMtrCanBusAddr, 
+					int secondStageMtrCanBusAddr, 
+					int magicCarpetMtrCanBusAddr, 
+					int highSpeedInfeedLaneMtrCanBusAddr, 
+					int highRollerMtrCanBusAddr,
+					int sliderPWMPort)
 	{
 		// First Stage Motor
 		_firstStgMtr = new CANTalon(firstStgMtrCanBusAddr);
@@ -134,31 +135,33 @@ public class Shooter
 		_secondStgMtr.setP(SECOND_STAGE_MTG_P_GAIN); 
 		_secondStgMtr.setI(SECOND_STAGE_MTG_I_GAIN); 
 		_secondStgMtr.setD(SECOND_STAGE_MTG_D_GAIN);
+				
+		// Magic Carpet Motor
+		_magicCarpetMtr = new CANTalon(magicCarpetMtrCanBusAddr);
+		_magicCarpetMtr.enableBrakeMode(false);
+		_magicCarpetMtr.enableLimitSwitch(false, false);
 		
-		// Blender Motor
-		_blenderMtr = new CANTalon(blenderMtrCanBusAddr);
-		_blenderMtr.enableBrakeMode(false);
-		_blenderMtr.enableLimitSwitch(false, false);
+		// High Speed Infeed Lane Motor
+		_highSpeedInfeedLaneMtr = new CANTalon(highSpeedInfeedLaneMtrCanBusAddr);
+		_highSpeedInfeedLaneMtr.enableBrakeMode(false);
+		_highSpeedInfeedLaneMtr.enableLimitSwitch(false, false);
 		
-		// Feeder Motor
-		_feederMtr = new CANTalon(feederMtrCanBusAddr);
-		_feederMtr.enableBrakeMode(false);
-		_feederMtr.enableLimitSwitch(false, false);
+		// High Roller Motor
+		_highRollerMtr = new CANTalon(highRollerMtrCanBusAddr);
+		_highRollerMtr.enableBrakeMode(false);
+		_highRollerMtr.enableLimitSwitch(false, false);
 		
 		// Slider
 		_linearActuator = new Servo(sliderPWMPort);
 		
-		// Default Blender Doubles
-		_blenderMtrTargetVBus = 0;
-		_blenderLastMtrTargetVBus = 0;
+		// Default Feeder Subsystem working variables
+		_magicCarpetMtrTargetVBus = 0;
+		_highSpeedInfeedLaneMtrTargetVBus = 0;
+		_highRollerMtrTargetVBus = 0;
 		
-		// default to bumping rmp up on both motors
+		// default to bumping rmp up on both shooter motors
 		_isStg1MtrTargetRPMBumpingUp = true;
 		_isStg2MtrTargetRPMBumpingUp = true;
-		
-		_isBlenderVBusBumpingUp = true;
-		
-		_isShooterInBangBangMode = false;
 	}
 	
 	//============================================================================================
@@ -168,34 +171,34 @@ public class Shooter
 	public void FullStop() 
 	{
 		FullShooterStop();
-		FullBlenderFeederStop();
+		FullShooterFeederStop();
 	}
 	
 	public void FullShooterStop() 
 	{
-		SpinStg1Wheel(0);
-		SpinStg2Wheel(0);
+		RunStg1(0);
+		RunStg2(0);
 	}
 	
-	public void FullBlenderFeederStop() 
+	public void FullShooterFeederStop() 
 	{
-		SpinBlender(0);
-		SpinFeeder(0);
-		_isShooterInBangBangMode = false;
+		RunMagicCarpet(0.0);
+		RunHighSpeedInfeedLane(0.0);
+		RunHighRoller(0.0);
 	}
 	
 	//============================================================================================
 	// Shooter Motors
 	//============================================================================================
 
-	public void SpinStg1Wheel(double targetRPM)
+	public void RunStg1(double targetRPM)
 	{
 		_stg1MtrTargetRPM = targetRPM;
 		_firstStgMtr.set(_stg1MtrTargetRPM);
 		DriverStation.reportWarning("Stage 1 Target RPM = " + targetRPM, false);
 	}
 	
-	public void SpinStg2Wheel(double targetRPM)
+	public void RunStg2(double targetRPM)
 	{
 		_stg2MtrTargetRPM = targetRPM;
 		_secondStgMtr.set(_stg2MtrTargetRPM);
@@ -206,19 +209,19 @@ public class Shooter
 	// Set Up Shooter Testing
 	//============================================================================================
 	
-	public void Stg1MtrCycleRPM()
+	public void CycleStg1MtrRPM()
 	{
 		if(_isStg1MtrTargetRPMBumpingUp)
 		{
-			Stg1MtrBumpRPMUp();
+			BumpStg1MtrRPMUp();
 		}
 		else
 		{
-			Stg1MtrBumpRPMDown();
+			BumpStg1MtrRPMDown();
 		}
 	}
 	
-	public void Stg1MtrBumpRPMUp()
+	public void BumpStg1MtrRPMUp()
 	{
 		// only bump if not already at max
 		if(Math.abs(_stg1MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
@@ -226,12 +229,12 @@ public class Shooter
 			if(Math.abs(_stg1MtrTargetRPM) >  0)
 			{
 				// if already turning, just bump
-				SpinStg1Wheel(_stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
+				RunStg1(_stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
 			}
 			else
 			{
 				// if currently stopped, set to default speed
-				SpinStg1Wheel(FIRST_STAGE_MTR_DEFAULT_RPM);
+				RunStg1(FIRST_STAGE_MTR_DEFAULT_RPM);
 			}
 		}
 		else
@@ -241,12 +244,12 @@ public class Shooter
 		}
 	}
 	
-	public void Stg1MtrBumpRPMDown()
+	public void BumpStg1MtrRPMDown()
 	{
 		// only bump if not already at min
 		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
 		{
-			SpinStg1Wheel(_stg1MtrTargetRPM += SHOOTER_BUMP_RPM);
+			RunStg1(_stg1MtrTargetRPM += SHOOTER_BUMP_RPM);
 		}
 		else
 		{
@@ -255,19 +258,19 @@ public class Shooter
 		}
 	}
 
-	public void Stg2MtrCycleRPM()
+	public void CycleStg2MtrRPM()
 	{
 		if(_isStg2MtrTargetRPMBumpingUp)
 		{
-			Stg2MtrBumpRPMUp();
+			BumpStg2MtrRPMUp();
 		}
 		else
 		{
-			Stg2MtrBumpRPMDown();
+			BumpStg2MtrRPMDown();
 		}
 	}
 	
-	public void Stg2MtrBumpRPMUp()
+	public void BumpStg2MtrRPMUp()
 	{
 		// only bump if not already at max
 		if(Math.abs(_stg2MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
@@ -275,13 +278,13 @@ public class Shooter
 			if(Math.abs(_stg2MtrTargetRPM) >  0)
 			{
 				// if already turning, just bump
-				SpinStg2Wheel(_stg2MtrTargetRPM -= SHOOTER_BUMP_RPM);
+				RunStg2(_stg2MtrTargetRPM -= SHOOTER_BUMP_RPM);
 				DriverStation.reportWarning("Bumping Up Stage 2", false);
 			}
 			else
 			{
 				// if currently stopped, set to default speed
-				SpinStg2Wheel(SECOND_STAGE_MTR_DEFAULT_RPM);
+				RunStg2(SECOND_STAGE_MTR_DEFAULT_RPM);
 			}
 		}
 		else
@@ -291,12 +294,12 @@ public class Shooter
 		}
 	}
 
-	public void Stg2MtrBumpRPMDown()
+	public void BumpStg2MtrRPMDown()
 	{
 		// only bump if not already at min
 		if(Math.abs(_stg2MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
 		{
-			SpinStg2Wheel(_stg2MtrTargetRPM += SHOOTER_BUMP_RPM);
+			RunStg2(_stg2MtrTargetRPM += SHOOTER_BUMP_RPM);
 		}
 		else
 		{
@@ -306,103 +309,54 @@ public class Shooter
 	}
 	
 	//============================================================================================
-	// Blender/Feeder Motors
+	// Run Blender/Feeder Motors
 	//============================================================================================
 	
-	public void ToggleSpinBlender()
+	public void ToggleRunShooterFeeder()
 	{
 		// if current cmd is 0, then start
-		if(_blenderMtr.get() == 0)
+		if(_magicCarpetMtrTargetVBus == 0.0)
 		{
-			if (_blenderLastMtrTargetVBus > 0)
-			{
-				SpinBlender(_blenderLastMtrTargetVBus);
-			}
-			else
-			{
-				SpinBlender(BLENDER_DEFAULT_PERCENTVBUS_COMMAND);	
-			}
+			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
+			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
+			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
 		}
 		else
 		{
-			_blenderLastMtrTargetVBus = _blenderMtrTargetVBus;
-			SpinBlender(0.0);
+			FullShooterFeederStop();
 		}
 	}
 	
-	public void ToggleSpinFeeder()
+	public void RunShooterFeederInReverse()
 	{
-		// if current cmd is 0, then start
-		if(_feederMtr.get() == 0)
-		{
-			SpinFeeder(FEEDER_PERCENTVBUS_COMMAND);
-		}
-		else
-		{
-			SpinFeeder(0.0);
-		}
+		RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
+		RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND * -1.0);
+		RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
 	}
 	
-	public void BlenderMtrCycleVBus()
+	private void RunMagicCarpet(double percentVbusCommand)
 	{
-		// Don't honor bump command if motors are currently stopped
-		if (_blenderMtr.get() != 0.0)
-		{
-			if(_isBlenderVBusBumpingUp)
-			{
-				BlenderBumpVBusUp();
-			}
-			else
-			{
-				BlenderBumpVBusDown();
-			}
-		}
+		_magicCarpetMtrTargetVBus = percentVbusCommand;
+		_magicCarpetMtr.set(_magicCarpetMtrTargetVBus);
 	}
 	
-	public void BlenderBumpVBusUp()
+	private void RunHighSpeedInfeedLane(double percentVbusCommand)
 	{
-		if((_blenderMtrTargetVBus + BLENDER_BUMP_PERCENTVBUS_COMMAND) <= BLENDER_MAX_PERCENTVBUS_COMMAND)
-		{	
-			// if already turning, just bump
-			SpinBlender(_blenderMtrTargetVBus += BLENDER_BUMP_PERCENTVBUS_COMMAND);
-		}
-		else
-		{
-			DriverStation.reportWarning("Blender Mtr Already at Max ", false);
-			_isBlenderVBusBumpingUp = false;
-		}
-	}
-
-	public void BlenderBumpVBusDown()
-	{
-		if((_blenderMtrTargetVBus - BLENDER_BUMP_PERCENTVBUS_COMMAND) >= BLENDER_MIN_PERCENTVBUS_COMMAND)
-		{	
-			// if already turning, just bump
-			SpinBlender(_blenderMtrTargetVBus -= BLENDER_BUMP_PERCENTVBUS_COMMAND);
-		}
-		else
-		{
-			DriverStation.reportWarning("Blender Mtr Already at Min ", false);
-			_isBlenderVBusBumpingUp = true;
-		}
+		_highSpeedInfeedLaneMtrTargetVBus = percentVbusCommand;
+		_highSpeedInfeedLaneMtr.set(_highSpeedInfeedLaneMtrTargetVBus);
 	}
 	
-	private void SpinBlender(double blenderVbusCommand)
+	private void RunHighRoller(double percentVbusCommand)
 	{
-		_blenderMtrTargetVBus = blenderVbusCommand;
-		_blenderMtr.set(_blenderMtrTargetVBus);
-	}
-	
-	private void SpinFeeder(double feederVbusCommand)
-	{
-		_feederMtr.set(feederVbusCommand);
+		_highRollerMtrTargetVBus = percentVbusCommand;
+		_highRollerMtr.set(_highRollerMtrTargetVBus);
 	}
 	
 	//============================================================================================
 	// Linear Actuator
 	//============================================================================================
 	
-	public void ActuatorMoveToDefaultPosition()
+	public void MoveActuatorToDefaultPosition()
 	{
 		_currentSliderPosition = INITIAL_POSITION_ACTUATOR;
 		_linearActuator.setPosition(_currentSliderPosition);
@@ -410,7 +364,7 @@ public class Shooter
 		DriverStation.reportWarning("Actuator Configured to " + _currentSliderPosition, false);
 	} 
 	
-	public void ActuatorMoveUp()
+	public void MoveActuatorUp()
 	{
 		if (_currentSliderPosition < MAX_THRESHOLD_ACTUATOR)
 		{
@@ -427,7 +381,7 @@ public class Shooter
 		}
 	}
 	
-	public void ActuatorMoveDown()
+	public void MoveActuatorDown()
 	{
 		if (_currentSliderPosition > MIN_THRESHOLD_ACTUATOR)
 		{
@@ -451,42 +405,48 @@ public class Shooter
 	public void OutputToSmartDashboard()
 	{
 		// working varibles
-		String outDataStg1Actual = "?";
-		String outDataStg2Actual = "?";
-		//String outDataStg1Command = "?";
-		//String outDataStg2Command = "?";
-		String outDataBlenderCommand = "?";
-		String outDataActuator = "?";
+		String stg1MtrData = "?";
+		String stg2MtrData = "?";
+		String shooterFeederMtrsData = "?";
+		String actuatorData = "?";
 		
-		//Display Current Shooter Motor 1 & 2 Cmd & Actual RPM + Error
-		outDataStg1Actual = String.format("[%.0f RPM] %.0f RPM (%.2f%%)", -1*_stg1MtrTargetRPM, -1*getStg1ActualRPM(), getStg1RPMErrorPercent());
-		outDataStg2Actual = String.format("[%.0f RPM] %.0f RPM (%.2f%%)", -1*_stg2MtrTargetRPM, -1*getStg2ActualRPM(), getStg2RPMErrorPercent());
-		//outDataStg1Command = String.format("%.0f RPM", _stg1MtrTargetRPM);
-		//outDataStg2Command = String.format("%.0f RPM", _stg2MtrTargetRPM);
+		//Display Current Shooter Motor 1 & 2  | Target | Actual RPM | Error | %Out
+		stg1MtrData = String.format("[%.0f RPM] %.0f RPM (%.2f%%) [%.2f%%]", 
+												-1*_stg1MtrTargetRPM, 
+												-1*getStg1ActualRPM(), 
+												getStg1RPMErrorPercent(),
+												getStg1CurrentPercentVBus());
 		
-		SmartDashboard.putString("[Command] Current Stage 1 RPM (Error)", outDataStg1Actual);
-		SmartDashboard.putString("[Command] Current Stage 2 RPM (Error)", outDataStg2Actual);
-		//SmartDashboard.putString("Current Stage 1 Command RPM", outDataStg1Command);
-		//SmartDashboard.putString("Current Stage 2 Command RPM", outDataStg2Command);
+		stg2MtrData = String.format("[%.0f RPM] %.0f RPM (%.2f%%) [%.2f%%]", 
+												-1*_stg2MtrTargetRPM, 
+												-1*getStg2ActualRPM(), 
+												getStg2RPMErrorPercent(),
+												getStg2CurrentPercentVBus());
 		
-		//Display Current Blender %VBus Command
-		outDataBlenderCommand = String.format("%.0f%% Vbus", _blenderMtrTargetVBus*100.0);
+		SmartDashboard.putString("Stg 1 RPM Target|Act|(Err%)|[%Out]", stg1MtrData);
+		SmartDashboard.putString("Stg 2 RPM Target|Act|(Err%)|[%Out]", stg2MtrData);
 		
-		SmartDashboard.putString("Blender Vbus Command)", outDataBlenderCommand);
+		//Display Current magicCarpet Infeed HighRoller MtrsData
+		shooterFeederMtrsData = String.format("(%.2f%%) | (%.2f%%) | (%.2f%%)", 
+																_magicCarpetMtrTargetVBus*100.0,
+																_highRollerMtrTargetVBus*100.0,
+																_highSpeedInfeedLaneMtrTargetVBus*100.0);
+		
+		SmartDashboard.putString("MC | HR | HSL)", shooterFeederMtrsData);
 		
 		//Display Current Actuator Value
-		outDataActuator = String.format( "%.3f", _currentSliderPosition); //Outputs "Max" and "Min" at respective values
+		actuatorData = String.format( "%.3f", _currentSliderPosition); //Outputs "Max" and "Min" at respective values
 		
 		if(_currentSliderPosition == MAX_THRESHOLD_ACTUATOR)
 		{
-			outDataActuator = outDataActuator + " (MAX)";
+			actuatorData = actuatorData + " (MAX)";
 		}
 		else if(_currentSliderPosition == MIN_THRESHOLD_ACTUATOR)
 		{
-			outDataActuator = outDataActuator + " (MIN)";
+			actuatorData = actuatorData + " (MIN)";
 		}
 		
-		SmartDashboard.putString("Actuator Current Value", outDataActuator);
+		SmartDashboard.putString("Actuator Position", actuatorData);
 	}
 	
 	//============================================================================================
@@ -505,15 +465,14 @@ public class Shooter
 		logData.AddData("Stg2Mtr:Err_%", String.format("%.2f%%", getStg2RPMErrorPercent()));
 		logData.AddData("Stg2Mtr:%VBus", String.format("%.2f%%", getStg2CurrentPercentVBus()));
 
-		logData.AddData("Stg1Output%", String.format("%.2f%%", getCurrentBatteryOutputVoltageMotor1()));
-		logData.AddData("Stg2VOutput%", String.format("%.2f%%", getCurrentBatteryOutputVoltageMotor2()));
-		
 		logData.AddData("Actuator Position", String.format("%.3f", _currentSliderPosition));
 	}
 	
 	//============================================================================================
 	// PROPERTY ACCESSORS FOLLOW
 	//============================================================================================
+	
+	// ---- Stage 1 ----------------------
 	private double getStg1ActualRPM()
 	{
 		return _firstStgMtr.getSpeed();
@@ -530,7 +489,8 @@ public class Shooter
 			return 0.0;
 		}
 	}
-	public double getStg1CurrentPercentVBus()
+	
+	private double getStg1CurrentPercentVBus()
 	{
 		double currentOutputVoltage = _firstStgMtr.getOutputVoltage();
 		double currentBusVoltage = _firstStgMtr.getBusVoltage();
@@ -540,6 +500,7 @@ public class Shooter
 		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
 	}
 	
+	// ---- Stage 2 ----------------------
 	private double getStg2ActualRPM()
 	{
 		return _secondStgMtr.getSpeed();
@@ -556,7 +517,8 @@ public class Shooter
 			return 0.0;
 		}
 	}
-	public double getStg2CurrentPercentVBus()
+	
+	private double getStg2CurrentPercentVBus()
 	{
 		double currentOutputVoltage = _secondStgMtr.getOutputVoltage();
 		double currentBusVoltage = _secondStgMtr.getBusVoltage();
@@ -564,27 +526,5 @@ public class Shooter
 		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
 		
 		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
-	}
-	public boolean getIsShooterInBangBangMode()
-	{
-		return _isShooterInBangBangMode;
-	}
-	public double getCurrentBatteryOutputVoltageMotor1()
-	{
-		double currentStg1InputVoltage = _firstStgMtr.getBusVoltage();
-		double currentStg1OutputVoltage = _firstStgMtr.getOutputVoltage();
-		
-		double stage1PercentOutput = ((currentStg1OutputVoltage / currentStg1InputVoltage) * 100);
-		
-		return stage1PercentOutput;
-	}
-	public double getCurrentBatteryOutputVoltageMotor2()
-	{
-		double currentStg2InputVoltage = _secondStgMtr.getBusVoltage();
-		double currentStg2OutputVoltage = _secondStgMtr.getOutputVoltage();
-		
-		double stage2PercentOutput = ((currentStg2OutputVoltage / currentStg2InputVoltage) * 100);
-		
-		return stage2PercentOutput;
 	}
 }

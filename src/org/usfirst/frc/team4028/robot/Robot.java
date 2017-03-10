@@ -58,7 +58,7 @@ public class Robot extends IterativeRobot {
 	private DriversStation _driversStation;
 	
 	// sensors
-	//private Lidar _lidar;
+	private Lidar _lidar;
 	private NavXGyro _navX;
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
@@ -127,12 +127,13 @@ public class Robot extends IterativeRobot {
 		
 		_shooter = new Shooter(RobotMap.SHOOTER_STG1_CAN_BUS_ADDR, 
 								RobotMap.SHOOTER_STG2_CAN_BUS_ADDR,
-								RobotMap.BLENDER_CAN_BUS_ADDR,
-								RobotMap.FEEDER_CAN_BUS_ADDR,
+								RobotMap.MAGIC_CARPET_CAN_BUS_ADDR,
+								RobotMap.HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR,
+								RobotMap.HIGH_ROLLER_CAN_BUS_ADDR,
 								RobotMap.SHOOTER_SLIDER_PWM_PORT);
 		
 		// sensors follow
-		//_lidar = new Lidar(SerialPort.Port.kMXP);
+		//_lidar = new Lidar(SerialPort.Port.kMXP);		// TODO: Re-enable?
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		_switchableCameraServer = new SwitchableCameraServer(RobotMap.GEAR_CAMERA_NAME);
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT);
@@ -158,9 +159,9 @@ public class Robot extends IterativeRobot {
     	}
     	
     	// stop lidar polling
-    	//if(_lidar != null) { 
-    	//	_lidar.stop();
-    	//}
+    	if(_lidar != null) { 
+    		_lidar.stop();
+    	}
     	
     	// cleanup auton resources, since they are not needed in Telop Mode
     	if(_crossBaseLineAuton != null) {
@@ -227,15 +228,16 @@ public class Robot extends IterativeRobot {
     	_gearHandler.ZeroGearTiltAxisInit();
     	
     	// start the lidar polling
-    	//if(_lidar != null)	{ _lidar.start(); }	//TODO: reslove timeout
+    	if(_lidar != null)	{
+    		_lidar.start(); 
+    	}	
     	
     	// =====================================
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
     	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
-
-    	
+  	
     	// =====================================
 		// Step 2.1: Create the correct auton routine
     	//				since we have quite a few auton routines we only create the one we need
@@ -414,7 +416,7 @@ public class Robot extends IterativeRobot {
 
     	// #### Shooter ####
     	_shooter.FullStop();
-    	_shooter.ActuatorMoveToDefaultPosition();
+    	_shooter.MoveActuatorToDefaultPosition();
     	
     	// #### Ball Infeed ####
     	_ballInfeed.FullStop();
@@ -510,10 +512,10 @@ public class Robot extends IterativeRobot {
     			// Handle Shooter Slider
     			//=====================			
     			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) {
-    				_shooter.ActuatorMoveUp();
+    				_shooter.MoveActuatorUp();
     			}
     			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) {
-    				_shooter.ActuatorMoveDown();
+    				_shooter.MoveActuatorDown();
     			}
     			
     			//===========================================================================
@@ -527,10 +529,10 @@ public class Robot extends IterativeRobot {
     			// Handle Shooter Slider
     			//=====================		
     			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) {
-    				_shooter.ActuatorMoveUp();
+    				_shooter.MoveActuatorUp();
     			}
     			if(_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) {
-    				_shooter.ActuatorMoveDown();
+    				_shooter.MoveActuatorDown();
     			}
     			
     			//=====================
@@ -538,18 +540,18 @@ public class Robot extends IterativeRobot {
     			//=====================
 				// Stg 1 Bump Up / Down
     			if(_driversStation.getIsDriver_ShooterStg1StepRPMUp_BtnJustPressed()) {
-    				_shooter.Stg1MtrBumpRPMUp();
+    				_shooter.BumpStg1MtrRPMUp();
     			}
     			else if (_driversStation.getIsDriver_ShooterStg1StepRPMDown_BtnJustPressed()) {
-    				_shooter.Stg1MtrBumpRPMDown();
+    				_shooter.BumpStg1MtrRPMDown();
 				}
 
     			// Stg 2 Bump Up / Down
     			if(_driversStation.getIsDriver_ShooterStg2StepRPMUp_BtnJustPressed()) {
-    				_shooter.Stg2MtrBumpRPMUp();
+    				_shooter.BumpStg2MtrRPMUp();
     			}
     			else if (_driversStation.getIsDriver_ShooterStg2StepRPMDown_BtnJustPressed()) {
-    				_shooter.Stg2MtrBumpRPMDown();
+    				_shooter.BumpStg2MtrRPMDown();
 				}
     			
     			// Stg 1 & 2 Full Stop
@@ -560,13 +562,12 @@ public class Robot extends IterativeRobot {
     			//=====================
     			// Blender and Feeder Motors
     			//=====================
-    			if(_driversStation.getIsDriver_ToggleBlenderAndFeederMtrs_BtnJustPressed()) {
-    				_shooter.ToggleSpinBlender();
-    				_shooter.ToggleSpinFeeder();
+    			if(_driversStation.getIsDriver_RunShooterFeederInReverse_BtnPressed()){
+    				_shooter.RunShooterFeederInReverse();
     			}
-    			else if (_driversStation.getIsDriver_BlenderCycleRPM_BtnJustPressed()) {
-    				_shooter.BlenderMtrCycleVBus();
-    			}   			
+    			else if(_driversStation.getIsDriver_ToggleShooterFeederMtrs_BtnJustPressed()) {
+    				_shooter.ToggleRunShooterFeeder();
+    			}			
 
 		    	//=====================
 		    	// Gear Tilt Cmd
@@ -706,7 +707,7 @@ public class Robot extends IterativeRobot {
     	
     	if(_gearHandler != null)	{ _gearHandler.OutputToSmartDashboard(); }
     		
-    	//if(_lidar != null)			{ _lidar.OutputToSmartDashboard(); }
+    	if(_lidar != null)			{ _lidar.OutputToSmartDashboard(); }
     	
     	if(_navX != null)			{ _navX.OutputToSmartDashboard(); }
     	
@@ -730,7 +731,7 @@ public class Robot extends IterativeRobot {
 	    	
 	    	if(_ballInfeed != null) 	{ _ballInfeed.UpdateLogData(logData); }
 	    	
-	    	//if(_lidar != null)			{ _lidar.UpdateLogData(logData); }
+	    	if(_lidar != null)			{ _lidar.UpdateLogData(logData); }
 	    	
 	    	if(_navX != null) 			{ _navX.UpdateLogData(logData); }
 	    	
