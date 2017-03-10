@@ -47,13 +47,13 @@ public class HitHopper {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter) {
+	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_navX = navX;
 		_shooter = shooter;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, true);
+		_trajController = trajController;
 		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -68,6 +68,7 @@ public class HitHopper {
 		
 		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
 		_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+		_trajController.configureIsHighGear(true);
 		_trajController.loadProfile(MoveToHopperTrajectory.LeftPoints, MoveToHopperTrajectory.RightPoints, 1.0, 1.0, MoveToHopperTrajectory.kNumPoints);
 		_trajController.enable();
 		

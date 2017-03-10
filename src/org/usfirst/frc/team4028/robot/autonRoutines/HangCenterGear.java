@@ -24,7 +24,6 @@ public class HangCenterGear {
 	private GearHandler _gearHandler;
 	private Chassis _chassis;
 	private NavXGyro _navX;
-	private RoboRealmClient _roboRealm;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
 	
@@ -45,15 +44,13 @@ public class HangCenterGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, RoboRealmClient roboRealm) {
+	public HangCenterGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
-		_roboRealm = roboRealm;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -67,6 +64,7 @@ public class HangCenterGear {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
@@ -92,14 +90,15 @@ public class HangCenterGear {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
-      			if (_trajController.getCurrentSegment() == 50) {
+      			if (_trajController.getCurrentSegment() == 40) {
       				_trajController.isVisionTrackingEnabled(true);
       			}
       			if (_trajController.onTarget()) {
       				_trajController.disable();
+      				_trajController.isVisionTrackingEnabled(false);
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
-      				//_hangGearController.Initialize();
-      				//_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
       			break;
       			

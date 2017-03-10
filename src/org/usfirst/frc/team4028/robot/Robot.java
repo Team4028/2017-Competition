@@ -14,6 +14,7 @@ import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
+import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.sensors.Lidar;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
@@ -77,6 +78,7 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	private ChassisAutoAimController _chassisAutoAim;
 	private HangGearController _hangGearController;
+	private TrajectoryDriveController _trajController;
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Auton Routines 
@@ -140,6 +142,7 @@ public class Robot extends IterativeRobot {
 		// telop Controller follow
 		_chassisAutoAim = new ChassisAutoAimController(_chassis, _navX);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		//Update Dashboard Fields (push all fields to dashboard)
 		OutputAllToSmartDashboard();
@@ -233,7 +236,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
+    	_autonMode = AUTON_MODE.TURN_AND_SHOOT;
 
     	
     	// =====================================
@@ -244,7 +247,7 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	switch (_autonMode) {
 			case CROSS_BASE_LINE:
-				_crossBaseLineAuton = new CrossBaseLine(_chassis, _gearHandler, _navX);
+				_crossBaseLineAuton = new CrossBaseLine(_chassis, _gearHandler, _navX, _trajController);
 				_crossBaseLineAuton.Initialize();
 				break;
 				
@@ -254,42 +257,42 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_BOILER_GEAR:
-				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
 				_hangBoilerGearAuton.Initialize();
 				break;
 			
 			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter);
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter, _trajController);
 				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController, _roboRealmClient);
+				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
 				_hangCenterGearAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter);
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter, _trajController);
 				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_RETRIEVAL_GEAR:
-				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
 				_hangRetrievalGear.Initialize();
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_chassis, _gearHandler, _navX, _shooter);
+				_hitHopper = new HitHopper(_chassis, _gearHandler, _navX, _shooter, _trajController);
 				_hitHopper.Initialize();
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _navX, _shooter);
+				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _navX, _shooter, _trajController);
 				_turnAndShoot.Initialize();
 				break;
 				
 			case TWO_GEAR:
-				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _navX, _hangGearController);
+				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
 				_twoGearAuton.Initialize();
 				break;
 				
@@ -375,6 +378,12 @@ public class Robot extends IterativeRobot {
 			case TURN_AND_SHOOT:
 				if(_turnAndShoot.getIsStillRunning()) {
 					_turnAndShoot.ExecuteRentrant();
+				}
+				break;
+				
+			case TWO_GEAR:
+				if(_twoGearAuton.getIsStillRunning()) {
+					_twoGearAuton.ExecuteRentrant();
 				}
 				break;
 				
@@ -637,7 +646,8 @@ public class Robot extends IterativeRobot {
     			if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
     				_teleopMode = TELEOP_MODE.STANDARD;
     			} else {
-    				_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
+    				//_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
+    				DriverStation.reportError(Double.toString(_roboRealmClient.getAngle()), false);
     			}
     			break;
     			

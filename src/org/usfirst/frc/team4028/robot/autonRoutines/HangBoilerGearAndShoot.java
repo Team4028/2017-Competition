@@ -46,15 +46,15 @@ public class HangBoilerGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, Shooter shooter) {
+	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, 
+			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
 		_shooter = shooter;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -68,6 +68,7 @@ public class HangBoilerGearAndShoot {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
@@ -93,8 +94,12 @@ public class HangBoilerGearAndShoot {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
+      			if (_trajController.getCurrentSegment() == 200) {
+      				_trajController.isVisionTrackingEnabled(true);
+      			}
       			if (_trajController.onTarget()) {
       				_trajController.disable();
+      				_trajController.isVisionTrackingEnabled(false);
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;

@@ -58,15 +58,14 @@ public class TwoGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TwoGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public TwoGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
 		_autoAim = new ChassisAutoAimController(_chassis, _navX);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -81,6 +80,7 @@ public class TwoGear {
 		
 		_autoAim.loadNewTarget(90.0);
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);

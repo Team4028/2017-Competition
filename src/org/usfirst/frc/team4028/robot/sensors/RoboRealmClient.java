@@ -211,7 +211,7 @@ public class RoboRealmClient
  	    	// round to 2 decimal places
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
-    		//System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec);
+    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec);
  	
  	    	//Reset the counter 
  	    	_badDataCounter = 0;
