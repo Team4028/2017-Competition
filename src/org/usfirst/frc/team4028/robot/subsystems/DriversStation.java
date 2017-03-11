@@ -33,14 +33,14 @@ public class DriversStation extends BaseDriversStation {
 	DRIVER_RIGHT_Y_AXIS
 	
 	--- Driver Buttons --------
-	DRIVER_GREEN_BUTTON_A			Toggle Blender And Feeder Mtrs
+	DRIVER_GREEN_BUTTON_A			Toggle Shooter Feeder Mtrs
 	DRIVER_RED_BUTTON_B				Shooter Slider Down
 	DRIVER_BLUE_BUTTON_X			Gear Shift Toggle
 	DRIVER_YELLOW_BUTTON_Y			Shooter Slider Up
 	DRIVER_LEFT_BUMPER				Shooter Stg1 Cycle RPM
 	DRIVER_RIGHT_BUMPER				Shooter Stg2 Cycle RPM
 	DRIVER_BACK_BUTTON				Full Shooter Stop
-	DRIVER_START_BUTTON				Blender Cycle RPM
+	DRIVER_START_BUTTON				Run Shooter Feeder Mtrs in Reverse
 	DRIVER_LEFT_THUMBSTICK		
 	DRIVER_RIGHT_THUMBSTICK
 		
@@ -49,13 +49,14 @@ public class DriversStation extends BaseDriversStation {
 									Shooter Stg 1 Motor RPM - 100
 									Shooter Stg 2 Motor RPM + 100
 									Shooter Stg 2 Motor RPM - 100
+									Blender Cycle RPM
 	==========================================================================
 		
 	--- Operator Joysticks --------
 	OPERATOR_LEFT_X_AXIS
 	OPERATOR_LEFT_Y_AXIS			Gear Tilt
-	OPERATOR_LEFT_TRIGGER
-	OPERATOR_RIGHT_TRIGGER
+	OPERATOR_LEFT_TRIGGER			Chassis Spin Left
+	OPERATOR_RIGHT_TRIGGER			Chassis Spin Right
 	OPERATOR_RIGHT_X_AXIS
 	OPERATOR_RIGHT_Y_AXIS			Gear Infeed/OutFeed
 	
@@ -99,7 +100,7 @@ public class DriversStation extends BaseDriversStation {
 	}
 	
 	// AccDec Mode
-	public boolean getIsDriver_ToggleBlenderAndFeederMtrs_BtnJustPressed() {
+	public boolean getIsDriver_ToggleShooterFeederMtrs_BtnJustPressed() {
 		return super.getIsDriverGreenBtnAJustPressed();
 	}
 	
@@ -126,9 +127,9 @@ public class DriversStation extends BaseDriversStation {
 	}
 	
 	// Blender Cycle
-	public boolean getIsDriver_BlenderCycleRPM_BtnJustPressed() {
-		return super.getIsDriverStartBtnJustPressed();
-	}
+	//public boolean getIsDriver_BlenderCycleRPM_BtnJustPressed() {
+	//	return super.getIsDriverStartBtnJustPressed();
+	//}
 	
 	//ShooterStg2Down
 	//public boolean getIsDriver_ShooterStg2Down_BtnJustPressed()
@@ -165,11 +166,16 @@ public class DriversStation extends BaseDriversStation {
 	// === driver Is Pressed buttons =====
 	// ===================================
 	/*  <sample code>
-	public boolean getIsDriver_FEATUREA_BtnAPressed()
+	public boolean getIsDriver_FEATUREA_BtnPressed()
 	{
-		return super.getIsDriverGreenBtnAPressed();
+		return super.getIsDriverGreenBtnPressed();
 	}
 	*/
+	
+	public boolean getIsDriver_RunShooterFeederInReverse_BtnPressed()
+	{
+		return super.getIsDriverStartBtnPressed();
+	}
 	
 	// ===================================
 	// === driver Joysticks ==============
@@ -275,6 +281,14 @@ public class DriversStation extends BaseDriversStation {
 		return super.getOperatorLeftYAxisCmd();
 	}
 	
+	// chassis turret
+	public double getOperator_ChassisSpinLeft_JoystickCmd() {
+		return super.getOperatorLeftTriggerCmd();
+	}
+
+	public double getOperator_ChassisSpinRight_JoystickCmd() {
+		return super.getOperatorRightTriggerCmd();
+	}
 	//============================================================================================
 	// Methods follow
 	//============================================================================================

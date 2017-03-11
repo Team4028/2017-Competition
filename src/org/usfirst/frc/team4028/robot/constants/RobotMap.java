@@ -38,12 +38,13 @@ public class RobotMap {
 	
 	public static final int SHOOTER_STG1_CAN_BUS_ADDR = 1;
 	public static final int SHOOTER_STG2_CAN_BUS_ADDR = 2;
-	public static final int BLENDER_CAN_BUS_ADDR = 6;
-	public static final int FEEDER_CAN_BUS_ADDR = 5;
+	public static final int MAGIC_CARPET_CAN_BUS_ADDR = 6;
+	public static final int HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR = 5;
+	public static final int HIGH_ROLLER_CAN_BUS_ADDR = 13;
 	
 	public static final int FUEL_INFEED_MTR_CAN_BUS_ADDR = 3;
 	
-	public static final int MAGIC_CARPET_CAN_BUS_ADDR = 13;
+
 	public static final int EXTRA_MOTOR_BUS_ADDR = 14;
 	
 	
