@@ -521,8 +521,11 @@ public class RoboRealmAPI
 
   public Vector getVariables(String names)
   {
-    if (!connected) return null;
-    if ((names==null)||(names.length()==0)) return null;
+    if (!connected) 
+    	return null;
+    
+    if ((names==null)||(names.length()==0)) 
+    	return null;
 
     if (send("<request><get_variables>"+escape(names)+"</get_variables></request>"))
     {

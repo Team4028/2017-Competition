@@ -1,78 +1,196 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
-import org.usfirst.frc.team4028.robot.util.Trajectory;
+import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
+import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
+import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
+import org.usfirst.frc.team4028.robot.util.TwoGearLong;
+import org.usfirst.frc.team4028.robot.util.TwoGearShort;
+import org.usfirst.frc.team4028.robot.util.TwoGearSuperShort;
 
 import java.util.TimerTask;
 
-import org.usfirst.frc.team4028.robot.Robot;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
+import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class TrajectoryDriveController extends Robot {
+public class TrajectoryDriveController {
 	
 	private Chassis _chassis;
 	private NavXGyro _navX;
 	private UpdaterTask _updaterTask;
-	private double[][] _leftMotionProfile;
-	private double[][] _rightMotionProfile;
 	private TrajectoryFollower _leftFollower = new TrajectoryFollower("left");
 	private TrajectoryFollower _rightFollower = new TrajectoryFollower("right");
+	private RoboRealmClient _roboRealm;
 	private java.util.Timer _updaterTimer;
+	private double _angleDiff;
+	private double _currentVisionError;
 	private double _direction;
 	private double _heading;
 	private double _kTurnGyro = -0.01;  // Should be a constant
 	private double _kTurnVision = 0.0;
-	private boolean _isEnabled = false;
+	private double _setVisionError;
+	private double _turn;
+	private double[][] _leftMotionProfile;
+	private double[][] _rightMotionProfile;
+	private boolean _isEnabled;
 	private boolean _isUpdaterTaskRunning;
-	private double _angleDiff;
+	private boolean _isVisionTrackingEnabled;
 	private int _currentSegment;
+	private int _trajectoryNumPoints;
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX) {
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear, RoboRealmClient roboRealm) {
 		_chassis = chassis;
 		_navX = navX;
-		_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
-		_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+		if(isHighGear) {
+			_leftFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
+			_rightFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
+		} else {
+			_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+			_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
+		}
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
+		_roboRealm = roboRealm;
+	}
+	
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear) {
+		this(chassis, navX, isHighGear, null);
 	}
 	
 	public boolean onTarget() {
-		if(_currentSegment == (GeneratedTrajectory.kNumPoints - 1)) {
+		if(_currentSegment == (_trajectoryNumPoints - 1)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	public void loadProfile(double[][] leftProfile, double[][] rightProfile, double direction, double heading) {
+	public void loadProfile(double[][] leftProfile, double[][] rightProfile, double direction, double heading, int numPoints) {
 		reset();
 		_leftMotionProfile = leftProfile;
 		_rightMotionProfile = rightProfile;
 		_direction = direction;
 		_heading = heading;
+		_trajectoryNumPoints = numPoints;
 		_angleDiff = 0.0;
 	}
 	
-	public void loadProfileNoReset(Trajectory leftProfile, Trajectory rightProfile) {
-		_leftFollower.setTrajectory(leftProfile);
-		_rightFollower.setTrajectory(rightProfile);
+	public void loadProfile(MOTION_PROFILE motionProfile, boolean isBlueAlliance) {
+		reset();
+		_angleDiff = 0.0;
+		switch(motionProfile) {
+			case BOILER_GEAR:
+				if (isBlueAlliance) {
+					_leftMotionProfile = SideGearTrajectory.LeftPoints;
+					_rightMotionProfile = SideGearTrajectory.RightPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = SideGearTrajectory.RightPoints;
+					_rightMotionProfile = SideGearTrajectory.LeftPoints;
+					_heading = -1.0;
+				}
+				_direction = 1.0;
+				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				break;
+				
+			case CENTER_GEAR:
+				_leftMotionProfile = CenterGearTrajectory.LeftPoints;
+				_rightMotionProfile = CenterGearTrajectory.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				break;
+				
+			case HOPPER_TO_SHOOTING_POSITION:
+				break;
+				
+			case MOVE_TO_BOILER:
+				if (isBlueAlliance) {
+					_leftMotionProfile = MoveToBoilerTrajectory.RightPoints;
+					_rightMotionProfile = MoveToBoilerTrajectory.LeftPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = MoveToBoilerTrajectory.LeftPoints;
+					_rightMotionProfile = MoveToBoilerTrajectory.RightPoints;
+					_heading = -1.0;
+				}
+				_direction = -1.0;
+				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				break;
+				
+			case MOVE_TO_HOPPER:
+				_leftMotionProfile = MoveToHopperTrajectory.LeftPoints;
+				_leftMotionProfile = MoveToHopperTrajectory.RightPoints;
+				_heading = 1.0;
+				_direction = -1.0;
+				_trajectoryNumPoints = MoveToHopperTrajectory.kNumPoints;
+				break;
+				
+			case RETRIEVAL_GEAR:
+				if (isBlueAlliance) {
+					_leftMotionProfile = SideGearTrajectory.RightPoints;
+					_rightMotionProfile = SideGearTrajectory.LeftPoints;
+					_heading = -1.0;
+				} else {
+					_leftMotionProfile = SideGearTrajectory.LeftPoints;
+					_rightMotionProfile = SideGearTrajectory.RightPoints;
+					_heading = 1.0;
+				}
+				_direction = 1.0;
+				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				break;
+				
+			case TURN_AND_SHOOT:
+				_leftMotionProfile = TurnAndShootTrajectory.LeftPoints;
+				_rightMotionProfile = TurnAndShootTrajectory.RightPoints;
+				_direction = -1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
+				break;
+				
+			case TWO_GEAR_LONG:
+				_leftMotionProfile = TwoGearLong.LeftPoints;
+				_rightMotionProfile = TwoGearLong.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearLong.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SHORT_FWD:
+				_leftMotionProfile = TwoGearShort.LeftPoints;
+				_rightMotionProfile = TwoGearShort.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SHORT_REV:
+				_leftMotionProfile = TwoGearShort.LeftPoints;
+				_rightMotionProfile = TwoGearShort.RightPoints;
+				_direction = -1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				break;
+				
+			case TWO_GEAR_SUPER_SHORT:
+				_leftMotionProfile = TwoGearSuperShort.LeftPoints;
+				_rightMotionProfile = TwoGearSuperShort.RightPoints;
+				_direction = 1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
+				break;
+		}
 	}
 	
 	public void reset() {
 		_leftFollower.reset();
 		_rightFollower.reset();
-	}
-	
-	public int getFollowerCurrentSegment() {
-		return _leftFollower.getCurrentSegment();
-	}
-	
-	public int getNumSegments() {
-		return _leftFollower.getNumSegments();
 	}
 	
 	public void update(int currentSegment) {
@@ -88,20 +206,35 @@ public class TrajectoryDriveController extends Robot {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
 			double distanceR = _direction * _chassis.getRightEncoderCurrentPosition();
 			
+			if(_isVisionTrackingEnabled) {
+				setIsFeedbackDisabled(true);
+				_currentVisionError = _roboRealm.getAngle();
+				/*
+				if(_setVisionError != _currentVisionError) {
+					_setVisionError = _currentVisionError;
+				}
+				_turn = _kTurnVision * _setVisionError;
+				*/
+				_turn = 0.0;
+			} else {
+				setIsFeedbackDisabled(false);
+				double goalHeading = _leftFollower.getHeading();
+				double goalHeadingInDegrees = _heading * BeefyMath.arctan(goalHeading);
+				double observedHeading = _navX.getYaw();
+
+				_turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
+			}
+			
 			double leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
 			double rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			
-			double goalHeading = _leftFollower.getHeading();
-			double goalHeadingInDegrees = _heading * BeefyMath.arctan(goalHeading);
-			double observedHeading = _navX.getYaw();
-
-			double turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
-			
-			_chassis.TankDrive(leftPower - turn, rightPower + turn);
+			_chassis.TankDrive(leftPower - _turn, rightPower + _turn);
 		}
 	}
 	
 	public void enable() {
+		_leftFollower.setTrajectoryNumPoints(_trajectoryNumPoints);
+		_rightFollower.setTrajectoryNumPoints(_trajectoryNumPoints);
 		_leftFollower.reset();
 		_rightFollower.reset();
 		_chassis.ZeroDriveEncoders();
@@ -118,6 +251,14 @@ public class TrajectoryDriveController extends Robot {
 		return _isEnabled;
 	}
 	
+	public void isVisionTrackingEnabled(boolean isEnabled) {
+		_isVisionTrackingEnabled = isEnabled;
+	}
+	
+	public double getAngleDiff() {
+		return _angleDiff;
+	}
+	
 	public int getCurrentSegment() {
 		return _leftFollower.getCurrentSegment();
 	}
@@ -126,8 +267,13 @@ public class TrajectoryDriveController extends Robot {
 		return _navX.getYaw();
 	}
 	
-	public double getAngleDiff() {
-		return _angleDiff;
+	public int getFollowerCurrentSegment() {
+		return _currentSegment;
+	}
+	
+	public void setIsFeedbackDisabled(boolean isDisabled) {
+		_leftFollower.setIsFeedbackDisabled(isDisabled);
+		_rightFollower.setIsFeedbackDisabled(isDisabled);
 	}
 	
 	public void startTrajectoryController() {
@@ -135,14 +281,11 @@ public class TrajectoryDriveController extends Robot {
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
 	}
 	
-	private class UpdaterTask extends TimerTask
-	{
+	private class UpdaterTask extends TimerTask {
 		public void run() {
 			while(_isUpdaterTaskRunning) {
-				// update method here
 				if (_isEnabled) {
-					//DriverStation.reportError(Integer.toString(_currentSegment), false);
-					if (_currentSegment != (GeneratedTrajectory.kNumPoints - 1)) {
+					if (_currentSegment != (_trajectoryNumPoints - 1)) {
 						update(_currentSegment);
 						_currentSegment = _currentSegment + 1;
 					}	

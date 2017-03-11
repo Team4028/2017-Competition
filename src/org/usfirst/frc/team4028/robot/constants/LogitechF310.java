@@ -1,18 +1,14 @@
 package org.usfirst.frc.team4028.robot.constants;
 
 /**
- * 
  * This class contains global constants that define the layout of a Logitech F310 Gamepad
- * 
  * 
  * Date			Rev		Author						Comments
  * -----------	------	-------------------------	---------------------------------- 
  * 26.Jul.2015	0.2		Tom Bruns					Added Comments, renamed class
  * 27.Jun.2015	0.1		Sebastian Rodriguez			Initial Version
- *
  */
-public class LogitechF310 
-{
+public class LogitechF310 {
 	// Constants for buttons on a Gamepad controller
 	public static final int GREEN_BUTTON_A =1;
 	public static final int RED_BUTTON_B = 2;

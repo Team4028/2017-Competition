@@ -7,8 +7,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 // This class contains id values for the physical elements of the robot so we can use names in the code
 // instead of hardcoded constants
-public class RobotMap 
-{
+public class RobotMap {
 	// ======================================
 	// Driver's station
 	// ======================================
@@ -39,10 +38,15 @@ public class RobotMap
 	
 	public static final int SHOOTER_STG1_CAN_BUS_ADDR = 1;
 	public static final int SHOOTER_STG2_CAN_BUS_ADDR = 2;
-	public static final int BLENDER_CAN_BUS_ADDR = 6;
-	public static final int FEEDER_CAN_BUS_ADDR = 5;
+	public static final int MAGIC_CARPET_CAN_BUS_ADDR = 6;
+	public static final int HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR = 5;
+	public static final int HIGH_ROLLER_CAN_BUS_ADDR = 13;
 	
 	public static final int FUEL_INFEED_MTR_CAN_BUS_ADDR = 3;
+	
+
+	public static final int EXTRA_MOTOR_BUS_ADDR = 14;
+	
 	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
@@ -96,6 +100,6 @@ public class RobotMap
 	// ======================================
 	// define constants for the Kangaroo & RoboRealm
 	// ======================================
-	public static final String KANGAROO_IPV4_ADDR = "10.40.28.11";
+	public static final String KANGAROO_IPV4_ADDR = "10.40.28.78";
 	public static final int RR_API_PORT = 6060;
 }

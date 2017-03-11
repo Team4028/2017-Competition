@@ -1,12 +1,8 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
-import java.util.TimerTask;
-
-import org.usfirst.frc.team4028.robot.util.GeneratedTrajectory;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
-import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
-import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import com.ctre.CANTalon;
 
@@ -14,18 +10,16 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //This class implements all functionality for the GEAR Subsystem
-//
 //------------------------------------------------------
 //	Rev		By		 	D/T			Desc
 //	===		========	===========	=================================
-//  1.0		Seabass		2/25/17		Initial 
+//  1.0		Seabass		25.Feb.2017		Initial 
 //------------------------------------------------------
-//
 //=====> For Changes see Sebastian Rodriguez
-public class Chassis 
-{
+public class Chassis {
 	// =====================================================================
 	// 4 DC Motors
 	//		1 Talon w/ Encoder		Left Master
@@ -48,7 +42,7 @@ public class Chassis
 	private double _driveSpeedScalingFactorClamped;
 	private boolean _isBrakeMode = false;
 	
-	//accel decel variables
+	//acc/dec variables
 	private boolean _isAccelDecelEnabled;
 	private double _currentThrottleCmdScaled;
 	private double _currentThrottleCmdAccDec;
@@ -78,9 +72,7 @@ public class Chassis
 	public Chassis(int talonLeftMasterCanBusAddr, int talonLeftSlave1CanBusAddr,
 					int talonRightMasterCanBusAddr, int talonRightSlave1CanBusAddr,
 					int pcmCanBusAddress, 
-					int shifterSolenoidHighGearPCMPort, int shifterSolenoidLowGearPCMPort)
-		
-	{
+					int shifterSolenoidHighGearPCMPort, int shifterSolenoidLowGearPCMPort) {
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
@@ -137,17 +129,6 @@ public class Chassis
 	
 	// This is the (arcade) main drive method
 	public void ArcadeDrive(double newThrottleCmdRaw, double newTurnCmdRaw) {
-		// ----------------
-		// Step 1: make sure we are in %VBus mode (we may have chg'd to PID mode)
-		// ----------------
-		if(_leftDriveMaster.getControlMode() != CANTalon.TalonControlMode.PercentVbus) {
-			_leftDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-		}
-		
-		if(_rightDriveMaster.getControlMode() != CANTalon.TalonControlMode.PercentVbus) {
-			_rightDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-		}
-		
 		// calc scaled throttle cmds
 		double newThrottleCmdScaled = newThrottleCmdRaw * _driveSpeedScalingFactorClamped;
 		double newTurnCmdScaled = newTurnCmdRaw * _turnSpeedScalingFactor;
@@ -172,8 +153,7 @@ public class Chassis
 			if(Math.abs(_arcadeDriveThrottleCmdAdj - _currentThrottleCmdScaled) < 0.1) {
 				_previousThrottleCmdScaled = _currentThrottleCmdScaled;
 			}
-		}
-		else {
+		} else {
 			_arcadeDriveThrottleCmdAdj = newThrottleCmdScaled;
 		}
 		
@@ -188,9 +168,7 @@ public class Chassis
 	}
 	
 	// stop the motors
-	public void FullStop() {
-		ArcadeDrive(0.0, 0.0);
-	}
+	public void FullStop() { ArcadeDrive(0.0, 0.0); }
 	
 	// shifts between high & low gear
 	public void ShiftGear(GearShiftPosition gear) {
@@ -212,6 +190,18 @@ public class Chassis
 		}
 	}
 	
+	public void ToggleShiftGear()
+	{
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) 
+		{
+			ShiftGear(GearShiftPosition.LOW_GEAR);
+		} 
+		else 
+		{	
+			ShiftGear(GearShiftPosition.HIGH_GEAR);
+		}
+	}
+	
 	public void ZeroDriveEncoders() {
 		_leftDriveMaster.setPosition(0);
 		_rightDriveMaster.setPosition(0);
@@ -220,6 +210,17 @@ public class Chassis
 	// update the Dashboard with any Chassis specific data values
 	public void OutputToSmartDashboard() {
 		
+		String chassisDriveGearPosition = "";
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
+			chassisDriveGearPosition = "HIGH_GEAR";
+		} 
+		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION) {
+			chassisDriveGearPosition = "LOW_GEAR";
+		} else {
+			chassisDriveGearPosition = "UNKNOWN";
+		}
+		
+		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
 	}
 	
 	public void UpdateLogData(LogData logData) {
@@ -237,14 +238,14 @@ public class Chassis
 	//============================================================================================
 	
 	// Returns the current shifter position (gear)
-	public GearShiftPosition getGearShiftPosition() {
-		if(_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION)
+	/*public GearShiftPosition getGearShiftPosition() {
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION)
 			return GearShiftPosition.HIGH_GEAR;
-		else if(_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION)
+		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION)
 			return GearShiftPosition.LOW_GEAR;
 		else
 			return GearShiftPosition.UNKNOWN;		
-	}
+	}*/
 	
 	public void setDriveSpeedScalingFactor(double speedScalingFactor) {
 		// for safety, clamp the scaling factor to max of +1, -1
@@ -265,10 +266,6 @@ public class Chassis
 	
 	public boolean getIsAccDecModeEnabled() {
 		return _isAccelDecelEnabled;
-	}
-	
-	public double getHeadingInDegrees() {
-		return 1.0; // Add heading getter here
 	}
 	
 	public double getLeftEncoderCurrentPosition() {
@@ -303,7 +300,6 @@ public class Chassis
         // finally calc the adj cmd
         double accDecCmd = previousThrottleCmd + ((_currentThrottleCmdScaled - previousThrottleCmd) * scaleFactor);
         
-        //DriverStation.reportError("accDecCmd = " + Double.toString(accDecCmd), false);
         return accDecCmd;
 	}
 }
