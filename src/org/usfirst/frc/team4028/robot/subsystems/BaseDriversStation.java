@@ -163,7 +163,7 @@ abstract class BaseDriversStation {
 	
 	protected boolean getIsOperatorBlueBtnXJustPressed() {
 		return(_currentValues.getIsOperatorBlueBtnXPressed()
-    				&& !_previousValues.getIsOperatorRedBtnBPressed());
+    				&& !_previousValues.getIsOperatorBlueBtnXPressed());
 	}
 	
 	protected boolean getIsOperatorYellowBtnYJustPressed() {

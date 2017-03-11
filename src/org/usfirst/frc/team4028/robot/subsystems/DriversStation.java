@@ -189,6 +189,10 @@ public class DriversStation extends BaseDriversStation {
 		return super.getIsDriverLeftBumperBtnPressed();
 	}
 	
+	public boolean getIsDriver_Climb_ButtonPressed() {
+		return super.getIsDriverBackBtnPressed();
+	}
+	
 	// ===================================
 	// === driver Joysticks ==============
 	// ===================================

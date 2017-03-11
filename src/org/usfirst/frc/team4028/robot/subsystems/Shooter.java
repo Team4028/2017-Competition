@@ -59,6 +59,7 @@ public class Shooter
 	private double _highRollerMtrTargetVBus;
 
 	private double _currentSliderPosition;
+	private boolean _isShooterReentrantRunning = false;
 	
 	//define class level PID constants
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
@@ -181,6 +182,8 @@ public class Shooter
 		RunHighSpeedInfeedLane(0.0);
 		RunMagicCarpet(0.0);
 		RunHighRoller(0.0);
+		
+		_isShooterReentrantRunning = false;
 	}
 	
 	public void FullShooterFeederStop() 
@@ -191,23 +194,38 @@ public class Shooter
 	
 	public void ToggleShootBall()
 	{
-		if (_stg1MtrTargetRPM == 0.0 && _stg2MtrTargetRPM == 0.0) 
-		{
-			BumpStg1MtrRPMUp();
-			BumpStg2MtrRPMUp();
+		if (_stg1MtrTargetRPM == 0.0 && _stg2MtrTargetRPM == 0.0) {
+			ShootBallReentrant();
 		}
-		else if (_stg2MtrTargetRPM == 0.0)
-		{
-			BumpStg2MtrRPMUp();
-		}
-		else if (_stg1MtrTargetRPM == 0.0)
-		{
-			BumpStg1MtrRPMUp();
-		}
-		else 
-		{
+		else {
 			FullStop();
 		}
+	}
+	
+	public boolean ShootBallReentrant()
+	{
+		if(Math.abs(_stg2MtrTargetRPM) == 0)
+		{
+			BumpStg2MtrRPMUp();
+			_isShooterReentrantRunning = true;
+		}
+		else if(Math.abs(getStg2RPMErrorPercent()) > 7.5 )
+		{
+			// allow time to spinup
+			_isShooterReentrantRunning = true;
+		}
+		else if (Math.abs(_stg1MtrTargetRPM) == 0)
+		{
+			BumpStg1MtrRPMUp();
+			_isShooterReentrantRunning = true;
+		}
+		else if(Math.abs(getStg1RPMErrorPercent()) <= 5.0 )
+		{
+			// allow time to spinup
+			_isShooterReentrantRunning = false;
+		}
+		
+		return _isShooterReentrantRunning;
 	}
 	
 	//============================================================================================
@@ -620,5 +638,10 @@ public class Shooter
 		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
 		
 		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
+	}
+	
+	public boolean get_isShooterReentrantRunning()
+	{
+		return _isShooterReentrantRunning;
 	}
 }

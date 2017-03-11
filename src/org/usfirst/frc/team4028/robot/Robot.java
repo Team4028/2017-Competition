@@ -141,7 +141,7 @@ public class Robot extends IterativeRobot {
 		// sensors follow
 		//_lidar = new Lidar(SerialPort.Port.kMXP);		// TODO: Re-enable?
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
-		_switchableCameraServer = new SwitchableCameraServer(RobotMap.GEAR_CAMERA_NAME);
+		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT);
 		
 		// telop Controller follow
@@ -307,6 +307,15 @@ public class Robot extends IterativeRobot {
 				break;
     	}
 		
+       	//=========================================================
+    	//Step 2.2
+    	//Set the Proper Cameras for this match
+    	//==========================================================
+    	_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
+    	_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
+    	_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
+    	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());
+    	
     	// =====================================
     	// Step 3: Optionally Configure Logging
     	// =====================================
@@ -439,8 +448,17 @@ public class Robot extends IterativeRobot {
     	// #### Lidar starts doing ####
     	//if(_lidar != null)	{ _lidar.start(); }	//TODO: reslove timeout
     	
+    	//=========================================================
+    	//Step 2
+    	//Set the Proper Cameras for this match
+    	//==========================================================
+    	_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
+    	_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
+    	_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
+    	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());
+    	
     	// =====================================
-    	// Step 2: Configure Logging (if USB Memory Stick is present)
+    	// Step 3: Configure Logging (if USB Memory Stick is present)
     	// =====================================    	
     	_dataLogger = GeneralUtilities.setupLogging("telop");
 	}
@@ -463,7 +481,9 @@ public class Robot extends IterativeRobot {
     			//===========================================================================
     			//Switchable Cameras
     			//=======================================================================			
-    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed() || _driversStation.getIsDriver_CameraSwap_BtnJustPressed()) {
+    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed() 
+    					|| _driversStation.getIsDriver_CameraSwap_BtnJustPressed()
+    					|| _driversStation.getIsDriver_GearReZero_BtnJustPressed()) {		// TODO: remove this
     				_switchableCameraServer.ChgToNextCamera();
     			}
     			
@@ -488,13 +508,13 @@ public class Robot extends IterativeRobot {
 		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) == 0.0))
 		    	{
 		    		// spin left
-		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinLeft_JoystickCmd() * 0.65 * -1.0);
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinLeft_JoystickCmd() * 0.75 * -1.0);
 		    	} 
 		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) > 0.0) 
 		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) == 0.0))
 		    	{
 		    		// spin right
-		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinRight_JoystickCmd() * 0.65);
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinRight_JoystickCmd() * 0.75);
 		    	} 
 		    	else {
 		    		// full stop
@@ -563,12 +583,16 @@ public class Robot extends IterativeRobot {
     			}
 
     			//=====================
-    			// ALL Shooting Subsystem Motors FULL STOP
+    			// Toggle Shooter Motors
     			//=====================
     			if(_driversStation.getIsOperator_ToggleShootBall_BtnJustPressed()) {
     				_shooter.ToggleShootBall();
     			}
-    			
+    			else if (_shooter.get_isShooterReentrantRunning())
+    			{
+    				_shooter.ShootBallReentrant();
+    			}
+ 			
 		    	//=====================
 		    	// Gear Tilt Cmd
 		    	//	Note: All of the Gear Handler sequences are interruptable except for Zero!
@@ -580,10 +604,10 @@ public class Robot extends IterativeRobot {
 		      		//			and automatically recall it until complete
 		    		_gearHandler.ZeroGearTiltAxisReentrant();
 		    	}
-		      	else if (_driversStation.getIsDriver_GearReZero_BtnJustPressed()) {
+		      	//else if (_driversStation.getIsDriver_GearReZero_BtnJustPressed()) {
 		      		// 2nd priority is operator request to rezero
-		      		_gearHandler.ZeroGearTiltAxisInit();	// zeroing will start on next scan
-		      	}
+		      	//	_gearHandler.ZeroGearTiltAxisInit();	// zeroing will start on next scan
+		      	//}
 		      	//else if (Math.abs(_driversStation.getOperator_GearTiltFeed_JoystickCmd()) > 0.0) {
 		      		// 3rd priority is joystick control
 		      		//_gearHandler.MoveTiltAxisVBus(_driversStation.getOperator_GearTiltFeed_JoystickCmd(), false);
@@ -638,9 +662,16 @@ public class Robot extends IterativeRobot {
     	    	// =====================================
     	    	// ====> Enter Climb Mode
     	    	// =====================================
-    	    	if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {
-    	    		_teleopMode = TELEOP_MODE.CLIMBING;
-    	    		_climber.RunClimberReentrant();
+    	    	//if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {		// TODO: put this back in
+    	    	//	_teleopMode = TELEOP_MODE.CLIMBING;
+    	    	//	_climber.RunClimberReentrant();
+    	    	//}
+    	    	
+    	    	if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
+    	    		_climber.RunMotorTest(Climber.CLIMBER_MOTOR_VBUS);
+    	    	}
+    	    	else {
+    	    		_climber.RunMotorTest(0.0);
     	    	}
     	    	
 		      	break;	// end of _telopMode = STANDARD
@@ -705,21 +736,23 @@ public class Robot extends IterativeRobot {
 	
     // utility method that calls the outputToSmartDashboard method on all subsystems
     private void OutputAllToSmartDashboard() {
-    	if(_ballInfeed != null)			{ _ballInfeed.OutputToSmartDashboard(); }
+    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
     	
-    	if(_chassis != null) 			{ _chassis.OutputToSmartDashboard(); }
+    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
     	
-    	if(_climber != null)			{ _climber.OutputToSmartDashboard(); }
+    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
     	
-    	if(_driversStation != null)		{ _driversStation.OutputToSmartDashboard(); }
+    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
     	
-    	if(_gearHandler != null)		{ _gearHandler.OutputToSmartDashboard(); }
+    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
     		
-    	if(_lidar != null)				{ _lidar.OutputToSmartDashboard(); }
+    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
     	
-    	if(_navX != null)				{ _navX.OutputToSmartDashboard(); }
+    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
     	
-    	if(_shooter != null)			{ _shooter.OutputToSmartDashboard(); }
+    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
+    	
+    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
     	
     	SmartDashboard.putString("Robot Build", _buildMsg);
     }
@@ -731,21 +764,21 @@ public class Robot extends IterativeRobot {
         	LogData logData = new LogData();
 	    	
 	    	// ask each subsystem that exists to add its data	    	
-	    	if(_chassis != null) 		{ _chassis.UpdateLogData(logData); }
+	    	if(_chassis != null) 			{ _chassis.UpdateLogData(logData); }
 	    	
-	    	if(_climber != null) 		{ _climber.UpdateLogData(logData); }
+	    	if(_climber != null) 			{ _climber.UpdateLogData(logData); }
+	    		
+	    	if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
 	    	
-	    	if(_driversStation != null) { _driversStation.UpdateLogData(logData); }
+	    	if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
 	    	
-	    	if(_gearHandler != null) 	{ _gearHandler.UpdateLogData(logData); }
+	    	if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
 	    	
-	    	if(_ballInfeed != null) 	{ _ballInfeed.UpdateLogData(logData); }
+	    	if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
 	    	
-	    	if(_lidar != null)			{ _lidar.UpdateLogData(logData); }
+	    	if(_navX != null) 				{ _navX.UpdateLogData(logData); }
 	    	
-	    	if(_navX != null) 			{ _navX.UpdateLogData(logData); }
-	    	
-	    	if(_shooter != null)		{ _shooter.UpdateLogData(logData); }
+	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
     	
 	    	// now write to the log file
 	    	_dataLogger.WriteDataLine(logData);
