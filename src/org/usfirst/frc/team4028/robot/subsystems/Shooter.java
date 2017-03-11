@@ -87,7 +87,7 @@ public class Shooter
 	// define class level Ball Infeed Motor Constants
 	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
 	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
-	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = -0.7;
+	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = 0.7;
 
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
@@ -178,12 +178,14 @@ public class Shooter
 	{
 		RunStg1(0);
 		RunStg2(0);
+		RunHighSpeedInfeedLane(0.0);
+		RunMagicCarpet(0.0);
+		RunHighRoller(0.0);
 	}
 	
 	public void FullShooterFeederStop() 
 	{
 		RunMagicCarpet(0.0);
-		RunHighSpeedInfeedLane(0.0);
 		RunHighRoller(0.0);
 	}
 	
@@ -196,6 +198,8 @@ public class Shooter
 		_stg1MtrTargetRPM = targetRPM;
 		_firstStgMtr.set(_stg1MtrTargetRPM);
 		DriverStation.reportWarning("Stage 1 Target RPM = " + targetRPM, false);
+		
+		ControlHighSpeedLane();
 	}
 	
 	public void RunStg2(double targetRPM)
@@ -203,24 +207,14 @@ public class Shooter
 		_stg2MtrTargetRPM = targetRPM;
 		_secondStgMtr.set(_stg2MtrTargetRPM);
 		DriverStation.reportWarning("Stage 2 Target RPM = " + targetRPM, false);
+		
+		ControlHighSpeedLane();
 	}
 	
 	//============================================================================================
 	// Set Up Shooter Testing
 	//============================================================================================
-	
-	public void CycleStg1MtrRPM()
-	{
-		if(_isStg1MtrTargetRPMBumpingUp)
-		{
-			BumpStg1MtrRPMUp();
-		}
-		else
-		{
-			BumpStg1MtrRPMDown();
-		}
-	}
-	
+		
 	public void BumpStg1MtrRPMUp()
 	{
 		// only bump if not already at max
@@ -255,18 +249,6 @@ public class Shooter
 		{
 			DriverStation.reportWarning("Stg 1 Mtr Already at MIN ", false);
 			_isStg1MtrTargetRPMBumpingUp = true;
-		}
-	}
-
-	public void CycleStg2MtrRPM()
-	{
-		if(_isStg2MtrTargetRPMBumpingUp)
-		{
-			BumpStg2MtrRPMUp();
-		}
-		else
-		{
-			BumpStg2MtrRPMDown();
 		}
 	}
 	
@@ -308,17 +290,35 @@ public class Shooter
 		}
 	}
 	
+	public void ControlHighSpeedLane()
+	{
+		// run High Speed Lane if both Shooter Motors are within 5% of non-zero cmd
+		if(((Math.abs(_stg1MtrTargetRPM) > 0) && (Math.abs(getStg1RPMErrorPercent()) < 5))
+				&& ((Math.abs(_stg2MtrTargetRPM) > 0) && (Math.abs(getStg2RPMErrorPercent()) < 5)))
+		{
+			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
+		} else
+		{
+			RunHighSpeedInfeedLane(0.0);
+		}
+	}
+	
+	private void RunHighSpeedInfeedLane(double percentVbusCommand)
+	{
+		_highSpeedInfeedLaneMtrTargetVBus = percentVbusCommand;
+		_highSpeedInfeedLaneMtr.set(_highSpeedInfeedLaneMtrTargetVBus);
+	}
+	
 	//============================================================================================
-	// Run Blender/Feeder Motors
+	// Run Magin Carpet / High Roller Motors
 	//============================================================================================
 	
 	public void ToggleRunShooterFeeder()
 	{
-		// if current cmd is 0, then start
-		if(_magicCarpetMtrTargetVBus == 0.0)
+		// if current cmd is 0 or - if running in reverse, then start
+		if(_magicCarpetMtrTargetVBus != MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND)
 		{
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
-			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
 		}
 		else
@@ -330,20 +330,21 @@ public class Shooter
 	public void RunShooterFeederInReverse()
 	{
 		RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
-		RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
+	}
+	
+	public void CleanupRunShooterFeederInReverse()
+	{
+		if (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0))
+		{
+			FullShooterFeederStop();
+		}
 	}
 	
 	private void RunMagicCarpet(double percentVbusCommand)
 	{
 		_magicCarpetMtrTargetVBus = percentVbusCommand;
 		_magicCarpetMtr.set(_magicCarpetMtrTargetVBus);
-	}
-	
-	private void RunHighSpeedInfeedLane(double percentVbusCommand)
-	{
-		_highSpeedInfeedLaneMtrTargetVBus = percentVbusCommand;
-		_highSpeedInfeedLaneMtr.set(_highSpeedInfeedLaneMtrTargetVBus);
 	}
 	
 	private void RunHighRoller(double percentVbusCommand)
@@ -366,11 +367,21 @@ public class Shooter
 	
 	public void MoveActuatorUp()
 	{
+		// are we below the max?
 		if (_currentSliderPosition < MAX_THRESHOLD_ACTUATOR)
 		{
+			// increment the target position
 			_currentSliderPosition += CHANGE_INTERVAL_ACTUATOR;
 			
-			_currentSliderPosition = GeneralUtilities.RoundDouble(_currentSliderPosition, 3); //rounds to 3 Decimal Places
+			// protect fwd limit
+			if(_currentSliderPosition > MAX_THRESHOLD_ACTUATOR) {
+				_currentSliderPosition = MAX_THRESHOLD_ACTUATOR;
+			}
+			
+			//rounds to 3 Decimal Places
+			_currentSliderPosition = GeneralUtilities.RoundDouble(_currentSliderPosition, 3); 
+			
+			// actually move the slider
 			_linearActuator.setPosition(_currentSliderPosition);
 			
 			DriverStation.reportWarning("Actuator Move Up To: " + _currentSliderPosition, false);
@@ -383,11 +394,21 @@ public class Shooter
 	
 	public void MoveActuatorDown()
 	{
+		// are we above the min?
 		if (_currentSliderPosition > MIN_THRESHOLD_ACTUATOR)
 		{
+			// decrement the target position
 			_currentSliderPosition -= CHANGE_INTERVAL_ACTUATOR;
 			
-			_currentSliderPosition = GeneralUtilities.RoundDouble(_currentSliderPosition, 3); //rounds to 3 Decimal Places
+			// protect fwd limit
+			if(_currentSliderPosition < MIN_THRESHOLD_ACTUATOR) {
+				_currentSliderPosition = MIN_THRESHOLD_ACTUATOR;
+			}
+			
+			//rounds to 3 Decimal Places
+			_currentSliderPosition = GeneralUtilities.RoundDouble(_currentSliderPosition, 3); 
+			
+			// actually move the slider
 			_linearActuator.setPosition(_currentSliderPosition);
 			
 			DriverStation.reportWarning("Actuator Move Down To: " + _currentSliderPosition, false);
@@ -404,6 +425,10 @@ public class Shooter
 	
 	public void OutputToSmartDashboard()
 	{
+		//%s - insert a string
+		//%d - insert a signed integer (decimal)
+		//%f - insert a real number, standard notation
+		
 		// working varibles
 		String stg1MtrData = "?";
 		String stg2MtrData = "?";
@@ -426,22 +451,50 @@ public class Shooter
 		SmartDashboard.putString("Stg 1 RPM Target|Act|(Err%)|[%Out]", stg1MtrData);
 		SmartDashboard.putString("Stg 2 RPM Target|Act|(Err%)|[%Out]", stg2MtrData);
 		
+		String magicCarpetMtrInOut = "?";
+		if(_magicCarpetMtrTargetVBus == MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND) {
+			magicCarpetMtrInOut = "in";
+		} else if (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0)){
+			magicCarpetMtrInOut = "out";
+		} else if (_magicCarpetMtrTargetVBus == 0.0){
+			magicCarpetMtrInOut = "off";
+		}
+		
+		String highRollerMtrInOut = "?";
+		if(_highRollerMtrTargetVBus == HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND) {
+			highRollerMtrInOut = "in";
+		} else if (_highRollerMtrTargetVBus == (HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0)){
+			highRollerMtrInOut = "out";
+		} else if (_highRollerMtrTargetVBus == 0.0){
+			highRollerMtrInOut = "off";
+		}
+		
+		String highSpeedLaneMtrOnOff= "?";
+		if(_highSpeedInfeedLaneMtrTargetVBus == HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND) {
+			highSpeedLaneMtrOnOff = "on";
+		} else if (_highSpeedInfeedLaneMtrTargetVBus == 0.0){
+			highSpeedLaneMtrOnOff = "off";
+		}
+		
 		//Display Current magicCarpet Infeed HighRoller MtrsData
-		shooterFeederMtrsData = String.format("(%.2f%%) | (%.2f%%) | (%.2f%%)", 
-																_magicCarpetMtrTargetVBus*100.0,
-																_highRollerMtrTargetVBus*100.0,
-																_highSpeedInfeedLaneMtrTargetVBus*100.0);
+		shooterFeederMtrsData = String.format("%.2f%% (%s) | %.2f%% (%s) | %.2f%% (%s)", 
+																_magicCarpetMtrTargetVBus * 100.0,
+																magicCarpetMtrInOut,
+																_highRollerMtrTargetVBus * 100.0,
+																highRollerMtrInOut,
+																_highSpeedInfeedLaneMtrTargetVBus * 100.0,
+																highSpeedLaneMtrOnOff);
 		
 		SmartDashboard.putString("MC | HR | HSL)", shooterFeederMtrsData);
 		
 		//Display Current Actuator Value
 		actuatorData = String.format( "%.3f", _currentSliderPosition); //Outputs "Max" and "Min" at respective values
 		
-		if(_currentSliderPosition == MAX_THRESHOLD_ACTUATOR)
+		if(_currentSliderPosition >= MAX_THRESHOLD_ACTUATOR)
 		{
 			actuatorData = actuatorData + " (MAX)";
 		}
-		else if(_currentSliderPosition == MIN_THRESHOLD_ACTUATOR)
+		else if(_currentSliderPosition <= MIN_THRESHOLD_ACTUATOR)
 		{
 			actuatorData = actuatorData + " (MIN)";
 		}

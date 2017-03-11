@@ -2,6 +2,7 @@ package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import com.ctre.CANTalon;
 
@@ -9,6 +10,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //This class implements all functionality for the GEAR Subsystem
 //------------------------------------------------------
@@ -188,6 +190,18 @@ public class Chassis {
 		}
 	}
 	
+	public void ToggleShiftGear()
+	{
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) 
+		{
+			ShiftGear(GearShiftPosition.LOW_GEAR);
+		} 
+		else 
+		{	
+			ShiftGear(GearShiftPosition.HIGH_GEAR);
+		}
+	}
+	
 	public void ZeroDriveEncoders() {
 		_leftDriveMaster.setPosition(0);
 		_rightDriveMaster.setPosition(0);
@@ -195,6 +209,18 @@ public class Chassis {
 	
 	// update the Dashboard with any Chassis specific data values
 	public void OutputToSmartDashboard() {
+		
+		String chassisDriveGearPosition = "";
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
+			chassisDriveGearPosition = "HIGH_GEAR";
+		} 
+		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION) {
+			chassisDriveGearPosition = "LOW_GEAR";
+		} else {
+			chassisDriveGearPosition = "UNKNOWN";
+		}
+		
+		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
 	}
 	
 	public void UpdateLogData(LogData logData) {
@@ -212,14 +238,14 @@ public class Chassis {
 	//============================================================================================
 	
 	// Returns the current shifter position (gear)
-	public GearShiftPosition getGearShiftPosition() {
+	/*public GearShiftPosition getGearShiftPosition() {
 		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION)
 			return GearShiftPosition.HIGH_GEAR;
 		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION)
 			return GearShiftPosition.LOW_GEAR;
 		else
 			return GearShiftPosition.UNKNOWN;		
-	}
+	}*/
 	
 	public void setDriveSpeedScalingFactor(double speedScalingFactor) {
 		// for safety, clamp the scaling factor to max of +1, -1

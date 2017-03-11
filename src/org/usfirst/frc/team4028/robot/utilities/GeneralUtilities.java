@@ -23,8 +23,9 @@ public class GeneralUtilities
     /**
     / This method writes general info about the build to the Operator's Console
 	**/
-	public static void WriteBuildInfoToDashboard(String robotName) 
+	public static String WriteBuildInfoToDashboard(String robotName) 
 	{
+		String buildMsg = "?";
 		try
     	{
     		//DriverStation.reportError("** Team 4028 The Beak Squad **", false);
@@ -44,7 +45,8 @@ public class GeneralUtilities
 			String newDateString = outputFormatter.format(utcFileDate);
 			
 			// write the build date & time to the operator's console log window
-			DriverStation.reportWarning("== Robot Name == " + robotName + "| Build Date and Time: " + newDateString + "|", false);
+			buildMsg = "== Robot Name == " + robotName + "| Build Date and Time: " + newDateString + "|";
+			DriverStation.reportWarning(buildMsg, false);
 			
 		} 
     	catch (URISyntaxException e) 
@@ -57,6 +59,8 @@ public class GeneralUtilities
     		DriverStation.reportWarning("General Error trying to determine current JAR file", true);
 			//e.printStackTrace();
 		}
+		
+		return buildMsg;
 	}
 	
     /**
