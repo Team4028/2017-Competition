@@ -62,21 +62,24 @@ public class BallInfeed {
 	
 	public void ToggleSolenoid() {
 		_fuelInfeedSolenoid.set(!_fuelInfeedSolenoid.get());
-		
-		//if(_fuelInfeedSolenoid.get() == false)
-		//{
-		//	_fuelInfeedSolenoid.set(true);
-		//}
-		//else if(_fuelInfeedSolenoid.get() == true)
-		//{
-		//	_fuelInfeedSolenoid.set(false);
-		//}
 	}
 	
 	// update the Dashboard with any Climber specific data values
 	public void OutputToSmartDashboard() {
 		SmartDashboard.putBoolean("Is Fuel Infeed Tilt Extended", _fuelInfeedSolenoid.get());
-		SmartDashboard.putString( "Ball Infeed Cmd", String.format("%.3f", _fuelInfeedMtr.getOutputVoltage()/_fuelInfeedMtr.getBusVoltage()));
+		
+		String ballInfeedMtrData = "?";
+		
+		if(Math.abs(_fuelInfeedMtr.getOutputVoltage()) > 0) {
+			ballInfeedMtrData = String.format("%s (%.0f%%)", 
+												"ON", 
+												(_fuelInfeedMtr.getOutputVoltage() / _fuelInfeedMtr.getBusVoltage())* 100);
+		}
+		else {
+			ballInfeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
+		}
+		
+		SmartDashboard.putString( "Fuel Infeed", ballInfeedMtrData);
 	}
 	
 	public void UpdateLogData(LogData logData) {

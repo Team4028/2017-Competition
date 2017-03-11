@@ -218,9 +218,10 @@ public class TrajectoryDriveController {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
 			double distanceR = _direction * _chassis.getRightEncoderCurrentPosition();
 			
+
 			if(_isVisionTrackingEnabled && _roboRealm.get_isVisionDataValid()) {
 				//setIsFeedbackDisabled(true);
-				_currentVisionError = _roboRealm.getAngle();
+				_currentVisionError = _roboRealm.get_Angle();
 		
 				if(_setVisionError != _currentVisionError) {
 					_setVisionError = _currentVisionError;

@@ -2,7 +2,6 @@
 package org.usfirst.frc.team4028.robot.sensors;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.opencv.core.Mat;
@@ -12,9 +11,9 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoSink;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //This class implements all functionality for operator/driver cameras
 //=====> For Changes see Nick Donahue (javadotmakeitwork)
@@ -22,12 +21,17 @@ import edu.wpi.first.wpilibj.DriverStation;
 //Rev		By			D/T				Description
 // 0		Nick		2/27 8:47		Added 4th Camera and Added "Swapped to Next" method for increased organization
 // 1		TomB		5.Mar.2017		Added code to handle unplugging & replugging cameras
+// 2        Nick        9.Mar.2017      Fixed the Issue of not Knowing Which Camera is Which via sendable chooser   
 //-------------------------------------------------------------
 public class SwitchableCameraServer
 {	
 	// working variables
 	private String _cameraName;
 	private String _previousCameraName;
+	private String _gearCameraName;
+	private String _shooterCameraName;
+	private String _climberCameraName;
+	private String _driverCameraName;
 	
 	private boolean _isCam0Present;
 	private boolean _isCam1Present;
@@ -109,12 +113,64 @@ public class SwitchableCameraServer
 		}
 	}
 	
+	public void OutputToSmartDashboard()
+	{
+		SmartDashboard.putString("IsCam0Present:", Boolean.toString(_isCam0Present) + " (" + getCameraFunction("cam0") + ")");
+		SmartDashboard.putString("IsCam1Present?", Boolean.toString(_isCam1Present) + " (" + getCameraFunction("cam1") + ")");
+		SmartDashboard.putString("IsCam2Present?", Boolean.toString(_isCam2Present) + " (" + getCameraFunction("cam2") + ")");
+		SmartDashboard.putString("IsCam3Present?", Boolean.toString(_isCam3Present) + " (" + getCameraFunction("cam3") + ")");
+		SmartDashboard.putString("CurrentCameraName:", _cameraName);
+	}
+	
+	private String getCameraFunction(String cameraName)
+	{
+		if(_gearCameraName == cameraName)
+		{
+			return "Gear";
+		}
+		else if(_shooterCameraName == cameraName)
+		{
+			return "Shooter";
+		}
+		else if(_climberCameraName == cameraName)
+		{
+			return "Climber";
+		}
+		else if(_driverCameraName == cameraName)
+		{
+			return "Driver";
+		}
+		else
+		{
+			return "N/A";
+		}
+	}
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
 	public String getCurrentCameraName()
 	{
 		return _cameraName;
+	}
+	
+	public void setGearCameraName(String cameraname)
+	{
+		_gearCameraName = cameraname;
+	}
+	
+	public void setClimberCameraName(String cameraname)
+	{
+		_climberCameraName = cameraname;
+	}
+	
+	public void setShooterCameraName(String cameraname)
+	{
+		_shooterCameraName = cameraname;
+	}
+	
+	public void setDriverCameraName(String cameraname)
+	{
+		_driverCameraName = cameraname;
 	}
 	
 	//============================================================================================
@@ -162,7 +218,7 @@ public class SwitchableCameraServer
 		    }
  
             // create an output stream
-            CvSource outputStream = CameraServer.getInstance().putVideo("Switcher", 640, 480);
+            CvSource outputStream = CameraServer.getInstance().putVideo("Switcher", 320, 240);
             
             // create a 2d array to hold the captured image
             Mat image = new Mat();
@@ -208,8 +264,8 @@ public class SwitchableCameraServer
 		            			
 				                cvSink0.setEnabled(true);
 			                	cam0.setFPS(60);
-			               		cam0.setResolution(640, 480);
-			               		cam0.setExposureManual(30);
+			               		cam0.setResolution(320, 240);
+			               		cam0.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -253,8 +309,8 @@ public class SwitchableCameraServer
 		            			
 				                cvSink1.setEnabled(true);
 			                	cam1.setFPS(60);
-			                	cam1.setResolution(640, 480);
-			                	cam1.setExposureManual(30);
+			                	cam1.setResolution(320, 240);
+			                	cam1.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -297,8 +353,8 @@ public class SwitchableCameraServer
 		            			
 				                cvSink2.setEnabled(true);
 			                	cam2.setFPS(60);
-			                	cam2.setResolution(640, 480);
-			                	cam2.setExposureManual(30);
+			                	cam2.setResolution(320, 240);
+			                	cam2.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -341,8 +397,8 @@ public class SwitchableCameraServer
 		            			
 				                cvSink3.setEnabled(true);
 			                	cam3.setFPS(60);
-			                	cam3.setResolution(640, 480);
-			                	cam3.setExposureManual(30);
+			                	cam3.setResolution(320, 240);
+			                	cam3.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
