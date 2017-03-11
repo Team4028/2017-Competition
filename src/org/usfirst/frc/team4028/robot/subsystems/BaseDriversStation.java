@@ -102,8 +102,18 @@ abstract class BaseDriversStation {
 	}
 	
 	protected boolean getIsDriverPovUpBtnJustPressed() {
-		return (_currentValues.getIsDriverPovUpBtnPressed()
-    				&& !_previousValues.getIsDriverPovUpBtnPressed());
+		return (_currentValues.getIsDriverPovBtnPressed()
+    				&& !_previousValues.getIsDriverPovBtnPressed());
+	}
+	
+	protected boolean getIsDriverLeftThumbstickBtnJustPressed() {
+		return (_currentValues.getIsDriverLeftThumbstickPressed()
+				&& !_previousValues.getIsDriverLeftThumbstickPressed());
+	}
+	
+	protected boolean getIsDriverRightThumbstickBtnJustPressed() {
+		return (_currentValues.getIsDriverRightThumbstickPressed() 
+				&& !_previousValues.getIsDriverRightThumbstickPressed());
 	}
 	
 	// Instantaneous Driver Buttons
@@ -153,7 +163,7 @@ abstract class BaseDriversStation {
 	
 	protected boolean getIsOperatorBlueBtnXJustPressed() {
 		return(_currentValues.getIsOperatorBlueBtnXPressed()
-    				&& !_previousValues.getIsOperatorRedBtnBPressed());
+    				&& !_previousValues.getIsOperatorBlueBtnXPressed());
 	}
 	
 	protected boolean getIsOperatorYellowBtnYJustPressed() {
@@ -179,6 +189,21 @@ abstract class BaseDriversStation {
 	protected boolean getIsOperatorStartBtnJustPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed()
     				&& !_previousValues.getIsOperatorStartBtnPressed());
+	}
+	
+	protected boolean getIsOperatorPovBtnJustPressed() {
+		return (_currentValues.getIsOperatorPovBtnPressed()
+				&& !_previousValues.getIsOperatorPovBtnPressed());
+	}
+	
+	protected boolean getIsOperatorLeftThumbstickBtnJustPressed() {
+		return (_currentValues.getIsOperatorLeftThumbstickPressed()
+				&& !_previousValues.getIsOperatorLeftThumbstickPressed());
+	}
+	
+	protected boolean getIsOperatorRightThumbstickBtnJustPressed() {
+		return (_currentValues.getIsOperatorRightThumbstickPressed() 
+				&& !_previousValues.getIsOperatorRightThumbstickPressed());
 	}
 	
 	//Instantaneous Operator Buttons
@@ -281,7 +306,9 @@ abstract class BaseDriversStation {
     	private final boolean _isDriverRightBumperBtnPressed;
     	private final boolean _isDriverBackBtnPressed;
     	private final boolean _isDriverStartBtnPressed;
-    	private final boolean _isDriverPovUpBtnPressed; //HERE
+    	private final boolean _isDriverPovBtnPressed;
+    	private final boolean _isDriverLeftThumbstickBtnPressed;
+    	private final boolean _isDriverRightThumbstickBtnPressed;
     	
     	private final boolean _isOperatorGreenBtnAPressed;
     	private final boolean _isOperatorRedBtnBPressed;
@@ -291,6 +318,9 @@ abstract class BaseDriversStation {
     	private final boolean _isOperatorRightBumperBtnPressed;
     	private final boolean _isOperatorBackBtnPressed;
     	private final boolean _isOperatorStartBtnPressed;
+    	private final boolean _isOperatorPovBtnPressed;
+    	private final boolean _isOperatorLeftThumbstickBtnPressed;
+    	private final boolean _isOperatorRightThumbstickBtnPressed;
     	
     	// analog inputs
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
@@ -326,7 +356,9 @@ abstract class BaseDriversStation {
 	    	_isDriverRightBumperBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
 	    	_isDriverBackBtnPressed = _driverGamepad.getRawButton(LogitechF310.BACK_BUTTON);
 	    	_isDriverStartBtnPressed = _driverGamepad.getRawButton(LogitechF310.START_BUTTON);
-	    	_isDriverPovUpBtnPressed = _driverGamepad.getRawButton(LogitechF310.POV_UP_RIGHT_1); //HERE
+	    	_isDriverPovBtnPressed = (_driverGamepad.getPOV() > -1);
+	    	_isDriverLeftThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
+	    	_isDriverRightThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
 	    	
 			_isOperatorGreenBtnAPressed = _operatorGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
 	    	_isOperatorRedBtnBPressed = _operatorGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
@@ -336,6 +368,11 @@ abstract class BaseDriversStation {
 	    	_isOperatorRightBumperBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
 	    	_isOperatorBackBtnPressed = _operatorGamepad.getRawButton(LogitechF310.BACK_BUTTON);
 	    	_isOperatorStartBtnPressed = _operatorGamepad.getRawButton(LogitechF310.START_BUTTON);
+	    	_isOperatorPovBtnPressed = (_operatorGamepad.getPOV() > -1);
+	    	
+
+	    	_isOperatorLeftThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
+	    	_isOperatorRightThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
 			
 	    	// analog inputs
 	    	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
@@ -388,8 +425,16 @@ abstract class BaseDriversStation {
     		return _isDriverStartBtnPressed;
     	}
 		
-		public boolean getIsDriverPovUpBtnPressed() {
-			return _isDriverPovUpBtnPressed;
+		public boolean getIsDriverPovBtnPressed() {
+			return _isDriverPovBtnPressed;
+		}
+		
+		public boolean getIsDriverLeftThumbstickPressed() {
+			return _isDriverLeftThumbstickBtnPressed;
+		}
+		
+		public boolean getIsDriverRightThumbstickPressed() {
+			return _isDriverRightThumbstickBtnPressed;
 		}
 		// === operator buttons ====================================
 		public boolean getIsOperatorGreenBtnAPressed() {
@@ -424,6 +469,17 @@ abstract class BaseDriversStation {
     		return _isOperatorStartBtnPressed;
     	}
 		
+		public boolean getIsOperatorPovBtnPressed() {
+			return _isOperatorPovBtnPressed;
+		}
+		
+		public boolean getIsOperatorLeftThumbstickPressed() {
+			return _isOperatorLeftThumbstickBtnPressed;
+		}
+		
+		public boolean getIsOperatorRightThumbstickPressed() {
+			return _isOperatorRightThumbstickBtnPressed;
+		}
 		// === driver joysticks ====================================
 		
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values

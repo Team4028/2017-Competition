@@ -25,11 +25,11 @@ public class RobotMap {
 	public static final int PDB_CAN_BUS_ADDR = 0; 
 	
 	// define constants for Talon SRX CAN Bus Addresses
-	public static final int LEFT_MASTER_CAN_BUS_ADDR = 11;
-	public static final int LEFT_SLAVE1_CAN_BUS_ADDR = 12;
+	public static final int LEFT_DRIVE_MASTER_CAN_BUS_ADDR = 11;
+	public static final int LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR = 12;
 
-	public static final int RIGHT_MASTER_CAN_BUS_ADDR = 9;
-	public static final int RIGHT_SLAVE1_CAN_BUS_ADDR = 10;
+	public static final int RIGHT_DRIVE_MASTER_CAN_BUS_ADDR = 9;
+	public static final int RIGHT_DRIVE_SLAVE1_CAN_BUS_ADDR = 10;
 	
 	public static final int CLIMBER_CAN_BUS_ADDR = 4;
 	
@@ -42,11 +42,9 @@ public class RobotMap {
 	public static final int HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR = 5;
 	public static final int HIGH_ROLLER_CAN_BUS_ADDR = 13;
 	
-	public static final int FUEL_INFEED_MTR_CAN_BUS_ADDR = 3;
+	public static final int BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR = 3;	// from the floor
 	
-
 	public static final int EXTRA_MOTOR_BUS_ADDR = 14;
-	
 	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
@@ -75,9 +73,7 @@ public class RobotMap {
 	// ======================================
 	public static final int SHIFTER_SOLENOID_RETRACT_PCM_PORT = 7;
 	public static final int SHIFTER_SOLENOID_EXTEND_PCM_PORT = 6;
-	
-	// TODO: update these
-	public static final int BALL_INFEED_TILT_EXTEND_PCM_PORT = 5;
+	public static final int BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT = 5;
 	
 	// ======================================
 	// Define constants for solenoid positions 

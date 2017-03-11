@@ -41,4 +41,25 @@ public class GeneralEnums {
 		TWO_GEAR_SHORT_REV,
 		TWO_GEAR_SUPER_SHORT
 	}
+	
+	public enum CAMERA_NAMES
+	{
+		UNDEFINED 	("N/A"),
+		CAM0		("cam0"),
+		CAM1		("cam1"),
+		CAM2		("cam2"),
+		CAM3		("cam3");
+		
+		private final String _cameraName;  
+		
+		CAMERA_NAMES(String cameraName)
+		{
+			_cameraName = cameraName;
+		}
+		
+		public String get_cameraName()
+		{
+			return _cameraName;
+		}
+	}
 }

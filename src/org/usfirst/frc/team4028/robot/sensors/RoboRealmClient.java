@@ -16,6 +16,7 @@ import org.usfirst.frc.team4028.robot.vision.RawImageData;
 //import uk.co.geolib.geolib.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This class is a wrapper around the interface to RoboRealm over TCP Sockets hosted on a 
@@ -58,7 +59,9 @@ public class RoboRealmClient
  	private double _fovCenterToTargetXAngleRawDegrees;
  	private int _badDataCounter;
  	
- 	// Constructor
+	//============================================================================================
+	// constructors follow
+	//============================================================================================
     public RoboRealmClient(String kangarooIPv4Addr, int portNo) 
     {        	
     	// create an instance of the RoboRealm API client
@@ -94,15 +97,15 @@ public class RoboRealmClient
 		_badDataCounter = 10;
     }
     
+	//============================================================================================
+	// Methods follow
+	//============================================================================================
     public void TestConnect()
     {
     	Dimension fovDimensions = _rrAPI.getDimension();
     }
     
- 	public double getAngle() 
- 	{ 
- 		return _fovCenterToTargetXAngleRawDegrees; 
- 	} 
+ 
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName)
@@ -151,6 +154,28 @@ public class RoboRealmClient
         }
  	}
  	
+ 	
+	// update the Dashboard with any Vision specific data values
+	public void OutputToSmartDashboard()
+	{
+		//SmartDashboard.getBoolean("Vision:IsValid", get_isVisionDataValid());
+		
+		String targetAngle = "?";
+		
+		//if(get_Angle() == 0)
+		//{
+		//	targetAngle = String.format("[%.0f RPM] %.0f RPM (%.2f%%) [%.0f%%]", 
+		//								-1*_stg1MtrTargetRPM, 
+		//								-1*getStg1ActualRPM(), 
+		//}
+		
+		//SmartDashboard.putString("Vision:AdjAngle", get_Angle());
+	} 	
+	
+	//=========================================================================
+	//	Task Executed By Timer
+	//=========================================================================	
+ 	
 	// poll RoboRealm to read current values
  	public void update() 
  	{ 
@@ -161,14 +186,14 @@ public class RoboRealmClient
  		
  	    // get multiple variables
  		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
- 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y");
  	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT,BLOB_COUNT");
  	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
  	    _newTargetRawData = null;
  	    
  	    if (_vector==null)
  	    {
- 	    	DriverStation.reportError("Error in GetVariables, did not return any results", false);
+ 	    	System.out.println("Error in GetVariables, did not return any results");
+ 	    	//DriverStation.reportError("Error in GetVariables, did not return any results", false);
  	    	
  	    	//Increment bad data counter
  	    	_badDataCounter += 1;
@@ -253,6 +278,11 @@ public class RoboRealmClient
     // =========================================================
     // Property Accessors
     // =========================================================
+ 	public double get_Angle() 
+ 	{ 
+ 		return _fovCenterToTargetXAngleRawDegrees; 
+ 	}
+    
     public double get_fovCenterToTargetXAngleRawDegrees()
     {
     	return _fovCenterToTargetXAngleRawDegrees;

@@ -41,7 +41,7 @@ public class Climber
 	// define class level constants
 	private static final double CLIMBER_MAX_CURRENT = 20.0;
 	private static final double MAX_TIME_OVER_THRESHHOLD = 315;
-	private static final double CLIMBER_MOTOR_VBUS = -0.55;
+	public static final double CLIMBER_MOTOR_VBUS = -0.55;
 	
 	//============================================================================================
 	// constructors follow
@@ -66,8 +66,13 @@ public class Climber
 	// This method starts the climber when the button is pressed
 	public void RunClimberReentrant()
 	{
-			RunMotor(CLIMBER_MOTOR_VBUS);
-			_isClimbing = true;
+		RunMotor(CLIMBER_MOTOR_VBUS);
+		_isClimbing = true;
+	}
+	
+	public void RunMotorTest(double percentVBusCmd)
+	{
+		_climberMtr.set(percentVBusCmd);
 	}
 	
 	// This is the main drive method
@@ -125,6 +130,7 @@ public class Climber
 	public void OutputToSmartDashboard()
 	{
 		SmartDashboard.putNumber("Climber Motor Current", getActualMotorCurrent());
+		SmartDashboard.putString(" ", getIsClimberBuckets());
 	}
 	
 	// add any important data to the logdata
@@ -156,5 +162,18 @@ public class Climber
 	private double getActualPercentVBus()
 	{
 		return GeneralUtilities.RoundDouble((_climberMtr.getOutputVoltage() / _climberMtr.getBusVoltage()), 2);
+	}
+	
+	// Per the request of the drive team
+	private String getIsClimberBuckets()
+	{
+		if (_isClimberMotorStalled)
+		{
+			return "BUCKETS!";
+		}
+		else
+		{
+			return "";
+		}
 	}
 }
