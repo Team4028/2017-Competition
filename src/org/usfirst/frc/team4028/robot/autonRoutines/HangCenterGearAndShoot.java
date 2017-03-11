@@ -49,7 +49,8 @@ public class HangCenterGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, Shooter shooter) {
+	public HangCenterGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, 
+			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
@@ -57,8 +58,7 @@ public class HangCenterGearAndShoot {
 		_hangGearController = hangGear;
 		_shooter = shooter;
 		_autoAim = new ChassisAutoAimController(_chassis, _navX);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -72,6 +72,7 @@ public class HangCenterGearAndShoot {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
@@ -97,7 +98,11 @@ public class HangCenterGearAndShoot {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
+      			if (_trajController.getCurrentSegment() == 40) {
+      				_trajController.isVisionTrackingEnabled(true);
+      			}
       			if (_trajController.onTarget()) {
+      				_trajController.isVisionTrackingEnabled(false);
       				_trajController.disable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
@@ -108,7 +113,7 @@ public class HangCenterGearAndShoot {
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			if (!isStillRunning) {
-      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_REV, false);
       				_trajController.enable();
       				_autonState = AUTON_STATE.MOVE_BACK;
       			}

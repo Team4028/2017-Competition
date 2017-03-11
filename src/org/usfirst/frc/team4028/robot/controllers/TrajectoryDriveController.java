@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
+import org.usfirst.frc.team4028.robot.util.HopperToBoilerTrajectory;
 import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
 import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
@@ -32,35 +33,41 @@ public class TrajectoryDriveController {
 	private double _currentVisionError;
 	private double _direction;
 	private double _heading;
-	private double _kTurnGyro = -0.01;  // Should be a constant
-	private double _kTurnVision = 0.0;
+	private double _kTurnGyro;
+	private double _kTurnVision = -0.015;
+	private double _leftPower;
+	private double _rightPower;
 	private double _setVisionError;
 	private double _turn;
+	private double _visionTurnThreshold = 0.07;
 	private double[][] _leftMotionProfile;
 	private double[][] _rightMotionProfile;
+	private boolean _isAutoStopEnabled = false;
 	private boolean _isEnabled;
 	private boolean _isUpdaterTaskRunning;
 	private boolean _isVisionTrackingEnabled;
 	private int _currentSegment;
 	private int _trajectoryNumPoints;
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear, RoboRealmClient roboRealm) {
+	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, RoboRealmClient roboRealm) {
 		_chassis = chassis;
 		_navX = navX;
-		if(isHighGear) {
-			_leftFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
-			_rightFollower.configure(0, 0.0, 0.0, 0.17, 0.0);
-		} else {
-			_leftFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
-			_rightFollower.configure(0.25,  0.0,  0.0,  0.31,  0.0);
-		}
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
 		_roboRealm = roboRealm;
+		startTrajectoryController();
 	}
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, boolean isHighGear) {
-		this(chassis, navX, isHighGear, null);
+	public void configureIsHighGear(boolean isHighGear) {
+		if(isHighGear) {
+			_leftFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
+			_rightFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
+			_kTurnGyro = -0.01;
+		} else {
+			_leftFollower.configure(0.25,  0.0,  0.0,  0.29,  0.0);
+			_rightFollower.configure(0.25,  0.0,  0.0,  0.29,  0.0);
+			_kTurnGyro = -0.01;
+		}
 	}
 	
 	public boolean onTarget() {
@@ -108,17 +115,22 @@ public class TrajectoryDriveController {
 				break;
 				
 			case HOPPER_TO_SHOOTING_POSITION:
+				_leftMotionProfile = HopperToBoilerTrajectory.LeftPoints;
+				_rightMotionProfile = HopperToBoilerTrajectory.RightPoints;
+				_direction = -1.0;
+				_heading = 1.0;
+				_trajectoryNumPoints = HopperToBoilerTrajectory.kNumPoints;
 				break;
 				
 			case MOVE_TO_BOILER:
 				if (isBlueAlliance) {
-					_leftMotionProfile = MoveToBoilerTrajectory.RightPoints;
-					_rightMotionProfile = MoveToBoilerTrajectory.LeftPoints;
-					_heading = 1.0;
-				} else {
 					_leftMotionProfile = MoveToBoilerTrajectory.LeftPoints;
 					_rightMotionProfile = MoveToBoilerTrajectory.RightPoints;
 					_heading = -1.0;
+				} else {
+					_leftMotionProfile = MoveToBoilerTrajectory.RightPoints;
+					_rightMotionProfile = MoveToBoilerTrajectory.LeftPoints;
+					_heading = 1.0;
 				}
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
@@ -149,7 +161,7 @@ public class TrajectoryDriveController {
 			case TURN_AND_SHOOT:
 				_leftMotionProfile = TurnAndShootTrajectory.LeftPoints;
 				_rightMotionProfile = TurnAndShootTrajectory.RightPoints;
-				_direction = -1.0;
+				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
 				break;
@@ -206,29 +218,47 @@ public class TrajectoryDriveController {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
 			double distanceR = _direction * _chassis.getRightEncoderCurrentPosition();
 			
-			if(_isVisionTrackingEnabled) {
-				setIsFeedbackDisabled(true);
+
+			if(_isVisionTrackingEnabled && _roboRealm.get_isVisionDataValid()) {
+				//setIsFeedbackDisabled(true);
 				_currentVisionError = _roboRealm.get_Angle();
-				/*
+		
 				if(_setVisionError != _currentVisionError) {
 					_setVisionError = _currentVisionError;
 				}
 				_turn = _kTurnVision * _setVisionError;
-				*/
-				_turn = 0.0;
+			
 			} else {
-				setIsFeedbackDisabled(false);
+				//setIsFeedbackDisabled(false);
 				double goalHeading = _leftFollower.getHeading();
 				double goalHeadingInDegrees = _heading * BeefyMath.arctan(goalHeading);
 				double observedHeading = _navX.getYaw();
 
 				_turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
+				if (_turn > _visionTurnThreshold) {
+					_turn = _visionTurnThreshold;
+				} else if (_turn < (-1.0 * _visionTurnThreshold)) {
+					_turn = -1.0 * _visionTurnThreshold;
+				} else {
+				}
 			}
 			
-			double leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
-			double rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+			if(_isAutoStopEnabled && _roboRealm.get_isVisionDataValid()) {
+				if (!_roboRealm.get_isInGearHangPosition()) {
+					_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+					_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+				} else {
+					_leftPower = 0.0;
+					_rightPower = 0.0;
+					DriverStation.reportError("AUTO STOP!", false);
+				}
+			} else {
+				_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+				_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+			}
 			
-			_chassis.TankDrive(leftPower - _turn, rightPower + _turn);
+			
+			_chassis.TankDrive(_leftPower - _turn, _rightPower + _turn);
 		}
 	}
 	
@@ -241,6 +271,7 @@ public class TrajectoryDriveController {
 		_navX.zeroYaw();
 		_isEnabled = true;
 		_currentSegment = 0;
+		DriverStation.reportError("Enabled", false);
 	}
 	
 	public void disable() {

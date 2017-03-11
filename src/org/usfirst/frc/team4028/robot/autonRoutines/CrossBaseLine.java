@@ -33,13 +33,12 @@ public class CrossBaseLine {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public CrossBaseLine(Chassis chassis, GearHandler gearHandler, NavXGyro navX) {
+	public CrossBaseLine(Chassis chassis, GearHandler gearHandler, NavXGyro navX, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_navX = navX;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -52,6 +51,7 @@ public class CrossBaseLine {
 		_isStillRunning = true;
 		
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		

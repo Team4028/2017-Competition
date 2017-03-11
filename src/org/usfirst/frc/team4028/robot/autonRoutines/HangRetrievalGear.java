@@ -43,14 +43,13 @@ public class HangRetrievalGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangRetrievalGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear) {
+	public HangRetrievalGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -64,6 +63,7 @@ public class HangRetrievalGear {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
 		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.RETRIEVAL_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
@@ -89,8 +89,12 @@ public class HangRetrievalGear {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
+      			if (_trajController.getCurrentSegment() == 140) {
+      				_trajController.isVisionTrackingEnabled(true);
+      			}
       			if (_trajController.onTarget()) {
       				_trajController.disable();
+      				_trajController.isVisionTrackingEnabled(false);
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;

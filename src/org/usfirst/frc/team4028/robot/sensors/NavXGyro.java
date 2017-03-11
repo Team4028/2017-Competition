@@ -1,9 +1,7 @@
 package org.usfirst.frc.team4028.robot.sensors;
 
 import org.usfirst.frc.team4028.robot.utilities.LogData;
-
 import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 
@@ -21,8 +19,6 @@ public class NavXGyro {
 			 * navX-MXP:
 			 * - Communication via RoboRIO MXP (SPI, I2C, TTL UART) and USB.            
 			 * - See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface.
-			 * 
-			 * Multiple navX-model devices on a single robot are supported.
 			 ************************************************************************/
         	_navXSensor = new AHRS(port); 
         } 

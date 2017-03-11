@@ -7,6 +7,7 @@ import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -37,15 +38,14 @@ public class TurnAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TurnAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, Shooter shooter) {
+	public TurnAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_chassis = chassis;
 		_navX = navX;
 		_autoAim = new ChassisAutoAimController(_chassis, _navX);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, false);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -57,7 +57,9 @@ public class TurnAndShoot {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
-		_autoAim.loadNewTarget(135.0);
+		_autoAim.loadNewTarget(-45.0);
+		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.TURN_AND_SHOOT, false);
 		_trajController.enable();
 		DriverStation.reportWarning("===== Entering TurnAndShoot Auton =====", false);
@@ -78,6 +80,7 @@ public class TurnAndShoot {
     	}
  
 		if(_trajController.onTarget()) {
+			_trajController.disable();
 			_autoAim.update();
 			if(_autoAim.onTarget()) {
 				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
