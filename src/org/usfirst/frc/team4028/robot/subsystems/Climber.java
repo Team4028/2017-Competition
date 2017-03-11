@@ -56,7 +56,7 @@ public class Climber
 		_climberMtr.enableLimitSwitch(false, false);
     	//_climberMtr.reverseOutput(true);
 		
-		//_isClimbing = false;
+		_isClimbing = false;
 	}
 	
 	//============================================================================================
@@ -94,6 +94,7 @@ public class Climber
 			{
 				_climberMtr.set(0.0);
 				_isClimberMotorStalled = true;
+				_isClimbing = false;
 			}
 		}
 		else
@@ -119,6 +120,7 @@ public class Climber
 	{
 		// This is called in Teleop Init, and it resets the climbing mechanism. 
 		_isClimberMotorStalled = false;
+		_isClimbing = false;
 	}
 
 	// update the Dashboard with any Climber specific data values
