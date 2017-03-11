@@ -209,7 +209,7 @@ public class SwitchableCameraServer
 				                cvSink0.setEnabled(true);
 			                	cam0.setFPS(60);
 			               		cam0.setResolution(640, 480);
-			               		cam0.setExposureManual(30);
+			               		//cam0.setExposureManual(30);  auto for testing, fix
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -254,7 +254,7 @@ public class SwitchableCameraServer
 				                cvSink1.setEnabled(true);
 			                	cam1.setFPS(60);
 			                	cam1.setResolution(640, 480);
-			                	cam1.setExposureManual(30);
+			                	//cam1.setExposureManual(30); auto for today, fix
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -298,7 +298,7 @@ public class SwitchableCameraServer
 				                cvSink2.setEnabled(true);
 			                	cam2.setFPS(60);
 			                	cam2.setResolution(640, 480);
-			                	cam2.setExposureManual(30);
+			                	//cam2.setExposureManual(30);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);
@@ -342,7 +342,7 @@ public class SwitchableCameraServer
 				                cvSink3.setEnabled(true);
 			                	cam3.setFPS(60);
 			                	cam3.setResolution(640, 480);
-			                	cam3.setExposureManual(30);
+			                	//cam3.setExposureManual(30);
 			               		_previousCameraName = _cameraName;
 			               		
 			               		System.out.println("Camera Swapped to: " + _cameraName);

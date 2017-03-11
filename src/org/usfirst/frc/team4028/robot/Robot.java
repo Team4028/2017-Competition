@@ -74,7 +74,7 @@ public class Robot extends IterativeRobot {
 	private AUTON_MODE _autonMode;
 	
 	// ===========================================================
-	//   Define class level instance variables for Robot Telep Sequences 
+	//   Define class level instance variables for Robot Controllers
 	// ===========================================================
 	private ChassisAutoAimController _chassisAutoAim;
 	private HangGearController _hangGearController;
@@ -93,11 +93,14 @@ public class Robot extends IterativeRobot {
 	TurnAndShoot _turnAndShoot;
 	TwoGear _twoGearAuton;
 	
+	// ===========================================================
+	//   Define class level working variables
+	// ===========================================================
 	String _buildMsg = "?";
 	
-	// ----------------------------------------------------------------------
-	// Code executed 1x at robot startup
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// Code executed 1x at robot startup																		ROBOT INIT
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void robotInit() {
         //===================
@@ -108,14 +111,14 @@ public class Robot extends IterativeRobot {
         //===================
     	// create instances (and configure) all of all robot subsystems & sensors
         //===================
-		_ballInfeed = new BallInfeed(RobotMap.FUEL_INFEED_MTR_CAN_BUS_ADDR, 
+		_ballInfeed = new BallInfeed(RobotMap.BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR, 
 										RobotMap.PCM_CAN_BUS_ADDR, 
-										RobotMap.BALL_INFEED_TILT_EXTEND_PCM_PORT);
+										RobotMap.BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT);
 		
-		_chassis = new Chassis(RobotMap.LEFT_MASTER_CAN_BUS_ADDR, 
-								RobotMap.LEFT_SLAVE1_CAN_BUS_ADDR, 
-								RobotMap.RIGHT_MASTER_CAN_BUS_ADDR, 
-								RobotMap.RIGHT_SLAVE1_CAN_BUS_ADDR,
+		_chassis = new Chassis(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR, 
+								RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR, 
+								RobotMap.RIGHT_DRIVE_MASTER_CAN_BUS_ADDR, 
+								RobotMap.RIGHT_DRIVE_SLAVE1_CAN_BUS_ADDR,
 								RobotMap.PCM_CAN_BUS_ADDR,
 								RobotMap.SHIFTER_SOLENOID_EXTEND_PCM_PORT,
 								RobotMap.SHIFTER_SOLENOID_RETRACT_PCM_PORT);
@@ -149,9 +152,9 @@ public class Robot extends IterativeRobot {
 		OutputAllToSmartDashboard();
 	}
 	
-	// ----------------------------------------------------------------------
-	// called each time the robot enters disabled mode from either telop or auton mode
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// called each time the robot enters disabled mode from either telop or auton mode							DISABLED PERIODIC
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void disabledPeriodic() {
 
@@ -217,9 +220,9 @@ public class Robot extends IterativeRobot {
 		}
 	}
 		
-	// ----------------------------------------------------------------------
-	// code executed 1x when entering AUTON Mode
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// code executed 1x when entering AUTON Mode																AUTONOMOUS INIT
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void autonomousInit() {
 		// =====================================
@@ -236,10 +239,10 @@ public class Robot extends IterativeRobot {
     	}	
     	
     	// =====================================
-		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
+		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
-    	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
+    	_autonMode = _dashboardInputs.get_autonMode();
+    	//_autonMode = AUTON_MODE.HANG_CENTER_GEAR;
   	
     	// =====================================
 		// Step 2.1: Create the correct auton routine
@@ -310,9 +313,9 @@ public class Robot extends IterativeRobot {
     	_dataLogger = GeneralUtilities.setupLogging("auton");
 	}
 
-	// ----------------------------------------------------------------------
-	// Code executed every scan cycle (about every 20 mSec or 50x / sec) in AUTON mode
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// Code executed every scan cycle (about every 20 mSec or 50x / sec) in AUTON mode							AUTONOMOUS PERIODIC
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void autonomousPeriodic() {
 		// =======================================
@@ -326,7 +329,7 @@ public class Robot extends IterativeRobot {
     	}
       	  	
       	// =======================================
-		// Step 2: call the correct Auton routine to run
+		// Step 2: call the correct Rentrant Auton routine to run
       	// =======================================
     	switch (_autonMode) {
 			case CROSS_BASE_LINE:
@@ -395,9 +398,9 @@ public class Robot extends IterativeRobot {
 		WriteLogData();
 	}
 
-	// ----------------------------------------------------------------------
-	// code executed 1x when entering TELOP Mode
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// code executed 1x when entering TELOP Mode																TELOP INIT
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void teleopInit() {
     	// =====================================
@@ -415,7 +418,9 @@ public class Robot extends IterativeRobot {
     	
     	// #### GearHandler ####
     	_gearHandler.FullStop();
-    	if(!_gearHandler.hasTiltAxisBeenZeroed())	{ _gearHandler.ZeroGearTiltAxisInit(); }
+    	if(!_gearHandler.hasTiltAxisBeenZeroed()) { 
+    		_gearHandler.ZeroGearTiltAxisInit(); 
+    	}
 
     	// #### Shooter ####
     	_shooter.FullStop();
@@ -440,9 +445,9 @@ public class Robot extends IterativeRobot {
     	_dataLogger = GeneralUtilities.setupLogging("telop");
 	}
 	
-	// ----------------------------------------------------------------------
-	// Code executed every scan cycle (about every 20 mSec or 50x / sec) in TELOP Mode
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------------------
+	// Code executed every scan cycle (about every 20 mSec or 50x / sec) in TELOP Mode							TELOP PERIODIC
+	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void teleopPeriodic() {
     	// =====================================
@@ -458,15 +463,14 @@ public class Robot extends IterativeRobot {
     			//===========================================================================
     			//Switchable Cameras
     			//=======================================================================			
-    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed()) {
+    			if(_driversStation.getIsOperator_CameraSwap_BtnJustPressed() || _driversStation.getIsDriver_CameraSwap_BtnJustPressed()) {
     				_switchableCameraServer.ChgToNextCamera();
     			}
     			
 				//=====================
 		    	// Chassis Gear Shift
 				//=====================
-		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) 
-		    	{
+		    	if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
 		    		_chassis.ToggleShiftGear();
 		    	}
 
@@ -477,7 +481,7 @@ public class Robot extends IterativeRobot {
 		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0)) 
 		    	{
 		    		// std drive
-			    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
+			    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1), 	// added -1 gear is front
 											_driversStation.getDriver_ChassisTurn_JoystickCmd());
 		    	} 
 		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) > 0.0)
@@ -492,8 +496,7 @@ public class Robot extends IterativeRobot {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinRight_JoystickCmd() * 0.65);
 		    	} 
-		    	else 
-		    	{
+		    	else {
 		    		// full stop
 			    	_chassis.ArcadeDrive(0.0, 0.0);
 		    	}
@@ -501,41 +504,39 @@ public class Robot extends IterativeRobot {
     			//============================================================================
     			// Fuel Infeed Cmd
     			//===========================================================================   			
-    			if(_driversStation.getIsOperator_FuelInfeed_BtnPressed()) 
-    			{
+    			if(_driversStation.getIsDriver_FuelInfeed_BtnPressed()) {
     				_ballInfeed.InfeedFuelAndExtendSolenoid();
     			} 
-    			else 
-    			{
+    			else {
     				_ballInfeed.FullStop();
     			}
     				    			
     			//=====================
-    			// Handle Shooter Slider
+    			// Shooter Slider
     			//=====================		
-    			if(_driversStation.getIsDriver_ShooterSliderUp_BtnJustPressed()) {
+    			if(_driversStation.getIsOperator_ShooterSliderUp_BtnJustPressed()) {
     				_shooter.MoveActuatorUp();
     			} 
-    			else if (_driversStation.getIsDriver_ShooterSliderDown_BtnJustPressed()) {
+    			else if (_driversStation.getIsOperator_ShooterSliderDown_BtnJustPressed()) {
     				_shooter.MoveActuatorDown();
     			}
     			
     			//=====================
-    			// Run Shooter Motors
+    			// Run Shooter Motors (FYI: High Speed Lane is controlled by these)
     			//=====================
 				// Stg 1 Bump Up / Down
-    			if(_driversStation.getIsDriver_ShooterStg1StepRPMUp_BtnJustPressed()) {
+    			if(_driversStation.getIsOperator_ShooterStg1StepRPMUp_BtnJustPressed()) {
     				_shooter.BumpStg1MtrRPMUp();
     			}
-    			else if (_driversStation.getIsDriver_ShooterStg1StepRPMDown_BtnJustPressed()) {
+    			else if (_driversStation.getIsOperator_ShooterStg1StepRPMDown_BtnJustPressed()) {
     				_shooter.BumpStg1MtrRPMDown();
 				}
 
     			// Stg 2 Bump Up / Down
-    			if(_driversStation.getIsDriver_ShooterStg2StepRPMUp_BtnJustPressed()) {
+    			if(_driversStation.getIsOperator_ShooterStg2StepRPMUp_BtnJustPressed()) {
     				_shooter.BumpStg2MtrRPMUp();
     			}
-    			else if (_driversStation.getIsDriver_ShooterStg2StepRPMDown_BtnJustPressed()) {
+    			else if (_driversStation.getIsOperator_ShooterStg2StepRPMDown_BtnJustPressed()) {
     				_shooter.BumpStg2MtrRPMDown();
 				}
     			else {
@@ -543,24 +544,29 @@ public class Robot extends IterativeRobot {
     			}
     			    			   			      			
     			//=====================
-    			// Blender and Feeder Motors
+    			// Shooter Feeder (Magic Carpet & High Roller) )Motors controlled as a unit
     			//=====================
-    			if(_driversStation.getIsDriver_RunShooterFeederInReverse_BtnPressed()){
+    			if(_driversStation.getIsOperator_RunShooterFeederInReverse_BtnPressed()){
     				_shooter.RunShooterFeederInReverse();
     			}
-    			else if(_driversStation.getIsDriver_ToggleShooterFeederMtrs_BtnJustPressed()) {
+    			else if(_driversStation.getIsOperator_ToggleShooterFeederMtrs_BtnJustPressed()) {
     				_shooter.ToggleRunShooterFeeder();
     			}
     			else {
     				// we need tp shut off the motors if they were running in reverse and the reverse button was released
     				_shooter.CleanupRunShooterFeederInReverse();
     			}
+    			
+    			if (_driversStation.getIsOperator_HighSpeedLane_BtnJustPressed())
+    			{
+    				_shooter.ToggleHighSpeedInfeedLane();
+    			}
 
     			//=====================
-    			// All Shooter Motors FULL STOP
+    			// ALL Shooting Subsystem Motors FULL STOP
     			//=====================
-    			if(_driversStation.getIsDriver_FullShooterStop_BtnJustPressed()) {
-    				_shooter.FullStop();
+    			if(_driversStation.getIsOperator_ToggleShootBall_BtnJustPressed()) {
+    				_shooter.ToggleShootBall();
     			}
     			
 		    	//=====================
@@ -574,23 +580,23 @@ public class Robot extends IterativeRobot {
 		      		//			and automatically recall it until complete
 		    		_gearHandler.ZeroGearTiltAxisReentrant();
 		    	}
-		      	else if (_driversStation.getIsOperator_GearReZero_BtnJustPressed()) {
+		      	else if (_driversStation.getIsDriver_GearReZero_BtnJustPressed()) {
 		      		// 2nd priority is operator request to rezero
 		      		_gearHandler.ZeroGearTiltAxisInit();	// zeroing will start on next scan
 		      	}
-		      	else if (Math.abs(_driversStation.getOperator_GearTiltFeed_JoystickCmd()) > 0.0) {
+		      	//else if (Math.abs(_driversStation.getOperator_GearTiltFeed_JoystickCmd()) > 0.0) {
 		      		// 3rd priority is joystick control
-		      		_gearHandler.MoveTiltAxisVBus(_driversStation.getOperator_GearTiltFeed_JoystickCmd(), false);
-		      	}
-		      	else if (_driversStation.getIsOperator_GearGoToHome_BtnJustPressed()) {
+		      		//_gearHandler.MoveTiltAxisVBus(_driversStation.getOperator_GearTiltFeed_JoystickCmd(), false);
+		      	//}
+		      	else if (_driversStation.getIsDriver_GearGoToHome_BtnJustPressed()) {
 		      		// 4th priority is Goto Home
 		      		_gearHandler.MoveGearToHomePosition();
 		      	}
-		      	else if (_driversStation.getIsOperator_GearGoToScore_BtnJustPressed()) {
+		      	else if (_driversStation.getIsDriver_GearGoToScore_BtnJustPressed()) {
 		      		// 5th priority is Goto Score
 		      		_gearHandler.MoveGearToScorePosition();
 		      	}
-		      	else if (_driversStation.getIsOperator_GearGoToFloor_BtnJustPressed()
+		      	else if (_driversStation.getIsDriver_GearGoToFloor_BtnJustPressed()
 		      				|| !_gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
 		      		// 6th priority is Goto Floor
 		      		// 	Note: MoveToFloor will take longer than 1 scan cycle to complete so
@@ -600,14 +606,26 @@ public class Robot extends IterativeRobot {
 		      	}  
 		      	
 		    	//=====================
-		    	// Gear Infeed Cmd
+		    	// Gear Infeed/Outfeed Cmd
 				//=====================
-		      	_gearHandler.SpinInfeedWheelsVBus(_driversStation.getOperator_GearInfeedOutFeed_JoystickCmd());
+		      	if (Math.abs(_driversStation.getDriver_GearInfeed_JoystickCmd()) > 0)
+		      	{
+		      		_gearHandler.SpinInfeedWheelsVBus(_driversStation.getDriver_GearInfeed_JoystickCmd());
+		      	}
+		      	else if (Math.abs(_driversStation.getDriver_GearOutfeed_JoystickCmd()) > 0)
+		      	{
+		      		_gearHandler.SpinInfeedWheelsVBus(_driversStation.getDriver_GearOutfeed_JoystickCmd() * -1.0);
+		      	}
+		      	else 
+		      	{
+		      		_gearHandler.SpinInfeedWheelsVBus(0.0);
+		      	}
+		      	//_gearHandler.SpinInfeedWheelsVBus(_driversStation.getDriver_GearInfeed_JoystickCmd());
 		      	
 				//=====================
 		    	// ====> Enter Gear Hang Mode
 				//=====================
-    			if(_driversStation.getIsOperator_GearStartSequence_BtnJustPressed()) {
+    			if(_driversStation.getIsDriver_GearStartSequence_BtnJustPressed()) {
     				// make sure Gear Tilt has completed zeroing before entering this mode!
     				if(_gearHandler.hasTiltAxisBeenZeroed()) {
 	    				_teleopMode = TELEOP_MODE.HANG_GEAR_SEQUENCE_MODE;
@@ -620,10 +638,11 @@ public class Robot extends IterativeRobot {
     	    	// =====================================
     	    	// ====> Enter Climb Mode
     	    	// =====================================
-    	    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {
+    	    	if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {
     	    		_teleopMode = TELEOP_MODE.CLIMBING;
     	    		_climber.RunClimberReentrant();
     	    	}
+    	    	
 		      	break;	// end of _telopMode = STANDARD
       		
     		case HANG_GEAR_SEQUENCE_MODE:
@@ -642,11 +661,11 @@ public class Robot extends IterativeRobot {
     		case CLIMBING:
 
     			// arcade drive
-		    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
-						_driversStation.getDriver_ChassisTurn_JoystickCmd());
+		    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1.0), 	// TomB Gear is now front
+										_driversStation.getDriver_ChassisTurn_JoystickCmd());
 		    	
 		    	// climber
-		    	if (_driversStation.getIsOperator_StartClimb_ButtonJustPressed()) {	
+		    	if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {	
 		    		// cancel climbing
 	    			_climber.FullStop();
 	    			_teleopMode = TELEOP_MODE.STANDARD;
@@ -656,13 +675,14 @@ public class Robot extends IterativeRobot {
 		    	}
     			break;
     			
-    		case AUTO_AIM:
+    		/*case AUTO_AIM:
     			if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
     				_teleopMode = TELEOP_MODE.STANDARD;
     			} else {
     				_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
     			}
     			break;
+    		*/
     			
     	}	// end of switch statement
       	
@@ -678,34 +698,28 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	WriteLogData();
 	}
-	
-	// ==================================================================================
-	// General Helper Methods Follow
-	// ==================================================================================
-	
-    // this method optionally calls the OutputToSmartDashboard on each subsystem
-	//----------------------------------------------------------------------------------
+		
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
 	//  Utility / Helper Methods Follow
-	//----------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
 	
     // utility method that calls the outputToSmartDashboard method on all subsystems
-
     private void OutputAllToSmartDashboard() {
-    	if(_ballInfeed != null)		{ _ballInfeed.OutputToSmartDashboard(); }
+    	if(_ballInfeed != null)			{ _ballInfeed.OutputToSmartDashboard(); }
     	
-    	if(_chassis != null) 		{ _chassis.OutputToSmartDashboard(); }
+    	if(_chassis != null) 			{ _chassis.OutputToSmartDashboard(); }
     	
-    	if(_climber != null)		{ _climber.OutputToSmartDashboard(); }
+    	if(_climber != null)			{ _climber.OutputToSmartDashboard(); }
     	
-    	if(_driversStation != null)	{ _driversStation.OutputToSmartDashboard(); }
+    	if(_driversStation != null)		{ _driversStation.OutputToSmartDashboard(); }
     	
-    	if(_gearHandler != null)	{ _gearHandler.OutputToSmartDashboard(); }
+    	if(_gearHandler != null)		{ _gearHandler.OutputToSmartDashboard(); }
     		
-    	if(_lidar != null)			{ _lidar.OutputToSmartDashboard(); }
+    	if(_lidar != null)				{ _lidar.OutputToSmartDashboard(); }
     	
-    	if(_navX != null)			{ _navX.OutputToSmartDashboard(); }
+    	if(_navX != null)				{ _navX.OutputToSmartDashboard(); }
     	
-    	if(_shooter != null)		{ _shooter.OutputToSmartDashboard(); }
+    	if(_shooter != null)			{ _shooter.OutputToSmartDashboard(); }
     	
     	SmartDashboard.putString("Robot Build", _buildMsg);
     }

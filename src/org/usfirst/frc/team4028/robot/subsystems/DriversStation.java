@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 //	===		========	===========		=================================
 //	0		TomB		17.Feb.2017		Initial Version
 //	1		TomB		18.FEb.2018		added OPERATOR_START_BUTTON			Gear Tilt ReZero
+//  2		SydneyS		11.Mar.2017		add POV buttons						Reassigned driver/operator buttons
 //------------------------------------------------------
 //
 public class DriversStation extends BaseDriversStation {
@@ -27,50 +28,49 @@ public class DriversStation extends BaseDriversStation {
 	--- Driver Joysticks --------
 	DRIVER_LEFT_X_AXIS
 	DRIVER_LEFT_Y_AXIS				ChassisThrottle_JoystickCmd
-	DRIVER_LEFT_TRIGGER				Shooter Stg1 Cycle Down RPM
-	DRIVER_RIGHT_TRIGGER			Shooter Stg2 Cycle Down RPM
+	DRIVER_LEFT_TRIGGER				Gear Infeed
+	DRIVER_RIGHT_TRIGGER			Gear Outfeed
 	DRIVER_RIGHT_X_AXIS				ChassisTurn_JoystickCmd
 	DRIVER_RIGHT_Y_AXIS
 	
 	--- Driver Buttons --------
-	DRIVER_GREEN_BUTTON_A			Toggle Shooter Feeder Mtrs
-	DRIVER_RED_BUTTON_B				Shooter Slider Down
-	DRIVER_BLUE_BUTTON_X			Gear Shift Toggle
-	DRIVER_YELLOW_BUTTON_Y			Shooter Slider Up
-	DRIVER_LEFT_BUMPER				Shooter Stg1 Cycle RPM
-	DRIVER_RIGHT_BUMPER				Shooter Stg2 Cycle RPM
-	DRIVER_BACK_BUTTON				Full Shooter Stop
-	DRIVER_START_BUTTON				Run Shooter Feeder Mtrs in Reverse
-	DRIVER_LEFT_THUMBSTICK		
+	DRIVER_GREEN_BUTTON_A		Gear Tilt Goto Floor
+	DRIVER_RED_BUTTON_B			Gear Tilt Goto Score 
+	DRIVER_BLUE_BUTTON_X		Hang Gear Sequence Initiation
+	DRIVER_YELLOW_BUTTON_Y		Gear Tilt GoTo Home
+	DRIVER_LEFT_BUMPER			Fuel Infeed
+	DRIVER_RIGHT_BUMPER			Gear Shift Toggle
+	DRIVER_BACK_BUTTON			Start Climb
+	DRIVER_START_BUTTON			Gear Tilt ReZero
+	DRIVER_LEFT_THUMBSTICK
 	DRIVER_RIGHT_THUMBSTICK
-		
-									Acc/Dec Mode Toggle
-									Shooter Stg 1 Motor RPM + 100
-									Shooter Stg 1 Motor RPM - 100
-									Shooter Stg 2 Motor RPM + 100
-									Shooter Stg 2 Motor RPM - 100
-									Blender Cycle RPM
+	DRIVER_POV					Camera Swap
+	
+							
+								Gear Tilt
+							
 	==========================================================================
 		
 	--- Operator Joysticks --------
-	OPERATOR_LEFT_X_AXIS
-	OPERATOR_LEFT_Y_AXIS			Gear Tilt
+	OPERATOR_LEFT_X_AXIS			
+	OPERATOR_LEFT_Y_AXIS			
 	OPERATOR_LEFT_TRIGGER			Chassis Spin Left
 	OPERATOR_RIGHT_TRIGGER			Chassis Spin Right
 	OPERATOR_RIGHT_X_AXIS
-	OPERATOR_RIGHT_Y_AXIS			Gear Infeed/OutFeed
+	OPERATOR_RIGHT_Y_AXIS			
 	
 	--- Operator Buttons --------
-	OPERATOR_GREEN_BUTTON_A			Gear Tilt Goto Floor
-	OPERATOR_RED_BUTTON_B			Gear Tilt Goto Score 
-	OPERATOR_BLUE_BUTTON_X			Hang Gear Sequence Initiation
-	OPERATOR_YELLOW_BUTTON_Y		Gear Tilt GoTo Home
-	OPERATOR_LEFT_BUMPER			Fuel Infeed
-	OPERATOR_RIGHT_BUMPER			Camera Swap
-	OPERATOR_BACK_BUTTON			Start Climb
-	OPERATOR_START_BUTTON			Gear Tilt ReZero
-	OPERATOR_LEFT_THUMBSTICK
-	OPERATOR_RIGHT_THUMBSTICK
+	OPERATOR_GREEN_BUTTON_A			Toggle Shooter Feeder Mtrs
+	OPERATOR_RED_BUTTON_B			Shooter Slider Down
+	OPERATOR_BLUE_BUTTON_X			Shoot Ball/Full Shooter Stop
+	OPERATOR_YELLOW_BUTTON_Y		Shooter Slider Up
+	OPERATOR_LEFT_BUMPER			Shooter Stg1 Cycle RPM
+	OPERATOR_RIGHT_BUMPER			Shooter Stg2 Cycle RPM
+	OPERATOR_BACK_BUTTON			High Speed Lane
+	OPERATOR_START_BUTTON			Run Shooter Feeder Mtrs in Reverse
+	OPERATOR_LEFT_THUMBSTICK		Shooter Stg1 Cycle Down RPM	
+	OPERATOR_RIGHT_THUMBSTICK		Shooter Stg2 Cycle Down RPM
+	OPERATOR_POV					Camera Swap
 	==========================================================================
 	*/
 		
@@ -93,16 +93,49 @@ public class DriversStation extends BaseDriversStation {
 		return super.getIsDriverGreenBtnAJustPressed();
 	} 
 	*/
+		// Gear Tilt Floor
+	public boolean getIsDriver_GearGoToFloor_BtnJustPressed() {
+		return super.getIsDriverGreenBtnAJustPressed();
+	}	
 	
-	// ConstantVelocityThroughVBus
-	public boolean getIsDriver_GearShiftToggle_BtnJustPressed() {
+	// Gear Tilt Score 
+	public boolean getIsDriver_GearGoToScore_BtnJustPressed() {
+		return super.getIsDriverRedBtnBJustPressed();
+	}
+	// Gear AutoScore Sequence
+	public boolean getIsDriver_GearStartSequence_BtnJustPressed() {
 		return super.getIsDriverBlueBtnXJustPressed();
 	}
 	
-	// AccDec Mode
-	public boolean getIsDriver_ToggleShooterFeederMtrs_BtnJustPressed() {
-		return super.getIsDriverGreenBtnAJustPressed();
+	// Gear Tilt Home
+	public boolean getIsDriver_GearGoToHome_BtnJustPressed() {
+		return super.getIsDriverYellowBtnYJustPressed();
 	}
+	
+	public boolean getIsDriver_StartClimb_ButtonJustPressed() {
+		return super.getIsDriverBackBtnJustPressed();
+	}
+
+	// Gear ReZero
+	public boolean getIsDriver_GearReZero_BtnJustPressed() {
+		return super.getIsDriverStartBtnJustPressed();
+	}
+	
+	// ConstantVelocityThroughVBus	
+	public boolean getIsDriver_GearShiftToggle_BtnJustPressed() {
+		return super.getIsDriverRightBumperBtnJustPressed();
+	}
+	
+	// Toggle Camera
+	public boolean getIsDriver_ToggleCamera_BtnJustPressed() {
+		return super.getIsDriverPovUpBtnJustPressed();
+	}
+	
+	// Camera Swap: Driver
+	public boolean getIsDriver_CameraSwap_BtnJustPressed() {
+		return super.getIsOperatorPovBtnJustPressed();
+	}
+	
 	
 	//ShooterStg1Up
 	//public boolean getIsDriver_ShooterStg1Up_BtnJustPressed()
@@ -121,10 +154,7 @@ public class DriversStation extends BaseDriversStation {
 	//{
 	//	return super.getIsDriverLeftBumperBtnJustPressed();
 	//}
-	
-	public boolean getIsDriver_ShooterStg1StepRPMUp_BtnJustPressed() {
-		return super.getIsDriverLeftBumperBtnJustPressed();
-	}
+
 	
 	// Blender Cycle
 	//public boolean getIsDriver_BlenderCycleRPM_BtnJustPressed() {
@@ -143,24 +173,6 @@ public class DriversStation extends BaseDriversStation {
 	//	return super.getIsDriverRightBumperBtnJustPressed();
 	//}
 	
-	public boolean getIsDriver_ShooterStg2StepRPMUp_BtnJustPressed() {
-		return super.getIsDriverRightBumperBtnJustPressed();
-	}
-	
-	//ActuatorUp
-	public boolean getIsDriver_ShooterSliderUp_BtnJustPressed() {
-		return super.getIsDriverYellowBtnYJustPressed();
-	}
-	
-	//ActuatorDown
-	public boolean getIsDriver_ShooterSliderDown_BtnJustPressed() {
-		return super.getIsDriverRedBtnBJustPressed();
-	}
-	
-	//FullStop
-	public boolean getIsDriver_FullShooterStop_BtnJustPressed() { //HERE 
-		return super.getIsDriverBackBtnJustPressed();
-	}
 		
 	// ===================================
 	// === driver Is Pressed buttons =====
@@ -171,10 +183,10 @@ public class DriversStation extends BaseDriversStation {
 		return super.getIsDriverGreenBtnPressed();
 	}
 	*/
-	
-	public boolean getIsDriver_RunShooterFeederInReverse_BtnPressed()
-	{
-		return super.getIsDriverStartBtnPressed();
+
+	//Fuel Infeed
+	public boolean getIsDriver_FuelInfeed_BtnPressed() {
+		return super.getIsDriverLeftBumperBtnPressed();
 	}
 	
 	// ===================================
@@ -186,6 +198,15 @@ public class DriversStation extends BaseDriversStation {
 		return super.getDriverLeftXAxisCmd();
 	}
 	*/
+	// Gear Infeed
+	public double getDriver_GearInfeed_JoystickCmd() {
+		return super.getDriverLeftTriggerCmd();
+	}
+	
+	// Gear Outfeed
+	public double getDriver_GearOutfeed_JoystickCmd() {
+		return super.getDriverRightTriggerCmd();
+	}
 	
 	// Chassis Throttle
 	public double getDriver_ChassisThrottle_JoystickCmd() {
@@ -198,15 +219,6 @@ public class DriversStation extends BaseDriversStation {
 	}
 	
 	
-	// Stg 1 Mtr Down
-	public boolean getIsDriver_ShooterStg1StepRPMDown_BtnJustPressed() {
-		return (Math.abs(super.getDriverLeftTriggerCmd()) > 0.2);
-	}
-	
-	// Stg 2 Mtr Down
-	public boolean getIsDriver_ShooterStg2StepRPMDown_BtnJustPressed() {
-		return (Math.abs(super.getDriverRightTriggerCmd()) > 0.2);
-	}
 	
 	
 	// =========================================================================================================
@@ -218,37 +230,52 @@ public class DriversStation extends BaseDriversStation {
 	// === operator Just Pressed buttons ===
 	// =====================================
 	
-	// Gear AutoScore Sequence
-	public boolean getIsOperator_GearStartSequence_BtnJustPressed() {
-		return super.getIsOperatorBlueBtnXJustPressed();
-	}
-	
-	// Gear Tilt Home
-	public boolean getIsOperator_GearGoToHome_BtnJustPressed() {
-		return super.getIsOperatorYellowBtnYJustPressed();
-	}
-	
-	// Gear ReZero
-	public boolean getIsOperator_GearReZero_BtnJustPressed() {
-		return super.getIsOperatorStartBtnJustPressed();
-	}
-	
-	// Gear Tilt Floor
-	public boolean getIsOperator_GearGoToFloor_BtnJustPressed() {
+	// Toggle Shooter Feeder Motors
+	public boolean getIsOperator_ToggleShooterFeederMtrs_BtnJustPressed() {
 		return super.getIsOperatorGreenBtnAJustPressed();
 	}
 	
-	// Gear Tilt Score 
-	public boolean getIsOperator_GearGoToScore_BtnJustPressed() {
-		return super.getIsOperatorRedBtnBJustPressed();
+	public boolean getIsOperator_ShooterStg1StepRPMUp_BtnJustPressed() {
+		return super.getIsOperatorLeftBumperBtnJustPressed();
 	}
 	
-	// Swap Cameras
+	// Toggle Shoot Ball
+	public boolean getIsOperator_ToggleShootBall_BtnJustPressed() {
+		return super.getIsOperatorBlueBtnXJustPressed();
+	}
+	
+
+	// Swap Cameras: Operator
 	public boolean getIsOperator_CameraSwap_BtnJustPressed() {
+		return super.getIsOperatorPovBtnJustPressed();
+	}
+	
+	public boolean getIsOperator_ShooterStg2StepRPMUp_BtnJustPressed() {
 		return super.getIsOperatorRightBumperBtnJustPressed();
 	}
 	
-	public boolean getIsOperator_StartClimb_ButtonJustPressed() {
+	//ActuatorUp
+	public boolean getIsOperator_ShooterSliderUp_BtnJustPressed() {
+		return super.getIsOperatorYellowBtnYJustPressed();
+	}
+	
+	//ActuatorDown
+	public boolean getIsOperator_ShooterSliderDown_BtnJustPressed() {
+		return super.getIsOperatorRedBtnBJustPressed();
+	}
+	
+	//Stg 1 Mtr Down
+	public boolean getIsOperator_ShooterStg1StepRPMDown_BtnJustPressed() {
+		return super.getIsOperatorLeftThumbstickBtnJustPressed();
+	}
+	
+	// Stg 2 Mtr Down
+	public boolean getIsOperator_ShooterStg2StepRPMDown_BtnJustPressed() {
+		return super.getIsOperatorRightThumbstickBtnJustPressed();
+	}
+	
+	//FullStop
+	public boolean getIsOperator_HighSpeedLane_BtnJustPressed() {  
 		return super.getIsOperatorBackBtnJustPressed();
 	}
 	
@@ -256,9 +283,9 @@ public class DriversStation extends BaseDriversStation {
 	// === operator Is Pressed buttons =====
 	// =====================================
 	
-	//Fuel Infeed
-	public boolean getIsOperator_FuelInfeed_BtnPressed() {
-		return super.getIsOperatorLeftBumperBtnPressed();
+	public boolean getIsOperator_RunShooterFeederInReverse_BtnPressed()
+	{
+		return super.getIsOperatorStartBtnPressed();
 	}
 	
 	// =====================================
@@ -273,13 +300,14 @@ public class DriversStation extends BaseDriversStation {
 	
 	
 	// GearInfeedOutFeed
-	public double getOperator_GearInfeedOutFeed_JoystickCmd() {
-		return super.getOperatorRightYAxisCmd();
-	}
+	//public double getOperator_GearInfeedOutFeed_JoystickCmd() {
+		//return super.getOperatorRightYAxisCmd();
+	//}
 	
-	public double getOperator_GearTiltFeed_JoystickCmd() {
-		return super.getOperatorLeftYAxisCmd();
-	}
+	// TODO: Find a home for this button. Or does this button even need to exist? 11 Mar
+	//public double getOperator_GearTiltFeed_JoystickCmd() {
+		//return super.getOperatorLeftYAxisCmd();
+	//}
 	
 	// chassis turret
 	public double getOperator_ChassisSpinLeft_JoystickCmd() {

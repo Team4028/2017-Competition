@@ -208,7 +208,7 @@ public class TrajectoryDriveController {
 			
 			if(_isVisionTrackingEnabled) {
 				setIsFeedbackDisabled(true);
-				_currentVisionError = _roboRealm.getAngle();
+				_currentVisionError = _roboRealm.get_Angle();
 				/*
 				if(_setVisionError != _currentVisionError) {
 					_setVisionError = _currentVisionError;

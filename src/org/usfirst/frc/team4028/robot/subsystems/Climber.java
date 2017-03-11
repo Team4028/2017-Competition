@@ -125,6 +125,7 @@ public class Climber
 	public void OutputToSmartDashboard()
 	{
 		SmartDashboard.putNumber("Climber Motor Current", getActualMotorCurrent());
+		SmartDashboard.putString(" ", getIsClimberBuckets());
 	}
 	
 	// add any important data to the logdata
@@ -156,5 +157,18 @@ public class Climber
 	private double getActualPercentVBus()
 	{
 		return GeneralUtilities.RoundDouble((_climberMtr.getOutputVoltage() / _climberMtr.getBusVoltage()), 2);
+	}
+	
+	// Per the request of the drive team
+	private String getIsClimberBuckets()
+	{
+		if (_isClimberMotorStalled)
+		{
+			return "BUCKETS!";
+		}
+		else
+		{
+			return "";
+		}
 	}
 }

@@ -46,15 +46,14 @@ public class DashboardInputs {
 		_autonModeChooser.addObject("Cross the Base Line", GeneralEnums.AUTON_MODE.CROSS_BASE_LINE);
 		_autonModeChooser.addObject("Hang Gear on Boiler Side", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR);
 		_autonModeChooser.addObject("Hang Gear on the Boiler Side and Shoot", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR_AND_SHOOT);
-		_autonModeChooser.addObject("Hang Gear in Center", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR);
+		_autonModeChooser.addDefault("Hang Gear in Center", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR);
 		_autonModeChooser.addObject("Hang Gear in Center and Shoot", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR_AND_SHOOT);
 		_autonModeChooser.addObject("Hang Gear on Retrieval Side", GeneralEnums.AUTON_MODE.HANG_RETRIEVAL_GEAR);
 		_autonModeChooser.addObject("Hit the Hopper and Shoot", GeneralEnums.AUTON_MODE.HIT_HOPPER);
-		_autonModeChooser.addDefault("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
+		_autonModeChooser.addObject("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
 		_autonModeChooser.addObject("Two Gears", GeneralEnums.AUTON_MODE.TWO_GEAR);
 		
 		SmartDashboard.putData("Auton Mode Chooser", _autonModeChooser);
-		_autonModeChoice = _autonModeChooser.getSelected();
 		
 		//============================
 		// Alliance Choice
@@ -64,19 +63,19 @@ public class DashboardInputs {
 		_allianceChooser.addDefault("Red Alliance", GeneralEnums.ALLIANCE.RED_ALLIANCE);
 		_allianceChooser.addObject("Blue Alliance", GeneralEnums.ALLIANCE.BLUE_ALLIANCE);
 		
-		SmartDashboard.putData("Alliance Chooser" , _allianceChooser);
-		_alliance =  _allianceChooser.getSelected();
-		
+		SmartDashboard.putData("Alliance Chooser" , _allianceChooser);		
 	}
 
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
 	public AUTON_MODE get_autonMode() {
+		_autonModeChoice = _autonModeChooser.getSelected();
 		return _autonModeChoice;
 	}
 	
 	public ALLIANCE get_allianceMode() {
+		_alliance =  _allianceChooser.getSelected();
 		return _alliance;
 	}
 }
