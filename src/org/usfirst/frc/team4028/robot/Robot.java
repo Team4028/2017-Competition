@@ -236,7 +236,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.TURN_AND_SHOOT;
+    	_autonMode = AUTON_MODE.HANG_BOILER_GEAR;
 
     	
     	// =====================================

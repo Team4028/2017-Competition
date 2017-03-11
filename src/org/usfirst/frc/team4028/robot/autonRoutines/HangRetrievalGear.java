@@ -89,7 +89,7 @@ public class HangRetrievalGear {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
-      			if (_trajController.getCurrentSegment() == 200) {
+      			if (_trajController.getCurrentSegment() == 130) {
       				_trajController.isVisionTrackingEnabled(true);
       			}
       			if (_trajController.onTarget()) {
