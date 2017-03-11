@@ -242,7 +242,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: add logic to read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
     	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HANG_BOILER_GEAR;
+    	_autonMode = AUTON_MODE.HIT_HOPPER;
     	
     	// =====================================
 		// Step 2.1: Create the correct auton routine
@@ -483,26 +483,22 @@ public class Robot extends IterativeRobot {
 		    	// Chassis Throttle Cmd
 				//=====================
 		    	if ((Math.abs(_driversStation.getDriver_ChassisThrottle_JoystickCmd()) > 0.0) 
-		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0)) 
-		    	{
+		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0)) {
 		    		// std drive
 			    	_chassis.ArcadeDrive(_driversStation.getDriver_ChassisThrottle_JoystickCmd(), 
 											_driversStation.getDriver_ChassisTurn_JoystickCmd());
 		    	} 
 		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) > 0.0)
-		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) == 0.0))
-		    	{
+		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) == 0.0)) {
 		    		// spin left
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinLeft_JoystickCmd() * 0.65 * -1.0);
 		    	} 
 		    	else if ((Math.abs(_driversStation.getOperator_ChassisSpinRight_JoystickCmd()) > 0.0) 
-		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) == 0.0))
-		    	{
+		    				&& (Math.abs(_driversStation.getOperator_ChassisSpinLeft_JoystickCmd()) == 0.0)) {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getOperator_ChassisSpinRight_JoystickCmd() * 0.65);
 		    	} 
-		    	else 
-		    	{
+		    	else {
 		    		// full stop
 			    	_chassis.ArcadeDrive(0.0, 0.0);
 		    	}

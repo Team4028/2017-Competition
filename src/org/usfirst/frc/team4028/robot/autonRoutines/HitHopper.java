@@ -42,7 +42,7 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 3000;
+	private static final int WAIT_TIME_MSEC = 2500;
 	
 	//============================================================================================
 	// constructors follow
@@ -54,7 +54,6 @@ public class HitHopper {
 		_navX = navX;
 		_shooter = shooter;
 		_trajController = trajController;
-		_trajController.startTrajectoryController();
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -93,8 +92,8 @@ public class HitHopper {
 			case MOVE_TO_BOILER_HELLA_FAST:
 				if(_trajController.onTarget()) {
 					_trajController.disable();
-					//_waitStartedTimeStamp = System.currentTimeMillis();
-					//_autonState = AUTON_STATE.WAIT;
+					_waitStartedTimeStamp = System.currentTimeMillis();
+					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				

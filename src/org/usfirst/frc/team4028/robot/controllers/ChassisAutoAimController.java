@@ -31,6 +31,11 @@ public class ChassisAutoAimController {
 		DriverStation.reportError("New Setpoint Loaded", false);
 	}
 	
+	public void loadNewVisionTarget(double angle) {
+		_autoAimPID.reset();
+		_autoAimPID.setSetpoint(_navX.getYaw() + angle);
+	}
+	
 	public void update() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
 		_chassis.TankDrive(-motorOutput, motorOutput);
