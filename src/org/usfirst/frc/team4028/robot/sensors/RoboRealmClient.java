@@ -233,13 +233,14 @@ public class RoboRealmClient
  	    	_fovXCenterPoint = _fovDimensions.width / 2;
  	    	
  	    	// calc the target center point
- 	    	_targetXCenterPoint = Math.round((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0);
+ 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) - 4.25);
  	    	
  	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
  	    	// round to 2 decimal places
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
-    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec + " Blob Count= " + _newTargetRawData.BlobCount);
+    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec
+    				+ " Blob Count= " + _newTargetRawData.BlobCount + " Is on Target= " + Boolean.toString(get_isInGearHangPosition()));
  	
  	    	//Reset the counter 
  	    	_badDataCounter = 0;

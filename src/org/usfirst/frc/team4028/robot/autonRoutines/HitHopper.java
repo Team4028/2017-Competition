@@ -42,19 +42,18 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 3000;
+	private static final int WAIT_TIME_MSEC = 2500;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter) {
+	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_navX = navX;
 		_shooter = shooter;
-		_trajController = new TrajectoryDriveController(_chassis, _navX, true);
-		_trajController.startTrajectoryController();
+		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -68,6 +67,7 @@ public class HitHopper {
 		
 		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
 		_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+		_trajController.configureIsHighGear(true);
 		_trajController.loadProfile(MoveToHopperTrajectory.LeftPoints, MoveToHopperTrajectory.RightPoints, 1.0, 1.0, MoveToHopperTrajectory.kNumPoints);
 		_trajController.enable();
 		
@@ -92,8 +92,8 @@ public class HitHopper {
 			case MOVE_TO_BOILER_HELLA_FAST:
 				if(_trajController.onTarget()) {
 					_trajController.disable();
-					//_waitStartedTimeStamp = System.currentTimeMillis();
-					//_autonState = AUTON_STATE.WAIT;
+					_waitStartedTimeStamp = System.currentTimeMillis();
+					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				

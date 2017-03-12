@@ -44,9 +44,9 @@ public class HangGearController
 	private static final long MAX_TIME_BEFORE_ABORT_IN_MSEC = 2000; 
 	private static final double DRIVE_BACKWARDS_SPEED = -0.50;
 	private static final double GEAR_OUTFEED_SPEED = -1.0;
-	private static final double GEAR_TILT_SPEED = 00.2;
+	private static final double GEAR_TILT_SPEED = 0.2;
 	private static final int MSEC_FIRST_CHANGE = 300;
-	private static final int MSEC_SECOND_CHANGE = 750;
+	private static final int MSEC_SECOND_CHANGE = 600;
 	
 	//============================================================================================
 	// constructors follow
