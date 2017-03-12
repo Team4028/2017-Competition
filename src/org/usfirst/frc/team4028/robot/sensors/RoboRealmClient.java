@@ -186,7 +186,7 @@ public class RoboRealmClient
  		
  	    // get multiple variables
  		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
- 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT,BLOB_COUNT");
+ 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
  	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
  	    _newTargetRawData = null;
  	    
