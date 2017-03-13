@@ -12,6 +12,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
@@ -326,6 +327,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Configure Logging
     	// =====================================
     	_dataLogger = GeneralUtilities.setupLogging("auton");
+    	
+    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.GEAR);
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -473,6 +476,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Configure Logging (if USB Memory Stick is present)
     	// =====================================    	
     	_dataLogger = GeneralUtilities.setupLogging("telop");
+    	
+    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
 	}
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------

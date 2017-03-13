@@ -77,7 +77,7 @@ public class Shooter
 	//define class level Actuator Constants
 	private static final double MAX_THRESHOLD_ACTUATOR = 0.7; 
 	private static final double MIN_THRESHOLD_ACTUATOR = 0.4;
-	private static final double CHANGE_INTERVAL_ACTUATOR = 0.02;
+	private static final double CHANGE_INTERVAL_ACTUATOR = 0.01;
 	private static final double INITIAL_POSITION_ACTUATOR = 0.65;
 	
 	//define class level Shooter Motor Constants

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
@@ -31,6 +32,7 @@ public class RoboRealmClient
  	private RoboRealmUpdater _task; 
 
  	private boolean _isConnected;
+ 	private String _currentVisionCameraName;
  	
  	private static final int TARGET_MINIMUM_Y_VALUE = 413;
  	private static final int SOUTHWEST_X_IDX = 0;
@@ -105,7 +107,19 @@ public class RoboRealmClient
     	Dimension fovDimensions = _rrAPI.getDimension();
     }
     
- 
+    // this method changes the active roborealm camera / program
+    public void ChangeToCamera(ViSION_CAMERAS visionCamera)
+    {
+    	_currentVisionCameraName= visionCamera.get_cameraName();
+    	
+    	if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
+    		System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
+    	}
+    	else {
+    		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
+    	}
+    }
+    
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName)
@@ -192,7 +206,10 @@ public class RoboRealmClient
  	    
  	    if (_vector==null)
  	    {
- 	    	System.out.println("Error in GetVariables, did not return any results");
+ 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
+ 	    	{
+ 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
+ 	    	}
  	    	//DriverStation.reportError("Error in GetVariables, did not return any results", false);
  	    	
  	    	//Increment bad data counter
