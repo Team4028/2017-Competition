@@ -245,8 +245,7 @@ public class Robot extends IterativeRobot {
 		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
 
-    	//_autonMode = _dashboardInputs.get_autonMode();
-    	_autonMode = AUTON_MODE.HIT_HOPPER;
+    	_autonMode = _dashboardInputs.get_autonMode();
 
     	// =====================================
 		// Step 2.1: Create the correct auton routine
@@ -670,16 +669,18 @@ public class Robot extends IterativeRobot {
     	    	// ====> Enter Climb Mode
     	    	// =====================================
     	    	//if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {		// TODO: put this back in
-    	    	//	_teleopMode = TELEOP_MODE.CLIMBING;
-    	    	//	_climber.RunClimberReentrant();
+    	    		//_teleopMode = TELEOP_MODE.CLIMBING;
+    	    		//_climber.RunClimberReentrant();
     	    	//}
     	    	
+    			
     	    	if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
     	    		_climber.RunMotorTest(Climber.CLIMBER_MOTOR_VBUS);
     	    	}
     	    	else {
     	    		_climber.RunMotorTest(0.0);
     	    	}
+    	    	
     	    	
 		      	break;	// end of _telopMode = STANDARD
       		
@@ -713,15 +714,14 @@ public class Robot extends IterativeRobot {
 		    	}
     			break;
     			
-    		/*case AUTO_AIM:
-    			if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
-    				_teleopMode = TELEOP_MODE.STANDARD;
+    		case AUTO_AIM:
+    			if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
+    				_chassisAutoAim.update();
     			} else {
-    				//_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
-    				DriverStation.reportError(Double.toString(_roboRealmClient.getAngle()), false);
+    				_teleopMode = TELEOP_MODE.STANDARD;
     			}
     			break;
-    		*/
+    		
     			
     	}	// end of switch statement
       	

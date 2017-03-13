@@ -119,6 +119,9 @@ public class SwitchableCameraServer
 		SmartDashboard.putString("IsCam1Present?", Boolean.toString(_isCam1Present) + " (" + getCameraFunction("cam1") + ")");
 		SmartDashboard.putString("IsCam2Present?", Boolean.toString(_isCam2Present) + " (" + getCameraFunction("cam2") + ")");
 		SmartDashboard.putString("IsCam3Present?", Boolean.toString(_isCam3Present) + " (" + getCameraFunction("cam3") + ")");
+		if (_cameraName == null) {
+			_cameraName = "N/A";
+		}
 		SmartDashboard.putString("CurrentCameraName:", _cameraName);
 	}
 	
