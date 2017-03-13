@@ -12,6 +12,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
@@ -129,7 +130,9 @@ public class Robot extends IterativeRobot {
 		
 		_dashboardInputs = new DashboardInputs();
 		
-		_driversStation = new DriversStation(RobotMap.DRIVER_GAMEPAD_USB_PORT, RobotMap.OPERATOR_GAMEPAD_USB_PORT);
+		_driversStation = new DriversStation(RobotMap.DRIVER_GAMEPAD_USB_PORT, 
+												RobotMap.OPERATOR_GAMEPAD_USB_PORT,
+												RobotMap.ENGINEERING_GAMEPAD_USB_PORT);
 	
 		_gearHandler = new GearHandler(RobotMap.GEAR_TILT_CAN_BUS_ADDR, RobotMap.GEAR_INFEED_CAN_BUS_ADDR);
 		
@@ -569,26 +572,7 @@ public class Robot extends IterativeRobot {
     			else {
     				_shooter.ControlHighSpeedLane();
     			}
-    			    			   			      			
-    			//=====================
-    			// Shooter Feeder (Magic Carpet & High Roller) )Motors controlled as a unit
-    			//=====================
-    			if(_driversStation.getIsOperator_RunShooterFeederInReverse_BtnPressed()){
-    				_shooter.RunShooterFeederInReverse();
-    			}
-    			else if(_driversStation.getIsOperator_ToggleShooterFeederMtrs_BtnJustPressed()) {
-    				_shooter.ToggleRunShooterFeeder();
-    			}
-    			else {
-    				// we need tp shut off the motors if they were running in reverse and the reverse button was released
-    				_shooter.CleanupRunShooterFeederInReverse();
-    			}
-    			
-    			if (_driversStation.getIsOperator_HighSpeedLane_BtnJustPressed())
-    			{
-    				_shooter.ToggleHighSpeedInfeedLane();
-    			}
-
+    			    	
     			//=====================
     			// Toggle Shooter Motors
     			//=====================
@@ -598,6 +582,28 @@ public class Robot extends IterativeRobot {
     			else if (_shooter.get_isShooterReentrantRunning())
     			{
     				_shooter.ShootBallReentrant();
+    			}
+    			
+    			//=====================
+    			// Shooter Feeder (Magic Carpet & High Roller) Motors controlled as a unit
+    			//=====================
+    			if(_driversStation.getIsOperator_RunShooterFeederInReverse_BtnPressed()){
+    				_shooter.RunShooterFeederInReverse();
+    			}
+    			else if(_driversStation.getIsOperator_ToggleShooterFeederMtrs_BtnJustPressed()) {
+    				_shooter.ToggleRunShooterFeeder();
+    			}
+    			else if (_shooter.get_isShooterInfeedReentrantRunning()) {
+    				_shooter.RunShooterFeederReentrant();
+    			}
+    			else {
+    				// we need tp shut off the motors if they were running in reverse and the reverse button was released
+    				_shooter.CleanupRunShooterFeederInReverse();
+    			}
+    			
+    			if (_driversStation.getIsOperator_HighSpeedLane_BtnJustPressed())
+    			{
+    				_shooter.ToggleHighSpeedInfeedLane();
     			}
  			
 		    	//=====================

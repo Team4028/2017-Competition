@@ -2,6 +2,7 @@ package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.constants.LogitechF310;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 
 // this class encapsulates all interactions with the DriversStation 
@@ -10,6 +11,11 @@ import edu.wpi.first.wpilibj.Joystick;
 //  - every project should implement a class that inherits from this class with 
 //		property accessors with more specific names
 //
+//------------------------------------------------------
+//Rev		By		 	D/T				Desc
+//===		========	===========		=================================
+//1.0		TomB		12.Mar.2017		Added support for engineering gamepad 
+//------------------------------------------------------
 // ===========================================================================
 //	  TALK TO SEBAS or MR. BRUNS BEFORE you edit this file !
 // ===========================================================================
@@ -19,6 +25,7 @@ abstract class BaseDriversStation {
 	// ===================================
 	private Joystick _driverGamepad;
 	private Joystick _operatorGamepad;
+	private Joystick _engineeringGamepad;
 	
 	// ===================================
 	// define working & state variables
@@ -31,9 +38,24 @@ abstract class BaseDriversStation {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	protected BaseDriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort) {
+	protected BaseDriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort, int engineerimgGamePadUsbPort) {
 		_driverGamepad = new Joystick(driverGamePadUsbPort);				// std Logitech F310 Gamepad  
 		_operatorGamepad = new Joystick(operatorGamePadUsbPort);			// std Logitech F310 Gamepad  
+		_engineeringGamepad = new Joystick(engineerimgGamePadUsbPort);		// std Logitech F310 Gamepad  
+		
+		
+		if(_driverGamepad == null)
+		{
+			DriverStation.reportError("DriverGamepad not present!", false);
+		}
+		if(_operatorGamepad == null)
+		{
+			DriverStation.reportError("OperatorGamepad not present!", false);
+		}
+		if(_engineeringGamepad == null)
+		{
+			DriverStation.reportError("EngineeringGamepad not present!", false);
+		}
 	}
 
 	// Refreshes the locally cached copy of the Current (this scan) Driver's Station Input Values
@@ -322,6 +344,18 @@ abstract class BaseDriversStation {
     	private final boolean _isOperatorLeftThumbstickBtnPressed;
     	private final boolean _isOperatorRightThumbstickBtnPressed;
     	
+    	private final boolean _isEngineeringGreenBtnAPressed;
+    	private final boolean _isEngineeringRedBtnBPressed;
+    	private final boolean _isEngineeringBlueBtnXPressed;
+    	private final boolean _isEngineeringYellowBtnYPressed;
+    	private final boolean _isEngineeringLeftBumperBtnPressed;
+    	private final boolean _isEngineeringRightBumperBtnPressed;
+    	private final boolean _isEngineeringBackBtnPressed;
+    	private final boolean _isEngineeringStartBtnPressed;
+    	private final boolean _isEngineeringPovBtnPressed;
+    	private final boolean _isEngineeringLeftThumbstickBtnPressed;
+    	private final boolean _isEngineeringRightThumbstickBtnPressed;
+    	
     	// analog inputs
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	private final double _driverLeftXAxisCmd;
@@ -337,6 +371,13 @@ abstract class BaseDriversStation {
     	private final double _operatorRightTriggerCmd;
     	private final double _operatorRightXAxisCmd;
     	private final double _operatorRightYAxisCmd;
+    	
+    	private final double _engineeringLeftXAxisCmd;
+    	private final double _engineeringLeftYAxisCmd;
+    	private final double _engineeringLeftTriggerCmd;
+    	private final double _engineeringRightTriggerCmd;
+    	private final double _engineeringRightXAxisCmd;
+    	private final double _engineeringRightYAxisCmd;
 		
 		/**
 		 * Create an entirely new instance by reading from the Gamepads
@@ -348,48 +389,134 @@ abstract class BaseDriversStation {
 	    	// get values from the gamepads
 	    	// ==========================
 			// digital inputs
-			_isDriverGreenBtnAPressed = _driverGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
-	    	_isDriverRedBtnBPressed = _driverGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
-	    	_isDriverBlueBtnXPressed = _driverGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
-	    	_isDriverYellowBtnYPressed = _driverGamepad.getRawButton(LogitechF310.YELLOW_BUTTON_Y);
-	    	_isDriverLeftBumperBtnPressed = _driverGamepad.getRawButton(LogitechF310.LEFT_BUMPER);
-	    	_isDriverRightBumperBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
-	    	_isDriverBackBtnPressed = _driverGamepad.getRawButton(LogitechF310.BACK_BUTTON);
-	    	_isDriverStartBtnPressed = _driverGamepad.getRawButton(LogitechF310.START_BUTTON);
-	    	_isDriverPovBtnPressed = (_driverGamepad.getPOV() > -1);
-	    	_isDriverLeftThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
-	    	_isDriverRightThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
-	    	
-			_isOperatorGreenBtnAPressed = _operatorGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
-	    	_isOperatorRedBtnBPressed = _operatorGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
-	    	_isOperatorBlueBtnXPressed = _operatorGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
-	    	_isOperatorYellowBtnYPressed = _operatorGamepad.getRawButton(LogitechF310.YELLOW_BUTTON_Y);
-	    	_isOperatorLeftBumperBtnPressed = _operatorGamepad.getRawButton(LogitechF310.LEFT_BUMPER);
-	    	_isOperatorRightBumperBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
-	    	_isOperatorBackBtnPressed = _operatorGamepad.getRawButton(LogitechF310.BACK_BUTTON);
-	    	_isOperatorStartBtnPressed = _operatorGamepad.getRawButton(LogitechF310.START_BUTTON);
-	    	_isOperatorPovBtnPressed = (_operatorGamepad.getPOV() > -1);
-	    	
-
-	    	_isOperatorLeftThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
-	    	_isOperatorRightThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
+			if(_driverGamepad != null) {
+				_isDriverGreenBtnAPressed = _driverGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
+		    	_isDriverRedBtnBPressed = _driverGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
+		    	_isDriverBlueBtnXPressed = _driverGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
+		    	_isDriverYellowBtnYPressed = _driverGamepad.getRawButton(LogitechF310.YELLOW_BUTTON_Y);
+		    	_isDriverLeftBumperBtnPressed = _driverGamepad.getRawButton(LogitechF310.LEFT_BUMPER);
+		    	_isDriverRightBumperBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
+		    	_isDriverBackBtnPressed = _driverGamepad.getRawButton(LogitechF310.BACK_BUTTON);
+		    	_isDriverStartBtnPressed = _driverGamepad.getRawButton(LogitechF310.START_BUTTON);
+		    	_isDriverPovBtnPressed = (_driverGamepad.getPOV() > -1);
+		    	_isDriverLeftThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
+		    	_isDriverRightThumbstickBtnPressed = _driverGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
+		    	
+		    	// analog inputs
+		    	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
+		    	_driverLeftXAxisCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_X_AXIS);
+		    	_driverLeftYAxisCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_Y_AXIS);
+		    	_driverLeftTriggerCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_TRIGGER);
+		    	_driverRightTriggerCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_TRIGGER);
+		    	_driverRightXAxisCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_X_AXIS);
+		    	_driverRightYAxisCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_Y_AXIS);
+			}
+			else {
+				_isDriverGreenBtnAPressed = false;
+		    	_isDriverRedBtnBPressed = false;
+		    	_isDriverBlueBtnXPressed = false;
+		    	_isDriverYellowBtnYPressed = false;
+		    	_isDriverLeftBumperBtnPressed = false;
+		    	_isDriverRightBumperBtnPressed = false;
+		    	_isDriverBackBtnPressed = false;
+		    	_isDriverStartBtnPressed = false;
+		    	_isDriverPovBtnPressed = false;
+		    	_isDriverLeftThumbstickBtnPressed = false;
+		    	_isDriverRightThumbstickBtnPressed = false;
+		    	
+		    	// analog inputs
+		    	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
+		    	_driverLeftXAxisCmd = 0.0;
+		    	_driverLeftYAxisCmd = 0.0;
+		    	_driverLeftTriggerCmd = 0.0;
+		    	_driverRightTriggerCmd = 0.0;
+		    	_driverRightXAxisCmd = 0.0;
+		    	_driverRightYAxisCmd = 0.0;	
+			}
 			
-	    	// analog inputs
-	    	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
-	    	_driverLeftXAxisCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_X_AXIS);
-	    	_driverLeftYAxisCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_Y_AXIS);
-	    	_driverLeftTriggerCmd = _driverGamepad.getRawAxis(LogitechF310.LEFT_TRIGGER);
-	    	_driverRightTriggerCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_TRIGGER);
-	    	_driverRightXAxisCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_X_AXIS);
-	    	_driverRightYAxisCmd = _driverGamepad.getRawAxis(LogitechF310.RIGHT_Y_AXIS);
-	    	
-	    	_operatorLeftXAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_X_AXIS);
-	    	_operatorLeftYAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_Y_AXIS);
-	    	_operatorLeftTriggerCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_TRIGGER);
-	    	_operatorRightTriggerCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_TRIGGER);
-	    	_operatorRightXAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_X_AXIS);
-	    	_operatorRightYAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_Y_AXIS);
-	    
+			if(_operatorGamepad != null)
+			{
+				_isOperatorGreenBtnAPressed = _operatorGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
+		    	_isOperatorRedBtnBPressed = _operatorGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
+		    	_isOperatorBlueBtnXPressed = _operatorGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
+		    	_isOperatorYellowBtnYPressed = _operatorGamepad.getRawButton(LogitechF310.YELLOW_BUTTON_Y);
+		    	_isOperatorLeftBumperBtnPressed = _operatorGamepad.getRawButton(LogitechF310.LEFT_BUMPER);
+		    	_isOperatorRightBumperBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
+		    	_isOperatorBackBtnPressed = _operatorGamepad.getRawButton(LogitechF310.BACK_BUTTON);
+		    	_isOperatorStartBtnPressed = _operatorGamepad.getRawButton(LogitechF310.START_BUTTON);
+		    	_isOperatorPovBtnPressed = (_operatorGamepad.getPOV() > -1);
+		    	_isOperatorLeftThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
+		    	_isOperatorRightThumbstickBtnPressed = _operatorGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
+		    	
+		    	_operatorLeftXAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_X_AXIS);
+		    	_operatorLeftYAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_Y_AXIS);
+		    	_operatorLeftTriggerCmd = _operatorGamepad.getRawAxis(LogitechF310.LEFT_TRIGGER);
+		    	_operatorRightTriggerCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_TRIGGER);
+		    	_operatorRightXAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_X_AXIS);
+		    	_operatorRightYAxisCmd = _operatorGamepad.getRawAxis(LogitechF310.RIGHT_Y_AXIS);
+			}
+			else 			{
+				_isOperatorGreenBtnAPressed = false;
+		    	_isOperatorRedBtnBPressed = false;
+		    	_isOperatorBlueBtnXPressed = false;
+		    	_isOperatorYellowBtnYPressed = false;
+		    	_isOperatorLeftBumperBtnPressed = false;
+		    	_isOperatorRightBumperBtnPressed = false;
+		    	_isOperatorBackBtnPressed = false;
+		    	_isOperatorStartBtnPressed = false;
+		    	_isOperatorPovBtnPressed = false;
+		    	_isOperatorLeftThumbstickBtnPressed = false;
+		    	_isOperatorRightThumbstickBtnPressed = false;
+		    	
+		    	_operatorLeftXAxisCmd = 0.0;
+		    	_operatorLeftYAxisCmd = 0.0;
+		    	_operatorLeftTriggerCmd = 0.0;
+		    	_operatorRightTriggerCmd = 0.0;
+		    	_operatorRightXAxisCmd = 0.0;
+		    	_operatorRightYAxisCmd = 0.0;
+			}
+			
+			if(_engineeringGamepad != null)
+			{
+				_isEngineeringGreenBtnAPressed = _engineeringGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
+		    	_isEngineeringRedBtnBPressed = _engineeringGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
+		    	_isEngineeringBlueBtnXPressed = _engineeringGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
+		    	_isEngineeringYellowBtnYPressed = _engineeringGamepad.getRawButton(LogitechF310.YELLOW_BUTTON_Y);
+		    	_isEngineeringLeftBumperBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.LEFT_BUMPER);
+		    	_isEngineeringRightBumperBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.RIGHT_BUMPER);
+		    	_isEngineeringBackBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.BACK_BUTTON);
+		    	_isEngineeringStartBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.START_BUTTON);
+		    	_isEngineeringPovBtnPressed = (_engineeringGamepad.getPOV() > -1);
+		    	_isEngineeringLeftThumbstickBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.LEFT_THUMBSTICK);
+		    	_isEngineeringRightThumbstickBtnPressed = _engineeringGamepad.getRawButton(LogitechF310.RIGHT_THUMBSTICK);
+		    	  
+		    	_engineeringLeftXAxisCmd = _engineeringGamepad.getRawAxis(LogitechF310.LEFT_X_AXIS);
+		    	_engineeringLeftYAxisCmd = _engineeringGamepad.getRawAxis(LogitechF310.LEFT_Y_AXIS);
+		    	_engineeringLeftTriggerCmd = _engineeringGamepad.getRawAxis(LogitechF310.LEFT_TRIGGER);
+		    	_engineeringRightTriggerCmd = _engineeringGamepad.getRawAxis(LogitechF310.RIGHT_TRIGGER);
+		    	_engineeringRightXAxisCmd = _engineeringGamepad.getRawAxis(LogitechF310.RIGHT_X_AXIS);
+		    	_engineeringRightYAxisCmd = _engineeringGamepad.getRawAxis(LogitechF310.RIGHT_Y_AXIS);
+			}
+			else {
+				_isEngineeringGreenBtnAPressed = false;
+		    	_isEngineeringRedBtnBPressed = false;
+		    	_isEngineeringBlueBtnXPressed = false;
+		    	_isEngineeringYellowBtnYPressed = false;
+		    	_isEngineeringLeftBumperBtnPressed = false;
+		    	_isEngineeringRightBumperBtnPressed = false;
+		    	_isEngineeringBackBtnPressed = false;
+		    	_isEngineeringStartBtnPressed = false;
+		    	_isEngineeringPovBtnPressed = false;
+		    	_isEngineeringLeftThumbstickBtnPressed = false;
+		    	_isEngineeringRightThumbstickBtnPressed = false;
+		    	  
+		    	_engineeringLeftXAxisCmd = 0.0;
+		    	_engineeringLeftYAxisCmd = 0.0;
+		    	_engineeringLeftTriggerCmd = 0.0;
+		    	_engineeringRightTriggerCmd = 0.0;
+		    	_engineeringRightXAxisCmd = 0.0;
+		    	_engineeringRightYAxisCmd = 0.0;
+			}
 		}
 		
 		// === driver buttons ====================================
@@ -436,6 +563,7 @@ abstract class BaseDriversStation {
 		public boolean getIsDriverRightThumbstickPressed() {
 			return _isDriverRightThumbstickBtnPressed;
 		}
+		
 		// === operator buttons ====================================
 		public boolean getIsOperatorGreenBtnAPressed() {
     		return _isOperatorGreenBtnAPressed;
@@ -479,6 +607,51 @@ abstract class BaseDriversStation {
 		
 		public boolean getIsOperatorRightThumbstickPressed() {
 			return _isOperatorRightThumbstickBtnPressed;
+		}
+		
+		// === operator buttons ====================================
+		public boolean getIsEngineeringGreenBtnAPressed() {
+    		return _isEngineeringGreenBtnAPressed;
+    	}
+		
+		public boolean getIsEngineeringRedBtnBPressed() {
+    		return _isEngineeringRedBtnBPressed;
+    	}
+		
+		public boolean getIsEngineeringBlueBtnXPressed() {
+    		return _isEngineeringBlueBtnXPressed;
+    	}
+		
+		public boolean getIsEngineeringYellowBtnYPressed() {
+    		return _isEngineeringYellowBtnYPressed;
+    	}
+
+		public boolean getIsEngineeringLeftBumperBtnPressed() {
+    		return _isEngineeringLeftBumperBtnPressed;
+    	}
+
+		public boolean getIsEngineeringRightBumperBtnPressed() {
+    		return _isEngineeringRightBumperBtnPressed;
+    	}
+		
+		public boolean getIsEngineeringBackBtnPressed() {
+    		return _isEngineeringBackBtnPressed;
+    	}
+
+		public boolean getIsEngineeringStartBtnPressed() {
+    		return _isEngineeringStartBtnPressed;
+    	}
+		
+		public boolean getIsEngineeringPovBtnPressed() {
+			return _isEngineeringPovBtnPressed;
+		}
+		
+		public boolean getIsEngineeringLeftThumbstickPressed() {
+			return _isEngineeringLeftThumbstickBtnPressed;
+		}
+		
+		public boolean getIsEngineeringRightThumbstickPressed() {
+			return _isEngineeringRightThumbstickBtnPressed;
 		}
 		// === driver joysticks ====================================
 		
@@ -579,6 +752,55 @@ abstract class BaseDriversStation {
     		} else {
     			return 0.0;
     		}
-    	}	    	
+    	}	
+    	
+		// === engineering joysticks ====================================
+    	public double getEngineeringLeftXAxisCmd() {
+    		if(Math.abs(_engineeringLeftXAxisCmd) > JOYSTICK_THRESHHOLD) {
+    			return (_engineeringLeftXAxisCmd);
+    		} else {
+    			return 0.0;
+    		}
+    	}
+		
+    	public double getEngineeringLeftYAxisCmd() {
+    		if(Math.abs(_engineeringLeftYAxisCmd) > JOYSTICK_THRESHHOLD) {
+    			return _engineeringLeftYAxisCmd;
+    		} else {
+    			return 0.0;
+    		}
+    	}
+
+    	public double getEngineeringLeftTriggerCmd() {
+    		if(Math.abs(_engineeringLeftTriggerCmd) > JOYSTICK_THRESHHOLD) {
+    			return _engineeringLeftTriggerCmd;
+    		} else {
+    			return 0.0;
+    		}
+    	}
+
+    	public double getEngineeringRightTriggerCmd() {
+    		if(Math.abs(_engineeringRightTriggerCmd) > JOYSTICK_THRESHHOLD) {
+    			return _engineeringRightTriggerCmd;
+    		} else {
+    			return 0.0;
+    		}
+    	}
+
+    	public double getEngineeringRightXAxisCmd() {
+    		if(Math.abs(_engineeringRightXAxisCmd) > JOYSTICK_THRESHHOLD) {
+    			return _engineeringRightXAxisCmd;
+    		} else {
+    			return 0.0;
+    		}
+    	}
+    	
+    	public double getEngineeringRightYAxisCmd() {
+    		if(Math.abs(_engineeringRightYAxisCmd) > JOYSTICK_THRESHHOLD) {
+    			return _engineeringRightYAxisCmd;
+    		} else {
+    			return 0.0;
+    		}
+    	}
 	}
 }

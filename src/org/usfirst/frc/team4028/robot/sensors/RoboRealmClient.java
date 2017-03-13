@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
@@ -21,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * This class is a wrapper around the interface to RoboRealm over TCP Sockets hosted on a 
  * on-robot Kangaroo
+ * 
+ *     	//_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
  */
 public class RoboRealmClient 
 {
@@ -31,6 +34,7 @@ public class RoboRealmClient
  	private RoboRealmUpdater _task; 
 
  	private boolean _isConnected;
+ 	private String _currentVisionCameraName;
  	
  	private static final int TARGET_MINIMUM_Y_VALUE = 413;
  	private static final int SOUTHWEST_X_IDX = 0;
@@ -105,7 +109,19 @@ public class RoboRealmClient
     	Dimension fovDimensions = _rrAPI.getDimension();
     }
     
- 
+    // this method changes the active roborealm camera / program
+    public void ChangeToCamera(ViSION_CAMERAS visionCamera)
+    {
+    	_currentVisionCameraName= visionCamera.get_cameraName();
+    	
+    	if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
+    		System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
+    	}
+    	else {
+    		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
+    	}
+    }
+    
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName)
@@ -186,13 +202,16 @@ public class RoboRealmClient
  		
  	    // get multiple variables
  		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
- 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,CALIBRATED_WIDTH,CALIBRATED_HEIGHT,BLOB_COUNT");
+ 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
  	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
  	    _newTargetRawData = null;
  	    
  	    if (_vector==null)
  	    {
- 	    	System.out.println("Error in GetVariables, did not return any results");
+ 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
+ 	    	{
+ 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
+ 	    	}
  	    	//DriverStation.reportError("Error in GetVariables, did not return any results", false);
  	    	
  	    	//Increment bad data counter
