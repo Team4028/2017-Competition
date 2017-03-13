@@ -327,8 +327,6 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Configure Logging
     	// =====================================
     	_dataLogger = GeneralUtilities.setupLogging("auton");
-    	
-    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.GEAR);
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -476,8 +474,6 @@ public class Robot extends IterativeRobot {
     	// Step 3: Configure Logging (if USB Memory Stick is present)
     	// =====================================    	
     	_dataLogger = GeneralUtilities.setupLogging("telop");
-    	
-    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
 	}
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------

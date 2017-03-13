@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * This class is a wrapper around the interface to RoboRealm over TCP Sockets hosted on a 
  * on-robot Kangaroo
+ * 
+ *     	//_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
  */
 public class RoboRealmClient 
 {
