@@ -13,6 +13,7 @@ public class RobotMap {
 	// ======================================
 	public static final int DRIVER_GAMEPAD_USB_PORT = 0;
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
+	public static final int ENGINEERING_GAMEPAD_USB_PORT = 2;
 	
 	// ======================================
 	// Constants for CAN Bus Addresses

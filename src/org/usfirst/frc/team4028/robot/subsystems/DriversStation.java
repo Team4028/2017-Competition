@@ -18,9 +18,9 @@ public class DriversStation extends BaseDriversStation {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public DriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort) {
+	public DriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort, int engineeringGamePadUsbPort) {
 		// call base class constructor
-		super(driverGamePadUsbPort, operatorGamePadUsbPort);
+		super(driverGamePadUsbPort, operatorGamePadUsbPort, engineeringGamePadUsbPort);
 	}
 	
 	/*

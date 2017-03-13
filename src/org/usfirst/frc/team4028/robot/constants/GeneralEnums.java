@@ -62,4 +62,23 @@ public class GeneralEnums {
 			return _cameraName;
 		}
 	}
+	
+	public enum ViSION_CAMERAS
+	{
+		UNDEFINED 	("N/A"),
+		GEAR		("GEAR"),
+		BOILER		("Boiler");
+		
+		private final String _cameraName;  
+		
+		ViSION_CAMERAS(String cameraName)
+		{
+			_cameraName = cameraName;
+		}
+		
+		public String get_cameraName()
+		{
+			return _cameraName;
+		}
+	}
 }

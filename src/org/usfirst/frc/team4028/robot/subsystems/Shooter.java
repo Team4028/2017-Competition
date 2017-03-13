@@ -60,6 +60,8 @@ public class Shooter
 
 	private double _currentSliderPosition;
 	private boolean _isShooterReentrantRunning = false;
+	private boolean _isShooterInfeedReentrantRunning = false;
+	private long _shooterInfeedReentrantRunningMsec;
 	
 	//define class level PID constants
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
@@ -75,7 +77,7 @@ public class Shooter
 	//define class level Actuator Constants
 	private static final double MAX_THRESHOLD_ACTUATOR = 0.7; 
 	private static final double MIN_THRESHOLD_ACTUATOR = 0.4;
-	private static final double CHANGE_INTERVAL_ACTUATOR = 0.02;
+	private static final double CHANGE_INTERVAL_ACTUATOR = 0.01;
 	private static final double INITIAL_POSITION_ACTUATOR = 0.65;
 	
 	//define class level Shooter Motor Constants
@@ -87,8 +89,8 @@ public class Shooter
 	
 	// define class level Ball Infeed Motor Constants
 	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
-	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
 	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = 0.7;
+	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
 
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
@@ -139,16 +141,19 @@ public class Shooter
 				
 		// Magic Carpet Motor
 		_magicCarpetMtr = new CANTalon(magicCarpetMtrCanBusAddr);
+		_magicCarpetMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		_magicCarpetMtr.enableBrakeMode(false);
 		_magicCarpetMtr.enableLimitSwitch(false, false);
 		
 		// High Speed Infeed Lane Motor
 		_highSpeedInfeedLaneMtr = new CANTalon(highSpeedInfeedLaneMtrCanBusAddr);
+		_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		_highSpeedInfeedLaneMtr.enableBrakeMode(false);
 		_highSpeedInfeedLaneMtr.enableLimitSwitch(false, false);
 		
 		// High Roller Motor
 		_highRollerMtr = new CANTalon(highRollerMtrCanBusAddr);
+		_highRollerMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		_highRollerMtr.enableBrakeMode(false);
 		_highRollerMtr.enableLimitSwitch(false, false);
 		
@@ -190,6 +195,8 @@ public class Shooter
 	{
 		RunMagicCarpet(0.0);
 		RunHighRoller(0.0);
+		
+		_isShooterInfeedReentrantRunning = false;
 	}
 	
 	public void ToggleShootBall()
@@ -331,7 +338,7 @@ public class Shooter
 	
 	public void ControlHighSpeedLane()
 	{
-		if(_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0))
+		if(_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0) && !_isShooterInfeedReentrantRunning)
 		{
 			// Priority 1: run in reverse if other infeed motors are runing in reverse
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND * -1.0);
@@ -363,6 +370,7 @@ public class Shooter
 		else
 		{
 			RunHighSpeedInfeedLane(0.0);
+
 		}
 	}
 	
@@ -373,14 +381,53 @@ public class Shooter
 	public void ToggleRunShooterFeeder()
 	{
 		// if current cmd is 0 or - if running in reverse, then start
-		if(_magicCarpetMtrTargetVBus != MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND)
+		//if(_magicCarpetMtrTargetVBus != MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND)
+		if(!_isShooterInfeedReentrantRunning
+				|| (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0)))
 		{
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
+			
+			_isShooterInfeedReentrantRunning = true;
+			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
 		}
 		else
 		{
 			FullShooterFeederStop();
+			
+			_isShooterInfeedReentrantRunning = false;
+		}
+	}
+	
+	public void RunShooterFeederReentrant()
+	{
+		if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 800)			// 800 ; 500
+		{
+			// 300 mSec fwd
+			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
+			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
+		}
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 840)	// 40; 20; 40
+		{
+			// 100 mSec pause
+			RunMagicCarpet(0.0);
+			RunHighRoller(0.0);
+		}
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 880)	// 40; 40
+		{
+			// 100 mSec rev
+			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
+			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
+		}
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 920)	// 40; 20; 40
+		{
+			// 100 mSec pause
+			RunMagicCarpet(0.0);
+			RunHighRoller(0.0);
+		}
+		else
+		{
+			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
 		}
 	}
 	
@@ -643,5 +690,10 @@ public class Shooter
 	public boolean get_isShooterReentrantRunning()
 	{
 		return _isShooterReentrantRunning;
+	}
+	
+	public boolean get_isShooterInfeedReentrantRunning()
+	{
+		return _isShooterInfeedReentrantRunning;
 	}
 }
