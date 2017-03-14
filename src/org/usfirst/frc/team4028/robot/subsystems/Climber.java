@@ -41,7 +41,7 @@ public class Climber
 	// define class level constants
 	private static final double CLIMBER_MAX_CURRENT = 20.0;
 	private static final double MAX_TIME_OVER_THRESHHOLD = 315;
-	public static final double CLIMBER_MOTOR_VBUS = -0.55;
+	public static final double CLIMBER_MOTOR_VBUS = -0.80;
 	
 	//============================================================================================
 	// constructors follow

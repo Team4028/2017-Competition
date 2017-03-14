@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
@@ -52,6 +53,16 @@ public class RoboRealmClient
  	private static final int EXPECTED_BLOB_COUNT = 2;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
+ 	
+ 	// =============================================================
+ 	// Camera Adjustment Factor
+ 	// =============================================================
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -4.25;
+ 	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
+ 	
+ 	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+ 	// =============================================================
+ 	
  	
  	// working variables raised to class level to reduce GC pressure inside update task
  	private Dimension _fovDimensions;
@@ -112,7 +123,18 @@ public class RoboRealmClient
     // this method changes the active roborealm camera / program
     public void ChangeToCamera(ViSION_CAMERAS visionCamera)
     {
-    	_currentVisionCameraName= visionCamera.get_cameraName();
+    	_currentVisionCameraName = visionCamera.get_cameraName();
+ 
+    	switch(visionCamera)
+    	{
+	    	case GEAR:
+	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+	    		break;
+	    		
+	    	case BOILER:
+	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
+	    		break;
+    	}
     	
     	if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
     		System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
@@ -174,19 +196,27 @@ public class RoboRealmClient
 	// update the Dashboard with any Vision specific data values
 	public void OutputToSmartDashboard()
 	{
-		//SmartDashboard.getBoolean("Vision:IsValid", get_isVisionDataValid());
+		String dashboardMsg = "";
 		
-		String targetAngle = "?";
+		if( get_isVisionDataValid()) {
+			dashboardMsg = "Camera= " + _currentVisionCameraName.toString() 
+							+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
+							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
+							+ " Blob Count= " + _newTargetRawData.BlobCount 
+							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
+		}
+		else {
+			dashboardMsg = "Vision DATA NOT VALID";
+		}
 		
-		//if(get_Angle() == 0)
-		//{
-		//	targetAngle = String.format("[%.0f RPM] %.0f RPM (%.2f%%) [%.0f%%]", 
-		//								-1*_stg1MtrTargetRPM, 
-		//								-1*getStg1ActualRPM(), 
-		//}
-		
-		//SmartDashboard.putString("Vision:AdjAngle", get_Angle());
+		SmartDashboard.getString("VIsion", dashboardMsg);		
 	} 	
+	
+	public void UpdateLogData(LogData logData)
+	{
+		logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
+		logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
+	}
 	
 	//=========================================================================
 	//	Task Executed By Timer
@@ -208,11 +238,11 @@ public class RoboRealmClient
  	    
  	    if (_vector==null)
  	    {
+ 	    	// write 1st 10 errors then every 50
  	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
  	    	{
  	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
  	    	}
- 	    	//DriverStation.reportError("Error in GetVariables, did not return any results", false);
  	    	
  	    	//Increment bad data counter
  	    	_badDataCounter += 1;
@@ -252,14 +282,16 @@ public class RoboRealmClient
  	    	_fovXCenterPoint = _fovDimensions.width / 2;
  	    	
  	    	// calc the target center point
- 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) - 4.25);
+ 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) + _cameraCalibrationFactor);
  	    	
  	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
  	    	// round to 2 decimal places
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
-    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees + " mSec=" + _newTargetRawData.ResponseTimeMSec
-    				+ " Blob Count= " + _newTargetRawData.BlobCount + " Is on Target= " + Boolean.toString(get_isInGearHangPosition()));
+    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees 
+    							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
+    							+ " Blob Count= " + _newTargetRawData.BlobCount 
+    							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
  	
  	    	//Reset the counter 
  	    	_badDataCounter = 0;

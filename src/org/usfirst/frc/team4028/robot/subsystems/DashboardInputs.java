@@ -94,8 +94,8 @@ public class DashboardInputs {
 		
 		_shooterCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
-		_shooterCamChooser.addDefault("s.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
-		_shooterCamChooser.addObject("cam1", GeneralEnums.CAMERA_NAMES.CAM1);
+		_shooterCamChooser.addObject("s.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
+		_shooterCamChooser.addDefault("cam1", GeneralEnums.CAMERA_NAMES.CAM1);
 		_shooterCamChooser.addObject("cam2", GeneralEnums.CAMERA_NAMES.CAM2);
 		_shooterCamChooser.addObject("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
 		
@@ -105,9 +105,9 @@ public class DashboardInputs {
 		
 		_climberCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
-		_climberCamChooser.addDefault("c.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
+		_climberCamChooser.addObject("c.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
 		_climberCamChooser.addObject("cam1", GeneralEnums.CAMERA_NAMES.CAM1);
-		_climberCamChooser.addObject("cam2", GeneralEnums.CAMERA_NAMES.CAM2);
+		_climberCamChooser.addDefault("cam2", GeneralEnums.CAMERA_NAMES.CAM2);
 		_climberCamChooser.addObject("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
 		
 		SmartDashboard.putData("Climber Camera Chooser", _climberCamChooser);
@@ -116,10 +116,10 @@ public class DashboardInputs {
 		
 		_driverCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
-		_driverCamChooser.addDefault("d.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
+		_driverCamChooser.addObject("d.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
 		_driverCamChooser.addObject("cam1", GeneralEnums.CAMERA_NAMES.CAM1);
 		_driverCamChooser.addObject("cam2", GeneralEnums.CAMERA_NAMES.CAM2);
-		_driverCamChooser.addObject("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
+		_driverCamChooser.addDefault("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
 		
 		SmartDashboard.putData("Driver Camera Chooser", _driverCamChooser);
 	}

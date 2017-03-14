@@ -768,6 +768,8 @@ public class Robot extends IterativeRobot {
     	
     	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
     	
+    	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+    	
     	SmartDashboard.putString("Robot Build", _buildMsg);
     }
          
@@ -793,6 +795,8 @@ public class Robot extends IterativeRobot {
 	    	if(_navX != null) 				{ _navX.UpdateLogData(logData); }
 	    	
 	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
+	    	
+	    	if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
     	
 	    	// now write to the log file
 	    	_dataLogger.WriteDataLine(logData);
