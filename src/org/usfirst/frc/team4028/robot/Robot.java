@@ -30,6 +30,7 @@ import org.usfirst.frc.team4028.robot.subsystems.Climber;
 import org.usfirst.frc.team4028.robot.subsystems.DashboardInputs;
 import org.usfirst.frc.team4028.robot.subsystems.DriversStation;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
+import org.usfirst.frc.team4028.robot.subsystems.LEDRingRelay;
 import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
@@ -56,6 +57,7 @@ public class Robot extends IterativeRobot {
 	private BallInfeed _ballInfeed;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
+	private LEDRingRelay _LEDRingRelay;
 	
 	private DashboardInputs _dashboardInputs;
 	private DriversStation _driversStation;
@@ -135,6 +137,8 @@ public class Robot extends IterativeRobot {
 												RobotMap.ENGINEERING_GAMEPAD_USB_PORT);
 	
 		_gearHandler = new GearHandler(RobotMap.GEAR_TILT_CAN_BUS_ADDR, RobotMap.GEAR_INFEED_CAN_BUS_ADDR);
+
+		_LEDRingRelay = new LEDRingRelay(RobotMap.LED_RING_RELAY_CHANNEL);
 		
 		_shooter = new Shooter(RobotMap.SHOOTER_STG1_CAN_BUS_ADDR, 
 								RobotMap.SHOOTER_STG2_CAN_BUS_ADDR,
