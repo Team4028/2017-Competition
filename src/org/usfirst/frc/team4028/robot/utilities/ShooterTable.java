@@ -89,12 +89,12 @@ public class ShooterTable {
 		int indexCounter = 0;
 		//======================================================================================
 		//									Position	Desc	Slider	Stg1  Stg2  Is Default?
-		//======================================================================================
-		table.add(new ShooterTableEntry(indexCounter++, "Pos A", .64, -3300, -3000, false));
-		table.add(new ShooterTableEntry(indexCounter++, "Pos B", .67, -3500, -3200, true));
-		table.add(new ShooterTableEntry(indexCounter++, "Pos C", .70, -3700, -3400, false));
-		//table.add(new ShooterTableEntry(indexCounter++, "Pos C",.65, -3600, -3750, true));
-		//table.add(new ShooterTableEntry(indexCounter++, "Pos D",.70, -3650, -3800, false));
+		//======================================================================================	
+		table.add(new ShooterTableEntry(indexCounter++, " 3ft", .40, -2800, -2600, false));
+		table.add(new ShooterTableEntry(indexCounter++, " 6ft", .57, -3000, -2700, false));
+		table.add(new ShooterTableEntry(indexCounter++, " 9ft", .62, -3200, -2900, false));
+		table.add(new ShooterTableEntry(indexCounter++, "12ft", .67, -3500, -3200, true));
+		table.add(new ShooterTableEntry(indexCounter++, "15ft", .70, -3850, -3550, false));
 		
 		return table;
 	}
