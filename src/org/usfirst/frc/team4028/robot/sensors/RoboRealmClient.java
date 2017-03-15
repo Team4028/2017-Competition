@@ -77,16 +77,16 @@ public class RoboRealmClient
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-    public RoboRealmClient(String kangarooIPv4Addr, int portNo) 
+    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int ledRelayDIOPortNo) 
     {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
     	
     	//Utilities.SimplePingTest(kangarooIPv4Addr);
-    	Utilities.RobustPortTest(kangarooIPv4Addr, portNo);
+    	Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
     	
     	// try to connect
-        if (!_rrAPI.connect(kangarooIPv4Addr, portNo))
+        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo))
         {
         	DriverStation.reportError("Could not connect to RoboRealm!", false);
         	System.out.println("====> Could not connect to RoboRealm!");
@@ -107,6 +107,9 @@ public class RoboRealmClient
 		// create a timer to fire events
 		_updaterTimer = new java.util.Timer();
 		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
+			
+		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
+		//TODO: create the relay object
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
@@ -124,7 +127,7 @@ public class RoboRealmClient
     public void ChangeToCamera(ViSION_CAMERAS visionCamera)
     {
     	_currentVisionCameraName = visionCamera.get_cameraName();
- 
+    	
     	switch(visionCamera)
     	{
 	    	case GEAR:
@@ -192,12 +195,26 @@ public class RoboRealmClient
         }
  	}
  	
+ 	public void TurnLEDsOn()
+ 	{
+ 		//TODO: turn in on
+ 	}
+ 	
+ 	public void TurnLEDsOff()
+ 	{
+ 		//TODO: turn in off
+ 	}
  	
 	// update the Dashboard with any Vision specific data values
 	public void OutputToSmartDashboard()
 	{
 		String dashboardMsg = "";
 		
+    	if(_currentVisionCameraName == null)
+    	{
+    		_currentVisionCameraName = "???";
+    	}
+    	
 		if( get_isVisionDataValid()) {
 			dashboardMsg = "Camera= " + _currentVisionCameraName.toString() 
 							+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
@@ -342,7 +359,9 @@ public class RoboRealmClient
     
     public boolean get_isVisionDataValid()
     {
-    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) && (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT))
+    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
+    			&& (_newTargetRawData != null)
+    			&& (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT))
     	{	
     		return true;
     	}

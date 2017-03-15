@@ -27,7 +27,7 @@ public class BallInfeed {
 	//======================================
 	//define class level constants
 	//=======================================
-	private static final double FUEL_INFEED_MOTOR_SPEED = -1.0;
+	//private static final double FUEL_INFEED_MOTOR_SPEED = -1.0;
 	
 	//============================================================================================
 	// constructors follow
@@ -50,20 +50,19 @@ public class BallInfeed {
 		_fuelInfeedMtr.set(0);						//stop motors	
 	}
 	
-	public void InfeedFuelAndExtendSolenoid() {
-		_fuelInfeedSolenoid.set(true);				//engage tilt
-		_fuelInfeedMtr.set(FUEL_INFEED_MOTOR_SPEED);
+	public void InfeedFuelAndExtendSolenoid(double percentVBusCmd) {
+		// run motor using joystick cmd
+		_fuelInfeedMtr.set(percentVBusCmd * -1.0);
+		
+		// if running fwd or reverse fire solenoid
+		if(percentVBusCmd != 0) {
+			_fuelInfeedSolenoid.set(true);			//extend Solenoid
+		}
+		else {
+			_fuelInfeedSolenoid.set(false);			//retract Solenoid
+		}
 	}
-	
-	public void InfeedNoSolenoid() {
-		//_fuelInfeedSolenoid.set(false);
-		_fuelInfeedMtr.set(FUEL_INFEED_MOTOR_SPEED);
-	}
-	
-	public void ToggleSolenoid() {
-		_fuelInfeedSolenoid.set(!_fuelInfeedSolenoid.get());
-	}
-	
+		
 	// update the Dashboard with any Climber specific data values
 	public void OutputToSmartDashboard() {
 		SmartDashboard.putBoolean("Is Fuel Infeed Tilt Extended", _fuelInfeedSolenoid.get());

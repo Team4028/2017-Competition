@@ -42,6 +42,8 @@ public class Climber
 	private static final double CLIMBER_MAX_CURRENT = 20.0;
 	private static final double MAX_TIME_OVER_THRESHHOLD = 315;
 	public static final double CLIMBER_MOTOR_VBUS = -0.80;
+	public static final double CLIMBER_MOTOR_HIGH_VBUS = -1.0;
+	public static final double CLIMBER_MOTOR_LOW_VBUS = -0.40;
 	
 	//============================================================================================
 	// constructors follow
@@ -63,18 +65,30 @@ public class Climber
 	// Methods follow
 	//============================================================================================
 	
+	// Simple single direction, 2 speed mode controlled by joystick
+	public void RunMotorUsingJoyStick(double joyStickCmd)
+	{
+		// push joystick up (0 => -1.0)
+		if(joyStickCmd < -0.5) {
+			// more than 1/2 way, climb @ high speed
+			_climberMtr.set(CLIMBER_MOTOR_HIGH_VBUS);
+		}
+		else if(joyStickCmd < -0.1) {
+			// more than 1/2 way, climb @ low speed
+			_climberMtr.set(CLIMBER_MOTOR_LOW_VBUS);
+		}
+		else {
+			_climberMtr.set(0.0);
+		}
+	}
+	
 	// This method starts the climber when the button is pressed
 	public void RunClimberReentrant()
 	{
 		RunMotor(CLIMBER_MOTOR_VBUS);
 		_isClimbing = true;
 	}
-	
-	public void RunMotorTest(double percentVBusCmd)
-	{
-		_climberMtr.set(percentVBusCmd);
-	}
-	
+		
 	// This is the main drive method
 	private void RunMotor(double percentVBusCmd)
 	{
