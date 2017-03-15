@@ -504,7 +504,9 @@ public class Robot extends IterativeRobot {
     			if(_driversStation.getIsOperator_SwapCamera_BtnJustPressed()) {
     				_switchableCameraServer.ChgToNextCamera();
     			}
-    			
+    			else if (_driversStation.getIsEngineering_SwapCamera_BtnJustPressed()) {
+    				_switchableCameraServer.ChgToNextCamera();
+    			}
 				//=====================
 		    	// Chassis Gear Shift
 				//=====================
@@ -530,6 +532,16 @@ public class Robot extends IterativeRobot {
 		    				&& (Math.abs(_driversStation.getDriver_SpinChassisLeft_JoystickCmd()) == 0.0)) {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getDriver_SpinChassisRight_JoystickCmd() * 0.75);
+		    	}
+		    	else if ((Math.abs(_driversStation.getEngineering_SpinChassisLeft_JoystickCmd()) > 0.0)
+	    				&& (Math.abs(_driversStation.getEngineering_SpinChassisRight_JoystickCmd()) == 0.0)) {
+		    		// spin left
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisLeft_JoystickCmd() * 0.75 * -1.0);
+		    	} 
+		    	else if ((Math.abs(_driversStation.getEngineering_SpinChassisRight_JoystickCmd()) > 0.0) 
+		    				&& (Math.abs(_driversStation.getEngineering_SpinChassisLeft_JoystickCmd()) == 0.0)) {
+		    		// spin right
+		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
 		    	else {
 		    		// full stop
@@ -560,25 +572,31 @@ public class Robot extends IterativeRobot {
     			else if (_driversStation.getIsOperator_MoveShooterSliderDown_BtnJustPressed()) {
     				_shooter.MoveActuatorDown();
     			}
+    			else if(_driversStation.getIsEngineering_MoveShooterSliderUp_BtnJustPressed()) {
+    				_shooter.MoveActuatorUp();
+    			} 
+    			else if (_driversStation.getIsEngineering_MoveShooterSliderDown_BtnJustPressed()) {
+    				_shooter.MoveActuatorDown();
+    			}
     			
     			//=====================
     			// Run Shooter Motors (FYI: High Speed Lane is controlled by these)
     			//=====================
 				// Stg 1 Bump Up / Down
-    			//if(_driversStation.getIsOperator_ShooterStg1StepRPMUp_BtnJustPressed()) {
-    			//	_shooter.BumpStg1MtrRPMUp();
-    			//}
-    			//else if (_driversStation.getIsOperator_ShooterStg1StepRPMDown_BtnJustPressed()) {
-    			//	_shooter.BumpStg1MtrRPMDown();
-				//}
+    			if(_driversStation.getIsEngineering_BumpStg1RPMUp_BtnJustPressed()) {
+    				_shooter.BumpStg1MtrRPMUp();
+    			}
+    			else if (_driversStation.getIsEngineering_BumpStg1RPMDown_BtnJustPressed()) {
+    				_shooter.BumpStg1MtrRPMDown();
+				}
 
     			// Stg 2 Bump Up / Down
-    			//if(_driversStation.getIsOperator_ShooterStg2StepRPMUp_BtnJustPressed()) {
-    			//	_shooter.BumpStg2MtrRPMUp();
-    			//}
-    			//else if (_driversStation.getIsOperator_ShooterStg2StepRPMDown_BtnJustPressed()) {
-    			//	_shooter.BumpStg2MtrRPMDown();
-				//}
+    			if(_driversStation.getIsEngineering_BumpStg2RPMUp_BtnJustPressed()) {
+    				_shooter.BumpStg2MtrRPMUp();
+    			}
+    			else if (_driversStation.getIsEngineering_BumpStg2RPMDown_BtnJustPressed()) {
+    				_shooter.BumpStg2MtrRPMDown();
+				}
     			//else {
     			//	_shooter.ControlHighSpeedLane();
     			//}
@@ -587,6 +605,9 @@ public class Robot extends IterativeRobot {
     			// Toggle Shooter Motors
     			//=====================
     			if(_driversStation.getIsOperator_ToggleShooterMotors_BtnJustPressed()) {
+    				_shooter.ToggleShooterMotors();
+    			}
+    			else if(_driversStation.getIsEngineering_ToggleShooterMotors_BtnJustPressed()) {
     				_shooter.ToggleShooterMotors();
     			}
     			else if (_shooter.get_isShooterMotorsReentrantRunning()) {
@@ -602,23 +623,41 @@ public class Robot extends IterativeRobot {
     			if(_driversStation.getIsOperator_RunShooterFeederInReverse_BtnPressed()){
     				_shooter.RunShooterFeederInReverse();
     			}
+    			
     			else if(_driversStation.getOperator_FireBall_BtnPressed()
     					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
     				// start motors on initial press
     				_shooter.ToggleRunShooterFeeder();
     			}
+    			else if(_driversStation.getEngineering_FireBall_BtnPressed()
+    					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
+    				// start motors on initial press
+    				_shooter.ToggleRunShooterFeeder();
+    			}
+    			
     			else if(_driversStation.getOperator_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// keep calling if still pressed
     				_shooter.RunShooterFeederReentrant();
     			}
+    			else if(_driversStation.getEngineering_FireBall_BtnPressed()
+    					&& _shooter.get_isShooterInfeedReentrantRunning()) {
+    				// keep calling if still pressed
+    				_shooter.RunShooterFeederReentrant();
+    			}
+    			
     			else if(!_driversStation.getOperator_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// if it was running and is no longer pressed
     				_shooter.ToggleRunShooterFeeder();
     			}
+    			else if(!_driversStation.getEngineering_FireBall_BtnPressed()
+    					&& _shooter.get_isShooterInfeedReentrantRunning()) {
+    				// if it was running and is no longer pressed
+    				_shooter.ToggleRunShooterFeeder();
+    			}
     			else {
-    				// we need tp shut off the motors if they were running in reverse and the reverse button was released
+    				// we need to shut off the motors if they were running in reverse and the reverse button was released
     				_shooter.CleanupRunShooterFeederInReverse();
     			}
     					

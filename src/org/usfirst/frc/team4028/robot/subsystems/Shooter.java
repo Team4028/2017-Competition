@@ -81,14 +81,14 @@ public class Shooter
 	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; //5.0; //4.0;//3.5; //0.0;//5; //6; //0.115;
 
 	//define class level Actuator Constants
-	private static final double MAX_THRESHOLD_ACTUATOR = 0.7; 
-	private static final double MIN_THRESHOLD_ACTUATOR = 0.4;
+	private static final double MAX_THRESHOLD_ACTUATOR = 0.80; //0.7; 
+	private static final double MIN_THRESHOLD_ACTUATOR = 0.35; //0.4;
 	private static final double CHANGE_INTERVAL_ACTUATOR = 0.01;
 	private static final double INITIAL_POSITION_ACTUATOR = 0.65;
 	
 	//define class level Shooter Motor Constants
 	private static final double MAX_SHOOTER_RPM = -4400;
-	private static final double MIN_SHOOTER_RPM = -3000;
+	private static final double MIN_SHOOTER_RPM = -2500;
 	private static final double SHOOTER_BUMP_RPM = 50;
 	private static final double FIRST_STAGE_MTR_DEFAULT_RPM = -3500;
 	private static final double SECOND_STAGE_MTR_DEFAULT_RPM = -3200;
@@ -249,9 +249,9 @@ public class Shooter
 		}
 		else {
 			// dynamically adjust speeds if current table entry is changed
-			RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
-			RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index) {
+				RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
+				RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 				// allow user to override slider if we have not chg to a new index in the shooter table
 				MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
 			}
@@ -305,16 +305,17 @@ public class Shooter
 		// only bump if not already at max
 		if(Math.abs(_stg1MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
 		{	
-			if(Math.abs(_stg1MtrTargetRPM) >  0)
-			{
+			//if(Math.abs(_stg1MtrTargetRPM) >  0)
+			//{
 				// if already turning, just bump
-				RunStg1(_stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
-			}
-			else
-			{
+			//_stg1MtrTargetRPM = _stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
+			RunStg1(_stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
+			//}
+			//else
+			//{
 				// if currently stopped, set to default speed
-				RunStg1(FIRST_STAGE_MTR_DEFAULT_RPM);
-			}
+			//	RunStg1(FIRST_STAGE_MTR_DEFAULT_RPM);
+			//}
 		}
 		else
 		{
@@ -328,6 +329,7 @@ public class Shooter
 		// only bump if not already at min
 		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
 		{
+			//_stg1MtrTargetRPM = _stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
 			RunStg1(_stg1MtrTargetRPM += SHOOTER_BUMP_RPM);
 		}
 		else
@@ -342,17 +344,18 @@ public class Shooter
 		// only bump if not already at max
 		if(Math.abs(_stg2MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
 		{	
-			if(Math.abs(_stg2MtrTargetRPM) >  0)
-			{
+			//if(Math.abs(_stg2MtrTargetRPM) >  0)
+			//{
+				//_stg2MtrTargetRPM = _stg2MtrTargetRPM -= SHOOTER_BUMP_RPM;
 				// if already turning, just bump
-				RunStg2(_stg2MtrTargetRPM -= SHOOTER_BUMP_RPM);
-				DriverStation.reportWarning("Bumping Up Stage 2", false);
-			}
-			else
-			{
+			RunStg2(_stg2MtrTargetRPM -= SHOOTER_BUMP_RPM);
+				//DriverStation.reportWarning("Bumping Up Stage 2", false);
+			//}
+			//else
+			//{
 				// if currently stopped, set to default speed
-				RunStg2(SECOND_STAGE_MTR_DEFAULT_RPM);
-			}
+			//	RunStg2(SECOND_STAGE_MTR_DEFAULT_RPM);
+			//}
 		}
 		else
 		{
@@ -366,6 +369,7 @@ public class Shooter
 		// only bump if not already at min
 		if(Math.abs(_stg2MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
 		{
+			//_stg2MtrTargetRPM = _stg2MtrTargetRPM += SHOOTER_BUMP_RPM;
 			RunStg2(_stg2MtrTargetRPM += SHOOTER_BUMP_RPM);
 		}
 		else
@@ -665,7 +669,7 @@ public class Shooter
 		}
 		
 		// currentShooterTableValues
-		currentShooterTableValues = String.format("[%d] %s | S:(%.3f) | M1:%d RPM | M2:%d RPM | %s", 
+		currentShooterTableValues = String.format("[%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
 				_currentShooterTableEntry.Index,
 				suffix,
 				_currentShooterTableEntry.SliderPosition,

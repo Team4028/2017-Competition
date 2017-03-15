@@ -164,12 +164,12 @@ public class DriversStation extends BaseDriversStation {
 		return super.getDriverRightXAxisCmd();
 	}
 
-	// Gear Infeed
+	// Chassis Spin Left
 	public double getDriver_SpinChassisLeft_JoystickCmd() {
 		return super.getDriverLeftTriggerCmd();
 	}
 	
-	// Gear Outfeed
+	// Chassis Spin Right
 	public double getDriver_SpinChassisRight_JoystickCmd() {
 		return super.getDriverRightTriggerCmd();
 	}
@@ -243,6 +243,75 @@ public class DriversStation extends BaseDriversStation {
 		// make this act like a button
 		return (super.getOperatorRightTriggerCmd() > 0.1);
 	}
+	
+	// =========================================================================================================
+	// ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	
+	// =========================================================================================================
+	
+	// =====================================
+	// === engineering Just Pressed buttons ===
+	// =====================================
+	
+	// Stg 1 Bump RPM UP
+	public boolean getIsEngineering_BumpStg1RPMUp_BtnJustPressed() {
+		return super.getIsEngineeringBackBtnJustPressed();
+	}
+	
+	// Stg 1 Bump RPM Down
+	public boolean getIsEngineering_BumpStg1RPMDown_BtnJustPressed() {
+		return super.getIsEngineeringLeftThumbstickBtnJustPressed();
+	}
+	
+	// Stg 2 Bump RPM UP
+	public boolean getIsEngineering_BumpStg2RPMUp_BtnJustPressed() {
+		return super.getIsEngineeringStartBtnJustPressed();
+	}
+	
+	// Stg 1 Bump RPM Down
+	public boolean getIsEngineering_BumpStg2RPMDown_BtnJustPressed() {
+		return super.getIsEngineeringRightThumbstickBtnJustPressed();
+	}
+	
+	// Slider Up
+	public boolean getIsEngineering_MoveShooterSliderUp_BtnJustPressed() {
+		return super.getIsEngineeringYellowBtnYJustPressed();
+	}
+	
+	// Slider Down
+	public boolean getIsEngineering_MoveShooterSliderDown_BtnJustPressed() {
+		return super.getIsEngineeringRedBtnBJustPressed();
+	}
+	
+	// Toggle Shooter Motors
+	public boolean getIsEngineering_ToggleShooterMotors_BtnJustPressed() {
+		return super.getIsEngineeringGreenBtnAJustPressed();
+	}
+	
+	// Fire Ball
+	public boolean getEngineering_FireBall_BtnPressed() {
+		// make this act like a button
+		return (super.getIsEngineeringRightBumperBtnPressed());
+	}
+	
+	// Camera Swap
+	public boolean getIsEngineering_SwapCamera_BtnJustPressed() {
+		return super.getIsEngineeringBlueBtnXJustPressed();
+	}
+	
+	// Joysticks
+	
+	// Chassis Spin Left
+	public double getEngineering_SpinChassisLeft_JoystickCmd() {
+		return super.getEngineeringLeftTriggerCmd();
+	}
+	
+	// Chassis Spin Right
+	public double getEngineering_SpinChassisRight_JoystickCmd() {
+		return super.getEngineeringRightTriggerCmd();
+	}
+	
+
+	
 	//============================================================================================
 	// Methods follow
 	//============================================================================================

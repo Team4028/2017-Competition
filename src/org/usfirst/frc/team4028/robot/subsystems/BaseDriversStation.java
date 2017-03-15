@@ -226,7 +226,7 @@ abstract class BaseDriversStation {
 	protected boolean getIsOperatorRightThumbstickBtnJustPressed() {
 		return (_currentValues.getIsOperatorRightThumbstickPressed() 
 				&& !_previousValues.getIsOperatorRightThumbstickPressed());
-	}
+	}	
 	
 	//Instantaneous Operator Buttons
 	protected boolean getIsOperatorGreenBtnAPressed() {
@@ -260,6 +260,96 @@ abstract class BaseDriversStation {
 	protected boolean getIsOperatorStartBtnPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed());
 	}
+		
+	//Instantaneous Engineering Buttons
+	protected boolean getIsEngineeringGreenBtnAPressed() {
+		return(_currentValues.getIsEngineeringGreenBtnAPressed());
+	}
+	
+	protected boolean getIsEngineeringRedBtnBPressed() {
+		return(_currentValues.getIsEngineeringRedBtnBPressed());
+	}
+	
+	protected boolean getIsEngineeringBlueBtnXPressed() {
+		return(_currentValues.getIsEngineeringBlueBtnXPressed());
+	}
+	
+	protected boolean getIsEngineeringYellowBtnYPressed() {
+		return(_currentValues.getIsEngineeringYellowBtnYPressed());
+	}
+
+	protected boolean getIsEngineeringLeftBumperBtnPressed() {
+		return(_currentValues.getIsEngineeringLeftBumperBtnPressed());
+	}
+	
+	protected boolean getIsEngineeringRightBumperBtnPressed() {
+		return(_currentValues.getIsEngineeringRightBumperBtnPressed());
+	}
+
+	protected boolean getIsEngineeringBackBtnPressed() {
+		return(_currentValues.getIsEngineeringBackBtnPressed());
+	}
+
+	protected boolean getIsEngineeringStartBtnPressed() {
+		return (_currentValues.getIsEngineeringStartBtnPressed());
+	}
+	
+	// === engineering just pressed  buttons ===============================================
+	protected boolean getIsEngineeringGreenBtnAJustPressed() {
+		return(_currentValues.getIsEngineeringGreenBtnAPressed()
+    				&& !_previousValues.getIsEngineeringGreenBtnAPressed());
+	}
+	
+	protected boolean getIsEngineeringRedBtnBJustPressed() {
+		return(_currentValues.getIsEngineeringRedBtnBPressed()
+    				&& !_previousValues.getIsEngineeringRedBtnBPressed());
+	}
+	
+	protected boolean getIsEngineeringBlueBtnXJustPressed() {
+		return(_currentValues.getIsEngineeringBlueBtnXPressed()
+    				&& !_previousValues.getIsEngineeringBlueBtnXPressed());
+	}
+	
+	protected boolean getIsEngineeringYellowBtnYJustPressed() {
+		return(_currentValues.getIsEngineeringYellowBtnYPressed()
+    				&& !_previousValues.getIsEngineeringYellowBtnYPressed());
+	}
+
+	protected boolean getIsEngineeringLeftBumperBtnJustPressed() {
+		return(_currentValues.getIsEngineeringLeftBumperBtnPressed()
+    				&& !_previousValues.getIsEngineeringLeftBumperBtnPressed());
+	}
+	
+	protected boolean getIsEngineeringRightBumperBtnJustPressed() {
+		return(_currentValues.getIsEngineeringRightBumperBtnPressed()
+    				&& !_previousValues.getIsEngineeringRightBumperBtnPressed());
+	}
+
+	protected boolean getIsEngineeringBackBtnJustPressed() {
+		return(_currentValues.getIsEngineeringBackBtnPressed()
+    				&& !_previousValues.getIsEngineeringBackBtnPressed());
+	}
+
+	protected boolean getIsEngineeringStartBtnJustPressed() {
+		return (_currentValues.getIsEngineeringStartBtnPressed()
+    				&& !_previousValues.getIsEngineeringStartBtnPressed());
+	}
+	
+	protected boolean getIsEngineeringPovUpBtnJustPressed() {
+		return (_currentValues.getIsEngineeringPovBtnPressed()
+    				&& !_previousValues.getIsEngineeringPovBtnPressed());
+	}
+	
+	protected boolean getIsEngineeringLeftThumbstickBtnJustPressed() {
+		return (_currentValues.getIsEngineeringLeftThumbstickPressed()
+				&& !_previousValues.getIsEngineeringLeftThumbstickPressed());
+	}
+	
+	protected boolean getIsEngineeringRightThumbstickBtnJustPressed() {
+		return (_currentValues.getIsEngineeringRightThumbstickPressed() 
+				&& !_previousValues.getIsEngineeringRightThumbstickPressed());
+	}
+	
 	
 	// === driver joysticks ===============================================
 	protected double getDriverLeftXAxisCmd() {
@@ -309,6 +399,31 @@ abstract class BaseDriversStation {
 
 	protected double getOperatorRightYAxisCmd() {
 		return _currentValues.getOperatorRightYAxisCmd();
+	}
+	
+	// === engineering joysticks ===============================================
+	protected double getEngineeringLeftXAxisCmd() {
+		return _currentValues.getEngineeringLeftXAxisCmd();
+	}
+	
+	protected double getEngineeringLeftYAxisCmd() {
+		return _currentValues.getEngineeringLeftYAxisCmd();
+	}
+
+	protected double getEngineeringLeftTriggerCmd() {
+		return _currentValues.getEngineeringLeftTriggerCmd();
+	}
+
+	protected double getEngineeringRightTriggerCmd() {
+		return _currentValues.getEngineeringRightTriggerCmd();
+	}
+
+	protected double getEngineeringRightXAxisCmd() {
+		return _currentValues.getEngineeringRightXAxisCmd();
+	}
+
+	protected double getEngineeringRightYAxisCmd() {
+		return _currentValues.getEngineeringRightYAxisCmd();
 	}
 	
 	/************************************************************
