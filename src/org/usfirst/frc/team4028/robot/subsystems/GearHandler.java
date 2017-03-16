@@ -76,7 +76,7 @@ public class GearHandler
 	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.25;   //set
 	private static final long GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC = 5000;
 	private String _gearTiltState;
-
+	
 	private long _gearTiltAxisStateStartTime;
 	private GEAR_TILT_HOMING_STATE _gearTiltAxisZeroCurrentState;
 	private GEAR_TILT_MOVE_LAST_TARGET_POSITION _gearTiltMoveLastTargetPosition;
