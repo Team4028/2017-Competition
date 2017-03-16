@@ -252,7 +252,7 @@ public class RoboRealmClient
  	    	_fovXCenterPoint = _fovDimensions.width / 2;
  	    	
  	    	// calc the target center point
- 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) - 4.25);
+ 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) + 3.0);
  	    	
  	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
  	    	// round to 2 decimal places

@@ -7,8 +7,8 @@ public class PIDCalculator {
 	private double _p; // "proportional" term
 	private double _i; // "integral" term
 	private double _d; // "derivative" term
-	private double _maximumOutput = 0.75; 
-	private double _minimumOutput = -0.75;
+	private double _maximumOutput = 0.6; 
+	private double _minimumOutput = -0.6;
 	private double _maximumInput = 180.0;
 	private double _minimumInput = -180.0;
 	private boolean _isContinuous = false; // do the endpoints wrap around e.g. absolute encoder

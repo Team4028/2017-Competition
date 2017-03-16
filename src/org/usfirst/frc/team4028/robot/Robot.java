@@ -148,6 +148,7 @@ public class Robot extends IterativeRobot {
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT);
+		_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.GEAR);
 		
 		// telop Controller follow
 		_chassisAutoAim = new ChassisAutoAimController(_chassis, _navX);
@@ -674,18 +675,21 @@ public class Robot extends IterativeRobot {
     	    	// =====================================
     	    	// ====> Enter Climb Mode
     	    	// =====================================
-    	    	//if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {		// TODO: put this back in
+    	    	if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {		// TODO: put this back in
     	    		//_teleopMode = TELEOP_MODE.CLIMBING;
     	    		//_climber.RunClimberReentrant();
-    	    	//}
+    	    		_teleopMode = TELEOP_MODE.AUTO_AIM;
+    	    		_chassisAutoAim.zeroVisionError();
+    	    	}
     	    	
-    			
+    			/*
     	    	if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
     	    		_climber.RunMotorTest(Climber.CLIMBER_MOTOR_VBUS);
     	    	}
     	    	else {
     	    		_climber.RunMotorTest(0.0);
     	    	}
+    	    	*/
     	    	
     	    	
 		      	break;	// end of _telopMode = STANDARD
@@ -721,8 +725,8 @@ public class Robot extends IterativeRobot {
     			break;
     			
     		case AUTO_AIM:
-    			if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
-    				_chassisAutoAim.update();
+    			if(_driversStation.getIsDriver_Climb_ButtonPressed()) {
+    				_chassisAutoAim.updateVision(-1.0 * _roboRealmClient.get_Angle());
     			} else {
     				_teleopMode = TELEOP_MODE.STANDARD;
     			}

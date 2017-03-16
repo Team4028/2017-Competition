@@ -34,12 +34,12 @@ public class TrajectoryDriveController {
 	private double _direction;
 	private double _heading;
 	private double _kTurnGyro;
-	private double _kTurnVision = -0.015;
+	private double _kTurnVision = -0.006;
 	private double _leftPower;
 	private double _rightPower;
 	private double _setVisionError;
 	private double _turn;
-	private double _visionTurnThreshold = 0.07;
+	private double _visionTurnThreshold = 0.15;
 	private double[][] _leftMotionProfile;
 	private double[][] _rightMotionProfile;
 	private boolean _isAutoStopEnabled = false;
@@ -227,6 +227,12 @@ public class TrajectoryDriveController {
 					_setVisionError = _currentVisionError;
 				}
 				_turn = _kTurnVision * _setVisionError;
+				if (_turn > _visionTurnThreshold) {
+					_turn = _visionTurnThreshold;
+				} else if (_turn < (-1.0 * _visionTurnThreshold)) {
+					_turn = -1.0 * _visionTurnThreshold;
+				} else {
+				}
 			
 			} else {
 				//setIsFeedbackDisabled(false);
@@ -235,12 +241,6 @@ public class TrajectoryDriveController {
 				double observedHeading = _navX.getYaw();
 
 				_turn = _kTurnGyro * (observedHeading - goalHeadingInDegrees);
-				if (_turn > _visionTurnThreshold) {
-					_turn = _visionTurnThreshold;
-				} else if (_turn < (-1.0 * _visionTurnThreshold)) {
-					_turn = -1.0 * _visionTurnThreshold;
-				} else {
-				}
 			}
 			
 			if(_isAutoStopEnabled && _roboRealm.get_isVisionDataValid()) {

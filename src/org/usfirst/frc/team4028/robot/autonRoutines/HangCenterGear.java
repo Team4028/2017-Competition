@@ -90,7 +90,7 @@ public class HangCenterGear {
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
-      			if (_trajController.getCurrentSegment() == 40) {
+      			if (_trajController.getCurrentSegment() == 1) {
       				_trajController.isVisionTrackingEnabled(true);
       			}
       			if (_trajController.onTarget()) {
