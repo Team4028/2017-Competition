@@ -613,9 +613,9 @@ public class Robot extends IterativeRobot {
     			else if (_shooter.get_isShooterMotorsReentrantRunning()) {
     				_shooter.ShooterMotorsReentrant();
     			}
-    			else {
-    				_shooter.ControlHighSpeedLane();
-    			}
+    			//else {
+    			//	_shooter.ControlHighSpeedLane();
+    			//}
     			 			
     			//=====================
     			// Shooter Feeder (Magic Carpet & High Roller) Motors controlled as a unit
