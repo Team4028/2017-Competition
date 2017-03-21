@@ -64,8 +64,8 @@ public class TrajectoryDriveController {
 			_rightFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
 			_kTurnGyro = -0.01;
 		} else {
-			_leftFollower.configure(0.25,  0.0,  0.0,  0.29,  0.0);
-			_rightFollower.configure(0.25,  0.0,  0.0,  0.29,  0.0);
+			_leftFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
+			_rightFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
 			_kTurnGyro = -0.01;
 		}
 	}
@@ -108,7 +108,7 @@ public class TrajectoryDriveController {
 				
 			case CENTER_GEAR:
 				_leftMotionProfile = CenterGearTrajectory.LeftPoints;
-				_rightMotionProfile = CenterGearTrajectory.RightPoints;
+				_rightMotionProfile = CenterGearTrajectory.LeftPoints;
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;

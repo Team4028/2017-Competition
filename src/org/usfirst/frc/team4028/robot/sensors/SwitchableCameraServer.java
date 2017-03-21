@@ -201,24 +201,28 @@ public class SwitchableCameraServer
 	    	{
 	    		cam0 = new UsbCamera("cam0", 0); 				
 	    		cvSink0 = CameraServer.getInstance().getVideo(cam0); 
+	    		cvSink0.setEnabled(false);
 	    	}
 	    	
 	    	if(_isCam1Present)
 	    	{
 	    		cam1 = new UsbCamera("cam1",  1); 	
 	    		cvSink1 = CameraServer.getInstance().getVideo(cam1);
+	    		cvSink1.setEnabled(false);
 	    	}
 	    	
 		    if(_isCam2Present)
 		    {
 		    	cam2 = new UsbCamera("cam2", 2); 
 		    	cvSink2 = CameraServer.getInstance().getVideo(cam2);
+		    	cvSink2.setEnabled(false);
 		    }
 		    
 		    if(_isCam3Present)
 		    {
 		    	cam3 = new UsbCamera("cam3", 3); 
 		    	cvSink3 = CameraServer.getInstance().getVideo(cam3);
+		    	cvSink3.setEnabled(false);
 		    }
  
             // create an output stream
@@ -277,7 +281,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		            		cvSink0.grabFrame(image);
+		            		cvSink0.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}
@@ -323,7 +327,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		            		cvSink1.grabFrame(image);
+		        			cvSink1.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}
@@ -368,7 +372,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		            		cvSink2.grabFrame(image);
+		        			cvSink2.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}
@@ -413,7 +417,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		            		cvSink3.grabFrame(image);
+		        			cvSink3.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}

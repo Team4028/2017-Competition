@@ -91,11 +91,11 @@ public class HangCenterGear {
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
       			if (_trajController.getCurrentSegment() == 1) {
-      				_trajController.isVisionTrackingEnabled(true);
+      				//_trajController.isVisionTrackingEnabled(true);
       			}
       			if (_trajController.onTarget()) {
       				_trajController.disable();
-      				_trajController.isVisionTrackingEnabled(false);
+      				//_trajController.isVisionTrackingEnabled(false);
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
