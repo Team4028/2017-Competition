@@ -174,6 +174,7 @@ public class DriversStation extends BaseDriversStation {
 		return super.getDriverRightTriggerCmd();
 	}
 	
+	
 	// =========================================================================================================
 	// OPERATOR		OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	
 	// =========================================================================================================
@@ -243,6 +244,7 @@ public class DriversStation extends BaseDriversStation {
 		// make this act like a button
 		return (super.getOperatorRightTriggerCmd() > 0.1);
 	}
+	
 	
 	// =========================================================================================================
 	// ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	ENGINEERING	
@@ -322,4 +324,17 @@ public class DriversStation extends BaseDriversStation {
 	
 	public void UpdateLogData(LogData logData) {
 	}
+	
+	// Vibrate Driver Controller
+	public void setDriverVibrateOn(boolean isVibrating){
+	}
+	
+	// Vibrate Operator Controller
+	public void setOperatorVibrateOn(boolean isVibrating){
+	}
+	
+	// Vibrate Engineering Controller
+	public void setEngineeringVibrateOn(boolean isVibrating){
+	}
+	
 }
