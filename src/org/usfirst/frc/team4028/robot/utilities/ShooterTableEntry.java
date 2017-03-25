@@ -4,6 +4,7 @@ public class ShooterTableEntry {
 
 	// define class level working variables
 	public final int Index;
+	public final int DistanceInInches;
 	public final String Description;
 	public final double SliderPosition;
 	public final int Stg1MotorRPM;
@@ -14,9 +15,10 @@ public class ShooterTableEntry {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public ShooterTableEntry(int index, String description, double sliderPosition, int stg1MotorRPM, int stg2MotorRPM, boolean isDefault)
+	public ShooterTableEntry(int index, int distanceInInches, String description, double sliderPosition, int stg1MotorRPM, int stg2MotorRPM, boolean isDefault)
 	{
 		Index = index;
+		DistanceInInches = distanceInInches;
 		Description = description;
 		SliderPosition = sliderPosition;
 		Stg1MotorRPM = stg1MotorRPM;
