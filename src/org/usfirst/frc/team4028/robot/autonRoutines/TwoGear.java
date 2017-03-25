@@ -58,13 +58,13 @@ public class TwoGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TwoGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
+	public TwoGear(GearHandler gearHandler, Chassis chassis, ChassisAutoAimController autoAim, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_chassis = chassis;
 		_navX = navX;
 		_hangGearController = hangGear;
-		_autoAim = new ChassisAutoAimController(_chassis, _navX);
+		_autoAim = autoAim;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}

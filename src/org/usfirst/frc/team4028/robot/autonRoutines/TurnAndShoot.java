@@ -25,7 +25,6 @@ public class TurnAndShoot {
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
 	private Chassis _chassis;
-	private NavXGyro _navX;
 	private TrajectoryDriveController _trajController;
 	private ChassisAutoAimController _autoAim;
 	
@@ -38,13 +37,12 @@ public class TurnAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TurnAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
+	public TurnAndShoot(GearHandler gearHandler, Chassis chassis, ChassisAutoAimController autoAim, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_chassis = chassis;
-		_navX = navX;
-		_autoAim = new ChassisAutoAimController(_chassis, _navX);
+		_autoAim = autoAim;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}

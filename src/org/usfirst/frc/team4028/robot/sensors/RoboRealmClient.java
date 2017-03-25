@@ -52,15 +52,17 @@ public class RoboRealmClient
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
- 	private static final int EXPECTED_ARRAY_SIZE = 8; //7;
- 	private static final int EXPECTED_BLOB_COUNT = 2;
+
+ 	private static final int EXPECTED_ARRAY_SIZE = 8;
+ 	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
+ 	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
  	
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -10.0;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -12.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
@@ -78,6 +80,7 @@ public class RoboRealmClient
  	private int _badDataCounter;
  	private long _lastDebugWriteTimeMSec;
  	private final Object _targetDataMutex;
+ 	private int _expectedBlobCount;
  	
 	//============================================================================================
 	// constructors follow
@@ -115,6 +118,7 @@ public class RoboRealmClient
 			
 		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
 		//TODO: create the relay object
+		//ChangeToCamera(ViSION_CAMERAS.BOILER);
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
@@ -139,10 +143,12 @@ public class RoboRealmClient
     	{
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
 	    		break;
 	    		
 	    	case BOILER:
 	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
 	    		break;
     	}
     	
@@ -335,6 +341,7 @@ public class RoboRealmClient
 	 	    	//Increment bad data counter
 	 	    	_badDataCounter += 1;
 	 	    }
+
  	    }
  	} 
  	
@@ -377,13 +384,14 @@ public class RoboRealmClient
     	synchronized (_targetDataMutex) {
 	    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
 	    			&& (_newTargetRawData != null)
-	    			&& (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT)) {	
+	    			&& (_newTargetRawData.BlobCount == _expectedBlobCount)) {	
 	    		return true;
 	    	}
 	    	
 	    	else {
 	    		return false;
 	    	}
+
     	}
     }
     

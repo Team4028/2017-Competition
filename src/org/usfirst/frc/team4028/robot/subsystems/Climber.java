@@ -80,6 +80,8 @@ public class Climber
 		else {
 			_climberMtr.set(0.0);
 		}
+		
+		
 	}
 	
 	// This method starts the climber when the button is pressed
