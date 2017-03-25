@@ -222,14 +222,21 @@ public class Shooter
 		}
 	}
 	
+	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry)
+	{
+		_currentShooterTableEntry = shooterTableEntry;
+		_lastShooterTableEntry = shooterTableEntry;
+		return ShooterMotorsReentrant();
+	}
+	
 	public boolean ShooterMotorsReentrant()
 	{
 		if(Math.abs(_stg2MtrTargetRPM) == 0)
 		{
 			RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 			MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
-			//
-			////BumpStg2MtrRPMUp();
+			
+			//BumpStg2MtrRPMUp();
 			_isShooterMotorsReentrantRunning = true;
 		}
 		else if(Math.abs(getStg2RPMErrorPercent()) > 7.5 )
@@ -248,15 +255,21 @@ public class Shooter
 			// allow time to spinup
 			_isShooterMotorsReentrantRunning = true;
 		}
-		else {
+		else 
+		{
 			// dynamically adjust speeds if current table entry is changed
-			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index) {
+			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index)
+			{
 				RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 				RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 				// allow user to override slider if we have not chg to a new index in the shooter table
 				MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
 			}
 			//ControlHighSpeedLane();
+			else
+			{
+				_isShooterMotorsReentrantRunning = false;
+			}
 		}
 		
 		// cache last so we can tell if we changed
@@ -285,6 +298,11 @@ public class Shooter
 		DriverStation.reportWarning("Stage 2 Target RPM = " + targetRPM, false);
 		
 		//ControlHighSpeedLane();
+	}
+	
+	public void RunShooter (double stg1RPM, double stg2RPM, double sliderPosition)
+	{
+		
 	}
 	
 	//============================================================================================
