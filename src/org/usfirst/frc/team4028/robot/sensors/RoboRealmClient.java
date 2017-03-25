@@ -57,7 +57,7 @@ public class RoboRealmClient
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -4.25;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -10.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;

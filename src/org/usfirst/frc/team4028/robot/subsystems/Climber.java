@@ -69,11 +69,11 @@ public class Climber
 	public void RunMotorUsingJoyStick(double joyStickCmd)
 	{
 		// push joystick up (0 => -1.0)
-		if(joyStickCmd < -0.5) {
+		if(joyStickCmd < -0.8) {
 			// more than 1/2 way, climb @ high speed
 			_climberMtr.set(CLIMBER_MOTOR_HIGH_VBUS);
 		}
-		else if(joyStickCmd < -0.1) {
+		else if(joyStickCmd < -0.05) {
 			// more than 1/2 way, climb @ low speed
 			_climberMtr.set(CLIMBER_MOTOR_LOW_VBUS);
 		}

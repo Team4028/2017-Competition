@@ -55,14 +55,14 @@ public class DashboardInputs {
 		
 		_autonModeChooser.addObject("Do Nothing", GeneralEnums.AUTON_MODE.DO_NOTHING);
 		_autonModeChooser.addObject("Cross the Base Line", GeneralEnums.AUTON_MODE.CROSS_BASE_LINE);
-		_autonModeChooser.addObject("Hang Gear on Boiler Side", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR);
-		_autonModeChooser.addObject("Hang Gear on the Boiler Side and Shoot", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR_AND_SHOOT);
-		_autonModeChooser.addDefault("Hang Gear in Center", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR);
-		_autonModeChooser.addObject("Hang Gear in Center and Shoot", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR_AND_SHOOT);
-		_autonModeChooser.addObject("Hang Gear on Retrieval Side", GeneralEnums.AUTON_MODE.HANG_RETRIEVAL_GEAR);
-		_autonModeChooser.addObject("Hit the Hopper and Shoot", GeneralEnums.AUTON_MODE.HIT_HOPPER);
-		_autonModeChooser.addObject("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
-		_autonModeChooser.addObject("Two Gears", GeneralEnums.AUTON_MODE.TWO_GEAR);
+		_autonModeChooser.addObject("Right Side Gear", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR);
+		//_autonModeChooser.addObject("Hang Gear on the Boiler Side and Shoot", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR_AND_SHOOT);
+		_autonModeChooser.addDefault("Center Gear", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR);
+		//_autonModeChooser.addObject("Hang Gear in Center and Shoot", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR_AND_SHOOT);
+		_autonModeChooser.addObject("Left Side Gear", GeneralEnums.AUTON_MODE.HANG_RETRIEVAL_GEAR);
+		//_autonModeChooser.addObject("Hit the Hopper and Shoot", GeneralEnums.AUTON_MODE.HIT_HOPPER);
+		//_autonModeChooser.addObject("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
+		//_autonModeChooser.addObject("Two Gears", GeneralEnums.AUTON_MODE.TWO_GEAR);
 		
 		SmartDashboard.putData("Auton Mode Chooser", _autonModeChooser);
 		

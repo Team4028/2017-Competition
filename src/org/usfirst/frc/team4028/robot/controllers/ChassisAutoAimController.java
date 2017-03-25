@@ -10,7 +10,7 @@ public class ChassisAutoAimController {
 	PIDCalculator _autoAimPID;
 	Chassis _chassis;
 	NavXGyro _navX;
-	double _kp = 0.11;
+	double _kp = 0.05;
 	double _ki = 0.0;
 	double _kd = 0.0;
 	double _setError = 0.0;
@@ -33,7 +33,7 @@ public class ChassisAutoAimController {
 	
 	public void loadNewVisionTarget(double angle) {
 		_autoAimPID.reset();
-		_autoAimPID.setSetpoint(_navX.getYaw() + angle);
+		_autoAimPID.setSetpoint(angle);
 	}
 	
 	public void update() {
@@ -44,10 +44,10 @@ public class ChassisAutoAimController {
 	public void updateVision(double currentError) {
 		if (_setError != currentError) {
 			_setError = currentError;
-			_autoAimPID.setSetpoint(_navX.getYaw() + _setError);
+			_autoAimPID.setSetpoint(_setError);
 		}
 		
-		double motorOutput = _autoAimPID.calculate(_navX.getYaw());
+		double motorOutput = _autoAimPID.calculate(0.0);
 		_chassis.TankDrive(-motorOutput, motorOutput);
 	}
 	

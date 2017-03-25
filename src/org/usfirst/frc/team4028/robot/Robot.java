@@ -34,9 +34,6 @@ import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
-import edu.wpi.cscore.MjpegServer;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -161,19 +158,6 @@ public class Robot extends IterativeRobot {
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
-		/*_server = new MjpegServer ("Real Switcher", 1181);
-		
-		_cam0 = new UsbCamera("cam0", 0);
-		_cam0.setResolution(320, 240);
-		_cam0.setFPS(12);
-		
-		_cam1 = new UsbCamera("cam1", 1);
-		_cam1.setResolution(320, 240);
-		_cam1.setFPS(12);
-		
-		_server.setSource(_cam0);
-		_isCamera0 = true;*/
-			
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
 												RobotMap.LED_RINGS_RELAY_DIO_PORT);
@@ -276,9 +260,7 @@ public class Robot extends IterativeRobot {
     	// =====================================
 		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
-
     	_autonMode = _dashboardInputs.get_autonMode();
-    	//_autonMode = AUTON_MODE.HIT_HOPPER;
 
     	// =====================================
 		// Step 2.1: Create the correct auton routine
@@ -347,10 +329,10 @@ public class Robot extends IterativeRobot {
     	//Step 2.2
     	//Set the Proper Cameras for this match
     	//==========================================================
-    	_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
+    	/*_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
     	_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
     	_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
-    	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());
+    	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());*/
     	
     	// =====================================
     	// Step 3: Optionally Configure Logging
@@ -482,7 +464,6 @@ public class Robot extends IterativeRobot {
     	
     	// #### Cameras ####
     	// set to default camera
-    	//_server.setSource(_cam0);
     	//_switchableCameraServer.ChgToCamera(RobotMap.BALL_INFEED_CAMERA_NAME);
     	
     	// #### Telop Controller ####
@@ -495,10 +476,10 @@ public class Robot extends IterativeRobot {
     	//Step 2
     	//Set the Proper Cameras for this match
     	//==========================================================
-    	//_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
-    	//_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
-    	//_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
-    	//_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());
+    	/*_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
+    	_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
+    	_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
+    	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());*/
     	
     	// =====================================
     	// Step 3: Configure Logging (if USB Memory Stick is present)
@@ -520,7 +501,8 @@ public class Robot extends IterativeRobot {
     	// Step 1: execute different steps based on current "telop mode"
     	// =====================================
     	switch (_teleopMode) {
-    		case STANDARD:	   
+    		case STANDARD:	  
+    			//DriverStation.reportError(Double.toString(_navX.getYaw()), false);
     			//===========================================================================
     			//Switchable Cameras
     			//=======================================================================			
@@ -808,13 +790,13 @@ public class Robot extends IterativeRobot {
 		    	//	_climber.RunClimberReentrant();
 		    	//}
     			break;
-    			
-    		/*case AUTO_AIM:
-    			if(_driversStation.getIsDriver_GearShiftToggle_BtnJustPressed()) {
-    				_teleopMode = TELEOP_MODE.STANDARD;
+    		
+    		/*
+    		case AUTO_AIM:
+    			if(_driversStation.getIsDriver_Climb_ButtonPressed()) {
+    				_chassisAutoAim.updateVision(-1.0 * _roboRealmClient.get_Angle());
     			} else {
-    				//_chassisAutoAim.updateVision(_roboRealmClient.getAngle());
-    				DriverStation.reportError(Double.toString(_roboRealmClient.getAngle()), false);
+    				_teleopMode = TELEOP_MODE.STANDARD;
     			}
     			break;
     		*/
