@@ -7,6 +7,8 @@ public class RawImageData
 {
 	public long Timestamp;
 	
+	public String CameraType;
+	
     public double ResponseTimeMSec;
 
     public int BlobCount;
