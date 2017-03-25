@@ -326,15 +326,15 @@ public class DriversStation extends BaseDriversStation {
 	}
 	
 	// Vibrate Driver Controller
-	public void setDriverVibrateOn(boolean isVibrating){
-	}
-	
-	// Vibrate Operator Controller
-	public void setOperatorVibrateOn(boolean isVibrating){
-	}
-	
-	// Vibrate Engineering Controller
-	public void setEngineeringVibrateOn(boolean isVibrating){
-	}
+		public void setDriverVibrateOn(boolean isVibrating){
+		}
+		
+		// Vibrate Operator Controller
+		public void setOperatorVibrateOn(boolean isVibrating){
+		}
+		
+		// Vibrate Engineering Controller
+		public void setEngineeringVibrateOn(boolean isVibrating){
+		}
 	
 }
