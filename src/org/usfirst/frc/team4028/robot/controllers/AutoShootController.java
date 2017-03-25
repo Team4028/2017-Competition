@@ -16,7 +16,6 @@ public class AutoShootController {
 		_chassisAutoAim = chassisAutoAim;
 		_roboRealm = roboRealm;
 		_shooter = shooter;
-		_chassisAutoAim.setDeadband(2.0);
 	}
 	
 	public void EnableBoilerCam() {
@@ -28,14 +27,14 @@ public class AutoShootController {
 	}
 	
 	public void Initialize() {
+		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 	}
 	
 	public void AimAndShootWhenReady() {
-		DriverStation.reportError("Trying to Aim: " + _roboRealm.get_isVisionDataValid(), false);
 		if (_roboRealm.get_isVisionDataValid()) {
-			_chassisAutoAim.updateVision(_roboRealm.get_Angle());
+			_chassisAutoAim.update();
+			DriverStation.reportError(Double.toString(_roboRealm.get_Angle()), false);
 		}
-		
 		//TODO: check magnitude of error, if under threshhold, shoot ball, else turn chassis
 	}
 }

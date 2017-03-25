@@ -163,6 +163,7 @@ public class HangCenterGearAndShoot {
       			if (_autoAim.onTarget()) {
       				
       				// chg state
+      				_autoShootController.Initialize();
       				_autonState = AUTON_STATE.SHOOT;
       				DriverStation.reportError("===> Chg state from TURN to SHOOT", false);
       			}

@@ -166,7 +166,7 @@ public class Robot extends IterativeRobot {
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
 		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.035, 0.0, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter);
+		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
