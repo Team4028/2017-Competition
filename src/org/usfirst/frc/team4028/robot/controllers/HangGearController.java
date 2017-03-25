@@ -111,8 +111,6 @@ public class HangGearController
 		else if(elapsedTimeInMSec >= MAX_TIME_BEFORE_ABORT_IN_MSEC)  //timeout in order to end sequence
 		{
 			DriverStation.reportWarning("=!=!= HangGearInTeleopSequence Timeout ABORT =!=!=", false);
-
-
 			_isStillRunning = false;
 		}
 

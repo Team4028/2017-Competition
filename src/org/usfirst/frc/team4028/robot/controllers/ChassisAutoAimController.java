@@ -10,15 +10,15 @@ public class ChassisAutoAimController {
 	PIDCalculator _autoAimPID;
 	Chassis _chassis;
 	NavXGyro _navX;
-	double _kp = 0.05;
-	double _ki = 0.0;
-	double _kd = 0.0;
 	double _setError = 0.0;
 	
-	public ChassisAutoAimController(Chassis chassis, NavXGyro navX) {
+	// =========================================================
+	// Constructors
+	
+	public ChassisAutoAimController(Chassis chassis, NavXGyro navX, double p, double i, double d) {
 		_chassis = chassis;
 		_navX = navX;
-		_autoAimPID = new PIDCalculator(_kp, _ki, _kd);
+		_autoAimPID = new PIDCalculator(p, i, d);
 	}
 	
 	public boolean onTarget() {
@@ -38,20 +38,26 @@ public class ChassisAutoAimController {
 	
 	public void update() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
+		DriverStation.reportError(Double.toString(_navX.getYaw()), false);
 		_chassis.TankDrive(-motorOutput, motorOutput);
 	}
 	
 	public void updateVision(double currentError) {
 		if (_setError != currentError) {
 			_setError = currentError;
-			_autoAimPID.setSetpoint(_setError);
+			_autoAimPID.setSetpoint(0.0);
 		}
 		
-		double motorOutput = _autoAimPID.calculate(0.0);
+		double motorOutput = _autoAimPID.calculate(_setError);
+		DriverStation.reportError(Double.toString(motorOutput), false);
 		_chassis.TankDrive(-motorOutput, motorOutput);
 	}
 	
 	public void zeroVisionError() {
 		_setError = 0.0;
+	}
+	
+	public void setDeadband(double deadband) {
+		_autoAimPID.setDeadband(deadband);
 	}
 }

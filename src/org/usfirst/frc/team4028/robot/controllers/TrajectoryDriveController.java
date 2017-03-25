@@ -19,6 +19,7 @@ import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TrajectoryDriveController {
 	
@@ -310,6 +311,12 @@ public class TrajectoryDriveController {
 	public void startTrajectoryController() {
 		_isUpdaterTaskRunning = true;
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
+	}
+	
+	public void OutputToSmartDashboard() {
+		if(_roboRealm.get_isVisionDataValid()) {
+			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
+		}
 	}
 	
 	private class UpdaterTask extends TimerTask {

@@ -209,7 +209,6 @@ public class Chassis {
 	
 	// update the Dashboard with any Chassis specific data values
 	public void OutputToSmartDashboard() {
-		
 		String chassisDriveGearPosition = "";
 		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
 			chassisDriveGearPosition = "HIGH_GEAR";

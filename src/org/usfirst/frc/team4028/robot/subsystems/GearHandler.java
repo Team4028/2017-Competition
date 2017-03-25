@@ -218,7 +218,7 @@ public class GearHandler
     	MoveTiltAxisPIDP(GEAR_TILT_SCORING_POSITION_IN_ROTATIONS);
     	_isLastTiltMoveToFloorCallComplete = true;
     	
-    	DriverStation.reportWarning("Move Gear To Score Position", false);
+    	//DriverStation.reportWarning("Move Gear To Score Position", false);
     }
     
     public void MoveGearToFloorPositionReentrant()

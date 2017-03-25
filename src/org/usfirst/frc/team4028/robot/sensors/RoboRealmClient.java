@@ -50,14 +50,15 @@ public class RoboRealmClient
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
  	private static final int EXPECTED_ARRAY_SIZE = 7;
- 	private static final int EXPECTED_BLOB_COUNT = 2;
+ 	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
+ 	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
  	
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -10.0;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -12.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
@@ -73,6 +74,7 @@ public class RoboRealmClient
  	private double _targetXCenterPoint;
  	private double _fovCenterToTargetXAngleRawDegrees;
  	private int _badDataCounter;
+ 	private int _expectedBlobCount;
  	
 	//============================================================================================
 	// constructors follow
@@ -110,6 +112,7 @@ public class RoboRealmClient
 			
 		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
 		//TODO: create the relay object
+		//ChangeToCamera(ViSION_CAMERAS.BOILER);
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
@@ -132,10 +135,12 @@ public class RoboRealmClient
     	{
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
 	    		break;
 	    		
 	    	case BOILER:
 	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
 	    		break;
     	}
     	
@@ -285,8 +290,8 @@ public class RoboRealmClient
  	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
  	
  	    	// debug
- 	    	/*
- 	    	System.out.println("FOVh: " + _fovDimensions.height 
+ 	    	
+ 	    	/*System.out.println("FOVh: " + _fovDimensions.height 
 								+ " FOVw: " + _fovDimensions.width 
 								+ " SWx: " + _newTargetRawData.SouthWestX 
  	    						+ " SWy: " + _newTargetRawData.SouthWestY 
@@ -294,7 +299,6 @@ public class RoboRealmClient
  	    						+ " SEy: " + _newTargetRawData.SouthEastY
  	    						+ " mSec: " + _newTargetRawData.ResponseTimeMSec);    	
  	    	*/
- 	    	
  	    	// calc the horiz center of the image
  	    	_fovXCenterPoint = _fovDimensions.width / 2;
  	    	
@@ -305,17 +309,17 @@ public class RoboRealmClient
  	    	// round to 2 decimal places
  	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
  	    	
-    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees 
+    		/*System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees 
     							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
     							+ " Blob Count= " + _newTargetRawData.BlobCount 
     							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
- 	
+ 			*/
  	    	//Reset the counter 
  	    	_badDataCounter = 0;
  	    }
  	    else
  	    {
- 	    	System.out.println("Unexpected Array Size: " + _vector.size());
+ 	    	//System.out.println("Unexpected Array Size: " + _vector.size());
  	    	_newTargetRawData = null;
 
  	    	//Increment bad data counter
@@ -361,7 +365,7 @@ public class RoboRealmClient
     {
     	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
     			&& (_newTargetRawData != null)
-    			&& (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT))
+    			&& (_newTargetRawData.BlobCount == _expectedBlobCount))
     	{	
     		return true;
     	}

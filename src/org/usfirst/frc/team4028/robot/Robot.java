@@ -13,6 +13,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
@@ -81,7 +82,9 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	//   Define class level instance variables for Robot Controllers
 	// ===========================================================
-	private ChassisAutoAimController _chassisAutoAim;
+	private AutoShootController _autoShootController;
+	private ChassisAutoAimController _chassisAutoAimGyro;
+	private ChassisAutoAimController _chassisAutoAimVision;
 	private HangGearController _hangGearController;
 	private TrajectoryDriveController _trajController;
 	
@@ -161,7 +164,9 @@ public class Robot extends IterativeRobot {
 												RobotMap.LED_RINGS_RELAY_DIO_PORT);
 		
 		// telop Controller follow
-		_chassisAutoAim = new ChassisAutoAimController(_chassis, _navX);
+		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.035, 0.0, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
@@ -293,7 +298,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter, _trajController);
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _shooter, _trajController);
 				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
@@ -308,12 +313,12 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _navX, _shooter, _trajController);
+				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _shooter, _trajController);
 				_turnAndShoot.Initialize();
 				break;
 				
 			case TWO_GEAR:
-				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _trajController);
 				_twoGearAuton.Initialize();
 				break;
 				
@@ -686,6 +691,8 @@ public class Robot extends IterativeRobot {
 		      	else if (_driversStation.getIsDriver_SendGearTiltToHome_BtnJustPressed()) {
 		      		// 4th priority is Goto Home
 		      		_gearHandler.MoveGearToHomePosition();
+		      		DriverStation.reportError("NavX: " + Double.toString(_navX.getYaw()), false);
+		      		DriverStation.reportError("Vision: " + Double.toString(_roboRealmClient.get_Angle()), false);
 		      	}
 		      	else if (_driversStation.getIsDriver_SendGearTiltToScore_BtnJustPressed()) {
 		      		// 5th priority is Goto Score
@@ -829,6 +836,8 @@ public class Robot extends IterativeRobot {
     	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
     	
     	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+    	
+    	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
     	
     	SmartDashboard.putString("Robot Build", _buildMsg);
     }
