@@ -222,13 +222,24 @@ public class Shooter
 		}
 	}
 	
+	// This method is provided for auton mode shooting
+	// keep calling this method until it returns false, that indicates motors are upto speed
 	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry)
 	{
 		_currentShooterTableEntry = shooterTableEntry;
 		_lastShooterTableEntry = shooterTableEntry;
-		return ShooterMotorsReentrant();
+		
+		// we use a 2% error threshhold
+		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
+				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {
+			return false;
+		}
+		else{
+			return true;
+		}
 	}
 	
+	// this is the normal method used during teleop
 	public boolean ShooterMotorsReentrant()
 	{
 		if(Math.abs(_stg2MtrTargetRPM) == 0)
@@ -265,11 +276,6 @@ public class Shooter
 				// allow user to override slider if we have not chg to a new index in the shooter table
 				MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
 			}
-			//ControlHighSpeedLane();
-			else
-			{
-				_isShooterMotorsReentrantRunning = false;
-			}
 		}
 		
 		// cache last so we can tell if we changed
@@ -298,11 +304,6 @@ public class Shooter
 		DriverStation.reportWarning("Stage 2 Target RPM = " + targetRPM, false);
 		
 		//ControlHighSpeedLane();
-	}
-	
-	public void RunShooter (double stg1RPM, double stg2RPM, double sliderPosition)
-	{
-		
 	}
 	
 	//============================================================================================
