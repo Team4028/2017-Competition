@@ -35,8 +35,6 @@ import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -69,6 +67,11 @@ public class Robot extends IterativeRobot {
 	private NavXGyro _navX;
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
+	
+	//private MjpegServer _server;
+	//private UsbCamera _cam0;
+	//private UsbCamera _cam1;
+	//private boolean _isCamera0;
 	
 	// Wrapper around data logging (will be null if logging is not enabled)
 	private DataLogger _dataLogger;
@@ -156,9 +159,8 @@ public class Robot extends IterativeRobot {
 		// sensors follow
 		//_lidar = new Lidar(SerialPort.Port.kMXP);		// TODO: Re-enable?
 		_navX = new NavXGyro(RobotMap.NAVX_PORT);
+		
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
-		//UsbCamera cam0 = CameraServer.getInstance().startAutomaticCapture();
-		//cam0.setResolution(320, 240);
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
 												RobotMap.LED_RINGS_RELAY_DIO_PORT);
@@ -510,6 +512,16 @@ public class Robot extends IterativeRobot {
     			//Switchable Cameras
     			//=======================================================================			
     			if(_driversStation.getIsOperator_SwapCamera_BtnJustPressed()) {
+    				/*if(_isCamera0)
+    				{
+    					_server.setSource(_cam1);
+    					_isCamera0 = false;
+    				}
+    				else
+    				{
+    					_server.setSource(_cam0);
+    					_isCamera0 = true;
+    				}*/
     				_switchableCameraServer.ChgToNextCamera();
     			}
     			else if (_driversStation.getIsEngineering_SwapCamera_BtnJustPressed()) {

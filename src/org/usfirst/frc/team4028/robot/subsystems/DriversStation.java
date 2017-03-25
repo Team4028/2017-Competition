@@ -174,6 +174,11 @@ public class DriversStation extends BaseDriversStation {
 		return super.getDriverRightTriggerCmd();
 	}
 	
+	public void setDriverVibrateOn(boolean isOn)
+	{
+		//return super.setDriverVibrateOn(isOn);
+	}
+	
 	// =========================================================================================================
 	// OPERATOR		OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	OPERATOR	
 	// =========================================================================================================
