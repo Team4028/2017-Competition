@@ -39,7 +39,7 @@ public class Climber
 	private boolean _isClimbing;
 	
 	// define class level constants
-	private static final double CLIMBER_MAX_CURRENT = 20.0;
+	private static final double CLIMBER_MAX_CURRENT = 25.0;
 	private static final double MAX_TIME_OVER_THRESHHOLD = 315;
 	public static final double CLIMBER_MOTOR_VBUS = -0.80;
 	public static final double CLIMBER_MOTOR_HIGH_VBUS = -1.0;
@@ -128,6 +128,7 @@ public class Climber
 		}	
 	}
 	
+	
 	public void FullStop()
 	{
 		_climberMtr.set(0.0);
@@ -176,6 +177,18 @@ public class Climber
 	private double getActualPercentVBus()
 	{
 		return GeneralUtilities.RoundDouble((_climberMtr.getOutputVoltage() / _climberMtr.getBusVoltage()), 2);
+	}
+	
+	public boolean getIsReadyToRumble ()
+	{
+		if (_isClimberMotorStalled)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	// Per the request of the drive team

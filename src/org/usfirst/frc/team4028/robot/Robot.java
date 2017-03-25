@@ -745,6 +745,18 @@ public class Robot extends IterativeRobot {
     	    	
     			// climb is now a manual mode for Pittsburgh
     			_climber.RunMotorUsingJoyStick(_driversStation.getOperator_ClimberSpeed_JoystickCmd());
+    			
+    			// Turning on vibrate/rumble functionality when climber current is over the max
+    			if (_climber.getIsReadyToRumble())
+    			{
+    				_driversStation.setDriverVibrateOn(true);
+    				_driversStation.setOperatorVibrateOn(true);
+    			}
+    			else
+    			{
+    				_driversStation.setDriverVibrateOn(false);
+    				_driversStation.setOperatorVibrateOn(false);
+    			}
     	    	
 		      	break;	// end of _telopMode = STANDARD
       		
