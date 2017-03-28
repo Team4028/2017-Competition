@@ -163,7 +163,9 @@ public class Robot extends IterativeRobot {
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
-												RobotMap.LED_RINGS_RELAY_DIO_PORT);
+												RobotMap.PCM_CAN_BUS_ADDR,
+												RobotMap.GEAR_LED_RING_PCM_PORT,
+												RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
@@ -241,6 +243,10 @@ public class Robot extends IterativeRobot {
 		if(_twoGearAuton != null) {
 			_twoGearAuton.Disabled();
 			_twoGearAuton = null;
+		}
+		
+		if(_roboRealmClient != null) {
+			_roboRealmClient.TurnAllVisionLEDsOff();
 		}
 	}
 		
@@ -330,8 +336,13 @@ public class Robot extends IterativeRobot {
 				break;
     	}
 		
+    	// =====================================
+    	// Step 2.3: Turn all vision LEDs offg
+    	// =====================================
+    	_roboRealmClient.TurnAllVisionLEDsOff();
+    	
        	//=========================================================
-    	//Step 2.2
+    	//Step 2.3
     	//Set the Proper Cameras for this match
     	//==========================================================
     	/*_switchableCameraServer.setGearCameraName(_dashboardInputs.get_gearCam().get_cameraName());
@@ -439,6 +450,7 @@ public class Robot extends IterativeRobot {
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// code executed 1x when entering TELOP Mode																TELOP INIT
 	// --------------------------------------------------------------------------------------------------------------------------------------------
+
 	@Override
 	public void teleopInit() {
     	// =====================================
@@ -485,6 +497,11 @@ public class Robot extends IterativeRobot {
     	_switchableCameraServer.setShooterCameraName(_dashboardInputs.get_shooterCam().get_cameraName());
     	_switchableCameraServer.setClimberCameraName(_dashboardInputs.get_climberCam().get_cameraName());
     	_switchableCameraServer.setDriverCameraName(_dashboardInputs.get_driverCam().get_cameraName());*/
+    	
+    	// =====================================
+    	// Step 2.2: Turn all vision LEDs offg
+    	// =====================================
+    	_roboRealmClient.TurnAllVisionLEDsOff();
     	
     	// =====================================
     	// Step 3: Configure Logging (if USB Memory Stick is present)
@@ -823,6 +840,30 @@ public class Robot extends IterativeRobot {
     	WriteLogData();
 	}
 		
+	@Override
+	public void testPeriodic()
+	{
+    	// =====================================
+    	// Step 0: Get the DASHBOARD Input values for the current scan cycle
+    	// =====================================
+    	_driversStation.ReadCurrentScanCycleValues();
+    	
+    	// Gear Tilt Zero
+    	if(_driversStation.getIsDriver_RezeroGearTilt_ButtonJustPressed()) {
+    		_roboRealmClient.TurnAllVisionLEDsOff();
+    	}
+
+    	// Driving Gear Shift Toggle
+    	if(_driversStation.getIsDriver_ShiftDrivingGear_BtnJustPressed()) {
+    		_roboRealmClient.TurnGearVisionLEDsOn();
+    	}
+    	
+    	// Gear Tilt Home
+    	if(_driversStation.getIsDriver_SendGearTiltToHome_BtnJustPressed()) {
+    		_roboRealmClient.TurnBoilerrVisionLEDsOn();
+    	}
+	}
+	
 	//--------------------------------------------------------------------------------------------------------------------------------------------------------
 	//  Utility / Helper Methods Follow
 	//--------------------------------------------------------------------------------------------------------------------------------------------------------

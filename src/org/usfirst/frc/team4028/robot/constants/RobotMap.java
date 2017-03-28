@@ -55,7 +55,6 @@ public class RobotMap {
 	// ======================================
 	// define constants for DIO Ports on RoboRio
 	// ======================================
-	public static final int LED_RINGS_RELAY_DIO_PORT = 9;
 	
 	// ======================================
 	// define constants for Sensor Ports on RoboRio
@@ -73,6 +72,9 @@ public class RobotMap {
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
+	public static final int GEAR_LED_RING_PCM_PORT = 0;
+	public static final int BOILER_LED_RING_PCM_PORT = 1;	
+	
 	public static final int SHIFTER_SOLENOID_RETRACT_PCM_PORT = 7;
 	public static final int SHIFTER_SOLENOID_EXTEND_PCM_PORT = 6;
 	public static final int BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT = 5;

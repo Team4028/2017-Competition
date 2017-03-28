@@ -222,14 +222,32 @@ public class Shooter
 		}
 	}
 	
+	// This method is provided for auton mode shooting
+	// keep calling this method until it returns false, that indicates motors are upto speed
+	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry)
+	{
+		_currentShooterTableEntry = shooterTableEntry;
+		_lastShooterTableEntry = shooterTableEntry;
+		
+		// we use a 2% error threshhold
+		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
+				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+	
+	// this is the normal method used during teleop
 	public boolean ShooterMotorsReentrant()
 	{
 		if(Math.abs(_stg2MtrTargetRPM) == 0)
 		{
 			RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 			MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
-			//
-			////BumpStg2MtrRPMUp();
+			
+			//BumpStg2MtrRPMUp();
 			_isShooterMotorsReentrantRunning = true;
 		}
 		else if(Math.abs(getStg2RPMErrorPercent()) > 7.5 )
@@ -248,15 +266,16 @@ public class Shooter
 			// allow time to spinup
 			_isShooterMotorsReentrantRunning = true;
 		}
-		else {
+		else 
+		{
 			// dynamically adjust speeds if current table entry is changed
-			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index) {
+			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index)
+			{
 				RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 				RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 				// allow user to override slider if we have not chg to a new index in the shooter table
 				MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
 			}
-			//ControlHighSpeedLane();
 		}
 		
 		// cache last so we can tell if we changed
