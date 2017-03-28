@@ -199,7 +199,10 @@ public class SwitchableCameraServer
             // create sinks for each camera
 	    	if(_isCam0Present)
 	    	{
-	    		cam0 = new UsbCamera("cam0", 0); 				
+	    		cam0 = new UsbCamera("cam0", 0); 		
+	    		//cam0.setFPS(20);
+           		//cam0.setResolution(320, 240);
+           		//cam0.setExposureAuto();
 	    		cvSink0 = CameraServer.getInstance().getVideo(cam0); 
 	    		cvSink0.setEnabled(false);
 	    	}
@@ -207,6 +210,9 @@ public class SwitchableCameraServer
 	    	if(_isCam1Present)
 	    	{
 	    		cam1 = new UsbCamera("cam1",  1); 	
+	    		//cam1.setFPS(20);
+           		//cam1.setResolution(320, 240);
+           		//cam1.setExposureAuto();
 	    		cvSink1 = CameraServer.getInstance().getVideo(cam1);
 	    		cvSink1.setEnabled(false);
 	    	}
@@ -214,6 +220,9 @@ public class SwitchableCameraServer
 		    if(_isCam2Present)
 		    {
 		    	cam2 = new UsbCamera("cam2", 2); 
+		    	//cam2.setFPS(20);
+           		//cam2.setResolution(320, 240);
+           		//cam2.setExposureAuto();
 		    	cvSink2 = CameraServer.getInstance().getVideo(cam2);
 		    	cvSink2.setEnabled(false);
 		    }
@@ -221,6 +230,9 @@ public class SwitchableCameraServer
 		    if(_isCam3Present)
 		    {
 		    	cam3 = new UsbCamera("cam3", 3); 
+		    	//cam3.setFPS(20);
+           		//cam3.setResolution(320, 240);
+           		//cam3.setExposureAuto();
 		    	cvSink3 = CameraServer.getInstance().getVideo(cam3);
 		    	cvSink3.setEnabled(false);
 		    }
@@ -232,11 +244,12 @@ public class SwitchableCameraServer
             Mat image = new Mat();
             
             // create a MjpegServer on port 1181
-            MjpegServer server = new MjpegServer("server", 1181);
+            //MjpegServer server = new MjpegServer("server", 1181);
             
             // set the image source for the mjepg server to be the output stream
-            server.setSource(outputStream);
-                       
+            //server.setSource(outputStream);
+            CameraServer.getInstance().getServer().setSource(outputStream);
+            
             boolean isImageAvailable = false;
             boolean isCameraAvailableLastScan = false;
             
@@ -271,9 +284,9 @@ public class SwitchableCameraServer
 		            			
 		            			
 				                cvSink0.setEnabled(true);
-			                	cam0.setFPS(60);
+			                	cam0.setFPS(20);
 			               		cam0.setResolution(320, 240);
-			               		cam0.setExposureAuto();
+			               		//cam0.setExposureAuto();
 			               		//cam0.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
@@ -289,7 +302,7 @@ public class SwitchableCameraServer
 	          			{ 
 	        				isCameraAvailableLastScan = false;
 	        				System.out.println("Camera Unplugged: " + _cameraName);
-	        				DriverStation.reportError("Camera Unplugged: " + _cameraName, false);
+	        				DriverStation.reportError("Camera Unplugged: " + _cameraName, true);
 	        			}
         			}
             	} 
@@ -317,9 +330,9 @@ public class SwitchableCameraServer
 		            			
 		            			
 				                cvSink1.setEnabled(true);
-			                	cam1.setFPS(60);
+			                	cam1.setFPS(20);
 			                	cam1.setResolution(320, 240);
-			                	cam1.setExposureAuto();
+			                	//cam1.setExposureAuto();
 			                	//cam1.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
@@ -327,7 +340,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		        			cvSink1.grabFrameNoTimeout(image);
+		            		cvSink1.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}
@@ -362,9 +375,9 @@ public class SwitchableCameraServer
 		            			
 		            			
 				                cvSink2.setEnabled(true);
-			                	cam2.setFPS(60);
+			                	cam2.setFPS(20);
 			                	cam2.setResolution(320, 240);
-			                	cam2.setExposureAuto();
+			                	//cam2.setExposureAuto();
 			                	//cam2.setExposureManual(36);
 			               		_previousCameraName = _cameraName;
 			               		
@@ -372,7 +385,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		        			cvSink2.grabFrameNoTimeout(image);
+		            		cvSink2.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}
@@ -417,7 +430,7 @@ public class SwitchableCameraServer
 		        			}
 		               		
 		        			// grab the current frame from this camera and put it into the 2D array
-		        			cvSink3.grabFrameNoTimeout(image);
+		            		cvSink3.grabFrameNoTimeout(image);
 		            		isImageAvailable = true;
 		            		isCameraAvailableLastScan = true;
 	        			}

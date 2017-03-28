@@ -7,21 +7,17 @@ public class PIDCalculator {
 	private double _p; // "proportional" term
 	private double _i; // "integral" term
 	private double _d; // "derivative" term
-	private double _maximumOutput = 0.6; 
-	private double _minimumOutput = -0.6;
+	private double _maximumOutput = 0.75; 
+	private double _minimumOutput = -0.75;
 	private double _maximumInput = 180.0;
 	private double _minimumInput = -180.0;
-	private boolean _isContinuous = false; // do the endpoints wrap around e.g. absolute encoder
 	private double _prevError = 0.0;
 	private double _totalError = 0.0;
 	private double _setpoint = 0.0;
 	private double _error = 0.0;
 	private double _result = 0.0;
 	private double _lastInput = Double.NaN;
-	private double _deadband = 0.0;
-	
-	public PIDCalculator() {
-	}
+	private double _deadband = 3.0;
 	
 	public PIDCalculator(double Kp, double Ki, double Kd) {
 		_p = Kp;
@@ -31,17 +27,7 @@ public class PIDCalculator {
 	
 	public double calculate (double input) {
 		_lastInput = input;
-		_error = _setpoint - input;
-		if (_isContinuous) {
-			if (Math.abs(_error) > (_maximumInput - _minimumInput) / 2) {
-				if (_error > 0) {
-					_error = _error - _maximumInput + _minimumInput;
-				} else {
-					_error = _error + _maximumInput - _minimumInput;
-				}
-			}
-		}
-		
+		_error = _setpoint - input;		
 		if ((_error * _p < _maximumOutput) && (_error *_p > _minimumOutput)) {
 			_totalError += _error;
 		} else {
@@ -66,16 +52,8 @@ public class PIDCalculator {
 		_d = d;
 	}
 	
-	public void setContinuous(boolean isContinuous) {
-		_isContinuous = isContinuous;
-	}
-	
 	public void setDeadband (double deadband) {
 		_deadband = deadband;
-	}
-	
-	public void setContinuous() {
-		this._isContinuous = true;
 	}
 	
 	public void setInputRange(double minimumInput, double maximumInput) {
@@ -112,7 +90,7 @@ public class PIDCalculator {
     }
 	
 	public boolean onTarget() {
-        return _lastInput != Double.NaN && Math.abs(_lastInput - _setpoint) < _deadband;
+        return (Math.abs(_error) < _deadband);
     }
 
     /**

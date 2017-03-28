@@ -22,7 +22,6 @@ public class HitHopper {
 	// define class level variables for Robot subsystems
 	private Chassis _chassis;
 	private GearHandler _gearHandler;
-	private NavXGyro _navX;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	
@@ -51,7 +50,6 @@ public class HitHopper {
 		// these are the subsystems that this auton routine needs to control
 		_chassis = chassis;
 		_gearHandler = gearHandler;
-		_navX = navX;
 		_shooter = shooter;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);

@@ -18,6 +18,7 @@ import org.usfirst.frc.team4028.robot.vision.RawImageData;
 //import uk.co.geolib.geolib.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -38,6 +39,7 @@ public class RoboRealmClient
  	private String _currentVisionCameraName;
  	
  	private static final int TARGET_MINIMUM_Y_VALUE = 413;
+ 	
  	private static final int SOUTHWEST_X_IDX = 0;
  	private static final int SOUTHWEST_Y_IDX = 1;
  	private static final int SOUTHEAST_X_IDX = 2;
@@ -46,18 +48,22 @@ public class RoboRealmClient
  	private static final int  CALIBRATED_HEIGHT_IDX = 5;
  	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
  	private static final int BLOB_COUNT_IDX = 6;
+ 	private static final int CAMERA_TYPE_IDX = 7;
+ 	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
  	
- 	private static final int EXPECTED_ARRAY_SIZE = 7;
- 	private static final int EXPECTED_BLOB_COUNT = 2;
+
+ 	private static final int EXPECTED_ARRAY_SIZE = 8;
+ 	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
+ 	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
  	
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -10.0;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -12.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
@@ -73,11 +79,17 @@ public class RoboRealmClient
  	private double _targetXCenterPoint;
  	private double _fovCenterToTargetXAngleRawDegrees;
  	private int _badDataCounter;
+ 	private long _lastDebugWriteTimeMSec;
+ 	private final Object _targetDataMutex;
+ 	private int _expectedBlobCount;
+ 	private Solenoid _gearCamLED;
+ 	private Solenoid _shooterCamLED;
  	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int ledRelayDIOPortNo) 
+    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, 
+    		int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
     {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
@@ -110,9 +122,17 @@ public class RoboRealmClient
 			
 		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
 		//TODO: create the relay object
+		//ChangeToCamera(ViSION_CAMERAS.BOILER);
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
+		
+		_targetDataMutex = new Object();
+		
+		//Set up LED PCM Rings
+		_gearCamLED = new Solenoid(PCMCanAddr, gearCamLEDPCMPort);
+		_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
+		TurnAllVisionLEDsOff();
     }
     
 	//============================================================================================
@@ -121,6 +141,36 @@ public class RoboRealmClient
     public void TestConnect()
     {
     	Dimension fovDimensions = _rrAPI.getDimension();
+    }
+    
+    public void TurnAllVisionLEDsOff()
+    {
+		_gearCamLED.set(false);
+		_shooterCamLED.set(false);
+    }
+    
+    public void TurnGearVisionLEDsOn()
+    {
+		_shooterCamLED.set(false);
+		try {
+			Thread.sleep(2);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		_gearCamLED.set(true);
+    }
+    
+    public void TurnBoilerrVisionLEDsOn()
+    {
+    	_gearCamLED.set(false);
+		try {
+			Thread.sleep(2);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		_shooterCamLED.set(true);
     }
     
     // this method changes the active roborealm camera / program
@@ -132,10 +182,16 @@ public class RoboRealmClient
     	{
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
+	        	_gearCamLED.set(true);
+	        	_shooterCamLED.set(false);
 	    		break;
 	    		
 	    	case BOILER:
 	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
+	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
+	        	_gearCamLED.set(false);
+	        	_shooterCamLED.set(true);
 	    		break;
     	}
     	
@@ -146,7 +202,7 @@ public class RoboRealmClient
     		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
     	}
     }
-    
+
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName)
@@ -195,28 +251,13 @@ public class RoboRealmClient
         }
  	}
  	
- 	public void TurnLEDsOn()
- 	{
- 		//TODO: turn in on
- 	}
- 	
- 	public void TurnLEDsOff()
- 	{
- 		//TODO: turn in off
- 	}
- 	
 	// update the Dashboard with any Vision specific data values
 	public void OutputToSmartDashboard()
 	{
 		String dashboardMsg = "";
 		
-    	if(_currentVisionCameraName == null)
-    	{
-    		_currentVisionCameraName = "???";
-    	}
-    	
-		if( get_isVisionDataValid()) {
-			dashboardMsg = "Camera= " + _currentVisionCameraName.toString() 
+		if( get_isVisionDataValid()){
+			dashboardMsg = "Camera= " + _newTargetRawData.CameraType
 							+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
 							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
 							+ " Blob Count= " + _newTargetRawData.BlobCount 
@@ -242,84 +283,98 @@ public class RoboRealmClient
 	// poll RoboRealm to read current values
  	public void update() 
  	{ 
- 		long startOfCallTimestamp = new Date().getTime();
- 		
- 		// get the Field Of View Dimensions
- 		//_fovDimensions = _rrAPI.getDimension();
- 		
- 	    // get multiple variables
- 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
- 	    _vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
- 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
- 	    _newTargetRawData = null;
- 	    
- 	    if (_vector==null)
- 	    {
- 	    	// write 1st 10 errors then every 50
- 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
- 	    	{
- 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
- 	    	}
- 	    	
- 	    	//Increment bad data counter
- 	    	_badDataCounter += 1;
- 	    }
- 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE)
- 	    {
- 	    	_newTargetRawData = new RawImageData();
- 	    	
- 	    	// parse the results and build the image data
- 	    	_newTargetRawData.Timestamp = new Date().getTime();
- 	    	_newTargetRawData.SouthWestX = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_X_IDX));
- 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
- 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
- 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
- 	    	
- 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
- 	    	
- 	    	_fovDimensions = new Dimension();
- 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
- 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(CALIBRATED_HEIGHT_IDX));
- 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
- 	    	
- 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
- 	
- 	    	// debug
- 	    	/*
- 	    	System.out.println("FOVh: " + _fovDimensions.height 
-								+ " FOVw: " + _fovDimensions.width 
-								+ " SWx: " + _newTargetRawData.SouthWestX 
- 	    						+ " SWy: " + _newTargetRawData.SouthWestY 
- 	    						+ " SEx: " + _newTargetRawData.SouthEastX 
- 	    						+ " SEy: " + _newTargetRawData.SouthEastY
- 	    						+ " mSec: " + _newTargetRawData.ResponseTimeMSec);    	
- 	    	*/
- 	    	
- 	    	// calc the horiz center of the image
- 	    	_fovXCenterPoint = _fovDimensions.width / 2;
- 	    	
- 	    	// calc the target center point
- 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) + _cameraCalibrationFactor);
- 	    	
- 	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
- 	    	// round to 2 decimal places
- 	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees *100) / 100;	
- 	    	
-    		System.out.println("Angle= " + _fovCenterToTargetXAngleRawDegrees 
-    							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
-    							+ " Blob Count= " + _newTargetRawData.BlobCount 
-    							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
- 	
- 	    	//Reset the counter 
- 	    	_badDataCounter = 0;
- 	    }
- 	    else
- 	    {
- 	    	System.out.println("Unexpected Array Size: " + _vector.size());
- 	    	_newTargetRawData = null;
+ 	    synchronized (_targetDataMutex) {
+	 		long startOfCallTimestamp = new Date().getTime();
+	 		
+	 		// get the Field Of View Dimensions
+	 		//_fovDimensions = _rrAPI.getDimension();
+	 		
+	 	    // get multiple variables
+	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
+	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
+	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+	 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
+	 	    _newTargetRawData = null;
+	 	    
+	 	    if (_vector==null)
+	 	    {
+	 	    	// write 1st 10 errors then every 50
+	 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
+	 	    	{
+	 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
+	 	    	}
+	 	    	
+	 	    	//Increment bad data counter
+	 	    	_badDataCounter += 1;
+	 	    }
+	 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE)
+	 	    {
+	 	    	_newTargetRawData = new RawImageData();
+	 	    	
+	 	    	// parse the results and build the image data
+	 	    	_newTargetRawData.Timestamp = new Date().getTime();
+	 	    	_newTargetRawData.CameraType = (String)_vector.elementAt(CAMERA_TYPE_IDX);	    	
+	 	    	_newTargetRawData.SouthWestX = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_X_IDX));
+	 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
+	 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
+	 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
+	 	    	
+	 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
+	 	    	
+	 	    	_fovDimensions = new Dimension();
+	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
+	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(CALIBRATED_HEIGHT_IDX));
+	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
+	 	    	
+	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
+	 	
+	 	    	// debug
+	 	    	/*
+	 	    	System.out.println("FOVh: " + _fovDimensions.height 
+									+ " FOVw: " + _fovDimensions.width 
+									+ " SWx: " + _newTargetRawData.SouthWestX 
+	 	    						+ " SWy: " + _newTargetRawData.SouthWestY 
+	 	    						+ " SEx: " + _newTargetRawData.SouthEastX 
+	 	    						+ " SEy: " + _newTargetRawData.SouthEastY
+	 	    						+ " mSec: " + _newTargetRawData.ResponseTimeMSec);    	
+	 	    	*/
+	 	    	
+	 	    	// calc the horiz center of the image
+	 	    	_fovXCenterPoint = _fovDimensions.width / 2.0;
+	 	    	
+	 	    	// calc the target center point
+	 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) + _cameraCalibrationFactor);
+	 	    	
+	 	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
+	 	    	
+	 	    	// round to 2 decimal places
+	 	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees * 100) / 100.0;	
+	 	    	
+	 	    	// limit spamming
+	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000)
+	 	    	{
+		    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
+		    							+ "|Camera= " + _newTargetRawData.CameraType 
+		    							+ "|Angle= " + _fovCenterToTargetXAngleRawDegrees 
+		    							+ "|mSec=" + _newTargetRawData.ResponseTimeMSec
+		    							+ "|Blob Count= " + _newTargetRawData.BlobCount 
+		    							+ "|Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
+		    		// reset last time
+		    		_lastDebugWriteTimeMSec = new Date().getTime();
+	 	    	}
+	 	    	
+	 	    	//Reset the counter 
+	 	    	_badDataCounter = 0;
+	 	    }
+	 	    else
+	 	    {
+	 	    	System.out.println("Unexpected Array Size: " + _vector.size());
+	 	    	_newTargetRawData = null;
+	
+	 	    	//Increment bad data counter
+	 	    	_badDataCounter += 1;
+	 	    }
 
- 	    	//Increment bad data counter
- 	    	_badDataCounter += 1;
  	    }
  	} 
  	
@@ -359,27 +414,28 @@ public class RoboRealmClient
     
     public boolean get_isVisionDataValid()
     {
-    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
-    			&& (_newTargetRawData != null)
-    			&& (_newTargetRawData.BlobCount == EXPECTED_BLOB_COUNT))
-    	{	
-    		return true;
-    	}
-    	
-    	else 
-    	{
-    		return false;
+    	synchronized (_targetDataMutex) {
+	    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
+	    			&& (_newTargetRawData != null)
+	    			&& (_newTargetRawData.BlobCount == _expectedBlobCount)) {	
+	    		return true;
+	    	}
+	    	
+	    	else {
+	    		return false;
+	    	}
+
     	}
     }
     
     public boolean get_isInGearHangPosition()
     {
-		if ((_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) && (_newTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE))
-		{
+		if (get_isVisionDataValid()
+				&& (_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) 
+				&& (_newTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE)) {
 			return true;
 		}
-		else
-		{
+		else {
 			return false;
 		}
     }
