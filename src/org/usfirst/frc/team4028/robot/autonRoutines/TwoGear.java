@@ -4,13 +4,7 @@ import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
-import org.usfirst.frc.team4028.robot.util.TwoGearLong;
-import org.usfirst.frc.team4028.robot.util.TwoGearShort;
-import org.usfirst.frc.team4028.robot.util.TwoGearSuperShort;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -25,8 +19,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class TwoGear {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
-	private Chassis _chassis;
-	private NavXGyro _navX;
 	private TrajectoryDriveController _trajController;
 	private ChassisAutoAimController _autoAim;
 	private HangGearController _hangGearController;
@@ -58,11 +50,9 @@ public class TwoGear {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TwoGear(GearHandler gearHandler, Chassis chassis, ChassisAutoAimController autoAim, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
+	public TwoGear(GearHandler gearHandler, ChassisAutoAimController autoAim, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
-		_chassis = chassis;
-		_navX = navX;
 		_hangGearController = hangGear;
 		_autoAim = autoAim;
 		_trajController = trajController;
@@ -79,7 +69,6 @@ public class TwoGear {
 		_autonState = AUTON_STATE.MOVE_TO_TARGET_1;
 		
 		_autoAim.loadNewTarget(90.0);
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();

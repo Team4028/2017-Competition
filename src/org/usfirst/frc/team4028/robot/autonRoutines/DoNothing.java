@@ -10,47 +10,28 @@ import edu.wpi.first.wpilibj.DriverStation;
 //------------------------------------------------------
 //=====> For Changes see Sebas
 public class DoNothing {
-	// define class level variables for Robot subsystems
-	
-	// define class level working variables
-	private long _autonStartedTimeStamp;
-	private boolean _isStillRunning;
-	
-	// define class level constants
-	
 	//============================================================================================
-	// constructors follow
+	// constructor follows
 	//============================================================================================
-	public DoNothing() {
-	}
+	public DoNothing() {}
 	
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
 	// execute any logic to initialize this object before ExecuteRentrant is called
 	public void Initialize() {
-		_autonStartedTimeStamp = System.currentTimeMillis();
-		_isStillRunning = false;
-		
 		DriverStation.reportError("===== Entering DoNothing Auton =====", false);
 	}
 	
-	// execute the auton routine, return = true indicates auton is still running
-	// This is a LONG RUNNING method (it spans multiple scan cycles)
-	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
 		// cleanup
-		if(!_isStillRunning) {
-			DriverStation.reportError("===== Completed DoNothing Auton =====", false);
-		}
+		DriverStation.reportError("===== Completed DoNothing Auton =====", false);
 		
-		return _isStillRunning; 
+		return false; 
 	}
 	
 	//============================================================================================
 	// Properties follow
 	//============================================================================================
-	public boolean getIsStillRunning() {
-		return _isStillRunning;
-	}
+	public boolean getIsStillRunning() { return false; }
 }

@@ -32,24 +32,11 @@ public class ChassisAutoAimController {
 	}
 	
 	public void loadNewVisionTarget(double angle) {
-		_autoAimPID.reset();
 		_autoAimPID.setSetpoint(_navX.getYaw() - angle);
 	}
 	
 	public void update() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
-		DriverStation.reportError(Double.toString(motorOutput), false);
-		_chassis.TankDrive(-motorOutput, motorOutput);
-	}
-	
-	public void updateVision(double currentError) {
-		if (_setError != currentError) {
-			_setError = currentError;
-			_autoAimPID.setSetpoint(0.0);
-		}
-		
-		double motorOutput = _autoAimPID.calculate(_setError);
-		DriverStation.reportError(Double.toString(motorOutput), false);
 		_chassis.TankDrive(-motorOutput, motorOutput);
 	}
 	
@@ -57,7 +44,15 @@ public class ChassisAutoAimController {
 		_setError = 0.0;
 	}
 	
+	public void zeroTotalError() {
+		_autoAimPID.resetTotalError();
+	}
+	
 	public void setDeadband(double deadband) {
 		_autoAimPID.setDeadband(deadband);
+	}
+	
+	public void setMaxMinOutput(double max, double min) {
+		_autoAimPID.setOutputRange(min, max);
 	}
 }

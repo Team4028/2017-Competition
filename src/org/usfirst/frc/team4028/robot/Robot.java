@@ -169,8 +169,8 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.035, 0.0, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.08, 0.0, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
@@ -281,7 +281,7 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	switch (_autonMode) {
 			case CROSS_BASE_LINE:
-				_crossBaseLineAuton = new CrossBaseLine(_chassis, _gearHandler, _navX, _trajController);
+				_crossBaseLineAuton = new CrossBaseLine(_gearHandler, _trajController);
 				_crossBaseLineAuton.Initialize();
 				break;
 				
@@ -291,42 +291,42 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_BOILER_GEAR:
-				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _hangGearController, _trajController);
 				_hangBoilerGearAuton.Initialize();
 				break;
 			
 			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter, _trajController);
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _hangGearController, _shooter, _trajController);
 				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _hangGearController, _trajController);
 				_hangCenterGearAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _shooter, _trajController);
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassisAutoAimGyro, _hangGearController, _shooter, _trajController);
 				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_RETRIEVAL_GEAR:
-				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _hangGearController, _trajController);
 				_hangRetrievalGear.Initialize();
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_chassis, _gearHandler, _navX, _shooter, _trajController);
+				_hitHopper = new HitHopper(_gearHandler, _shooter, _trajController);
 				_hitHopper.Initialize();
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _shooter, _trajController);
+				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassisAutoAimGyro, _shooter, _trajController);
 				_turnAndShoot.Initialize();
 				break;
 				
 			case TWO_GEAR:
-				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _trajController);
+				_twoGearAuton = new TwoGear(_gearHandler, _chassisAutoAimGyro, _hangGearController, _trajController);
 				_twoGearAuton.Initialize();
 				break;
 				

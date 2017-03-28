@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 //=====> For Changes see Sebas
 public class HitHopper {
 	// define class level variables for Robot subsystems
-	private Chassis _chassis;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
@@ -46,9 +45,8 @@ public class HitHopper {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(Chassis chassis, GearHandler gearHandler, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
+	public HitHopper(GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
-		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_trajController = trajController;
@@ -64,7 +62,6 @@ public class HitHopper {
 		_isStillRunning = true;
 		
 		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
-		_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 		_trajController.configureIsHighGear(true);
 		_trajController.loadProfile(MoveToHopperTrajectory.LeftPoints, MoveToHopperTrajectory.RightPoints, 1.0, 1.0, MoveToHopperTrajectory.kNumPoints);
 		_trajController.enable();

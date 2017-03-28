@@ -5,9 +5,6 @@ import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
@@ -24,8 +21,6 @@ public class HangCenterGearAndShoot {
 	// define class level variables for Robot subsystems
 	private AutoShootController _autoShootController;
 	private GearHandler _gearHandler;
-	private Chassis _chassis;
-	private NavXGyro _navX;
 	private ChassisAutoAimController _autoAim;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
@@ -36,8 +31,8 @@ public class HangCenterGearAndShoot {
 		MOVE_TO_TARGET,
 		RUN_GEAR_SEQUENCE,
 		MOVE_BACK,
-		TURN,
-		SHOOT,
+		GYRO_TURN,
+		VISION_TURN,
 		FINISHED
 	}
 	
@@ -52,13 +47,11 @@ public class HangCenterGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGearAndShoot(AutoShootController autoShoot, GearHandler gearHandler, Chassis chassis, ChassisAutoAimController autoAim, NavXGyro navX, 
+	public HangCenterGearAndShoot(AutoShootController autoShoot, GearHandler gearHandler, ChassisAutoAimController autoAim,  
 			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_autoShootController = autoShoot;
 		_gearHandler = gearHandler;
-		_chassis = chassis;
-		_navX = navX;
 		_hangGearController = hangGear;
 		_shooter = shooter;
 		_autoAim = autoAim;
@@ -74,8 +67,8 @@ public class HangCenterGearAndShoot {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
+		_autoShootController.LoadTargetDistanceInInches(117);
 		
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
@@ -142,6 +135,7 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case MOVE_BACK:
+      			_autoShootController.RunShooterAtTargetSpeed();
       			if (_trajController.onTarget()) {
       				// disable the thread
       				_trajController.disable();
@@ -150,12 +144,14 @@ public class HangCenterGearAndShoot {
       				_autoAim.loadNewTarget(-70.0);
       				
       				// chg state
-      				_autonState = AUTON_STATE.TURN;
+      				_autonState = AUTON_STATE.GYRO_TURN;
       				DriverStation.reportError("===> Chg state from MOVE_BACK to TURN", false);
       			}
       			break;
       			
-      		case TURN:
+      		case GYRO_TURN:
+      			_autoShootController.RunShooterAtTargetSpeed();
+      			
       			// call turn controller
       			_autoAim.update();
       			
@@ -163,16 +159,14 @@ public class HangCenterGearAndShoot {
       			if (_autoAim.onTarget()) {
       				
       				// chg state
-      				_autoShootController.Initialize();
-      				_autonState = AUTON_STATE.SHOOT;
+      				_autoShootController.InitializeVisionAiming();
+      				_autonState = AUTON_STATE.VISION_TURN;
       				DriverStation.reportError("===> Chg state from TURN to SHOOT", false);
       			}
       			break;
       			
-      		case SHOOT:
+      		case VISION_TURN:
       			_autoShootController.AimAndShootWhenReady();
-      			
-      			// TODO: need to decide how to exit
       			//_autonState = AUTON_STATE.FINISHED;
       			break;
       			

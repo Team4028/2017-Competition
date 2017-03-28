@@ -13,10 +13,8 @@ public class TrajectoryFollower {
 	private double _velocityOutput;
 	private int _currentSegment;
 	private int _trajectoryNumPoints;	
-	public String _followerName;
 	
-	public TrajectoryFollower(String name) {
-		this._followerName = name;
+	public TrajectoryFollower() {
 	}
 	
 	public void configure(double kp, double ki, double kd, double kv, double ka) {
