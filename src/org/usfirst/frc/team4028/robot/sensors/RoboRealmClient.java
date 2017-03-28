@@ -18,6 +18,7 @@ import org.usfirst.frc.team4028.robot.vision.RawImageData;
 //import uk.co.geolib.geolib.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -81,11 +82,14 @@ public class RoboRealmClient
  	private long _lastDebugWriteTimeMSec;
  	private final Object _targetDataMutex;
  	private int _expectedBlobCount;
+ 	private Solenoid _gearCamLED;
+ 	private Solenoid _shooterCamLED;
  	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int ledRelayDIOPortNo) 
+    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, 
+    		int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
     {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
@@ -124,6 +128,11 @@ public class RoboRealmClient
 		_badDataCounter = 10;
 		
 		_targetDataMutex = new Object();
+		
+		//Set up LED PCM Rings
+		_gearCamLED = new Solenoid(PCMCanAddr, gearCamLEDPCMPort);
+		_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
+		TurnAllVisionLEDsOff();
     }
     
 	//============================================================================================
@@ -132,6 +141,36 @@ public class RoboRealmClient
     public void TestConnect()
     {
     	Dimension fovDimensions = _rrAPI.getDimension();
+    }
+    
+    public void TurnAllVisionLEDsOff()
+    {
+		_gearCamLED.set(false);
+		_shooterCamLED.set(false);
+    }
+    
+    public void TurnGearVisionLEDsOn()
+    {
+		_shooterCamLED.set(false);
+		try {
+			Thread.sleep(2);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		_gearCamLED.set(true);
+    }
+    
+    public void TurnBoilerrVisionLEDsOn()
+    {
+    	_gearCamLED.set(false);
+		try {
+			Thread.sleep(2);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		_shooterCamLED.set(true);
     }
     
     // this method changes the active roborealm camera / program
@@ -144,11 +183,15 @@ public class RoboRealmClient
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
 	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
+	        	_gearCamLED.set(true);
+	        	_shooterCamLED.set(false);
 	    		break;
 	    		
 	    	case BOILER:
 	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
 	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
+	        	_gearCamLED.set(false);
+	        	_shooterCamLED.set(true);
 	    		break;
     	}
     	
@@ -159,7 +202,7 @@ public class RoboRealmClient
     		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
     	}
     }
-    
+
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName)
@@ -206,16 +249,6 @@ public class RoboRealmClient
         	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
         	System.out.println("====> Error..Could not resume RoboRealm program!");
         }
- 	}
- 	
- 	public void TurnLEDsOn()
- 	{
- 		//TODO: turn in on
- 	}
- 	
- 	public void TurnLEDsOff()
- 	{
- 		//TODO: turn in off
  	}
  	
 	// update the Dashboard with any Vision specific data values
