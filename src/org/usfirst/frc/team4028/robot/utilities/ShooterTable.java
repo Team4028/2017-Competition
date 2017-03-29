@@ -3,22 +3,30 @@ package org.usfirst.frc.team4028.robot.utilities;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+//------------------------------------------------------
+//Rev		By		 	D/T			Desc
+//===		========	===========	====================================
+//	1		TomB		29.Mar.2017	Implemented separate table for Auton 
+//------------------------------------------------------
+
 public class ShooterTable {
 
 	// define class level working variables
-	private LinkedList<ShooterTableEntry> _table = null;
+	private LinkedList<ShooterTableEntry> _telopTable = null;
+	private LinkedList<ShooterTableEntry> _autonTable = null;
 	private int _currentIndex = 0;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
 	public ShooterTable(){
-		_table = LoadTable();
+		_telopTable = LoadTable();
+		_autonTable = LoadAutonTable();
 		
 		// set the initial value of the current index to the 1st one marked as default
 		_currentIndex = 1;
 		ShooterTableEntry ste;
-		Iterator<ShooterTableEntry> itr = _table.iterator();
+		Iterator<ShooterTableEntry> itr = _telopTable.iterator();
 		while(itr.hasNext()) {
 			ste = itr.next();
 			if (ste.IsDefault == true) {
@@ -37,12 +45,12 @@ public class ShooterTable {
 			_currentIndex++;
 		}
 		
-		return _table.get(_currentIndex);
+		return _telopTable.get(_currentIndex);
 	}
 	
 	public ShooterTableEntry getCurrentEntry()
 	{
-		return _table.get(_currentIndex);
+		return _telopTable.get(_currentIndex);
 	}
 	
 	public ShooterTableEntry getPreviousEntry()
@@ -51,13 +59,23 @@ public class ShooterTable {
 			_currentIndex--;
 		}
 
-		return _table.get(_currentIndex);
+		return _telopTable.get(_currentIndex);
+	}
+	
+	public ShooterTableEntry getAutonEntryForDistance(int targetDistanceInInches)
+	{
+		return getEntryForDistance(targetDistanceInInches, _telopTable);
+	}
+	
+	public ShooterTableEntry getTelopEntryForDistance(int targetDistanceInInches)
+	{
+		return getEntryForDistance(targetDistanceInInches, _autonTable);
 	}
 	
 	// Return the correct SHooterTableEntry for a given distance
 	// ShooterTableEntry ste = _shooterTable.getEntryForDistance(130);
 	// System.out.println("..STE Entry: " + ste.Description);
-	public ShooterTableEntry getEntryForDistance(int targetDistanceInInches)
+	private ShooterTableEntry getEntryForDistance(int targetDistanceInInches, LinkedList<ShooterTableEntry> table)
 	{
 		// set the initial value of the current index to the 1st one marked as default
 		int currentIndex = 1;
@@ -66,7 +84,7 @@ public class ShooterTable {
 		ShooterTableEntry currentSte = null;
 		
 		// loop thru and try to find the entries above and below the target distance
-		Iterator<ShooterTableEntry> itr = _table.iterator();
+		Iterator<ShooterTableEntry> itr = table.iterator();
 		while(itr.hasNext()) {
 			currentSte = itr.next();
 			
@@ -83,7 +101,7 @@ public class ShooterTable {
 		
 		// now decide which one to use
 		if (currentSte == null) {
-			selectedSte = _table.get(1);	// should never happen!(just default to 1st entry
+			selectedSte = table.get(1);	// should never happen!(just default to 1st entry
 		}
 		else if((previousSte == null) || (currentSte == previousSte)){
 			selectedSte = currentSte;
@@ -110,7 +128,7 @@ public class ShooterTable {
 	
 	public Boolean get_IsAtUpperEntry()
 	{
-		if (_currentIndex == _table.size() - 1){
+		if (_currentIndex == _telopTable.size() - 1){
 			return true;
 		}
 		else {
@@ -153,12 +171,25 @@ public class ShooterTable {
 		table.add(new ShooterTableEntry(indexCounter++, 144, "12ft", .67, -3500, -3200, true));
 		table.add(new ShooterTableEntry(indexCounter++, 156, "13ft", .68, -3617, -3317, false));
 		table.add(new ShooterTableEntry(indexCounter++, 168, "14ft", .69, -3733, -3433, false));
-		table.add(new ShooterTableEntry(indexCounter++, 172, "14' 4ft", .69, -3771, -3471, false));
-		table.add(new ShooterTableEntry(indexCounter++, 175, "14' 7ft", .69, -3811, -3511, false));
 		table.add(new ShooterTableEntry(indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
 		
 		return table;
 	}
 
+	private LinkedList<ShooterTableEntry> LoadAutonTable() {
+
+		LinkedList<ShooterTableEntry> table = new LinkedList<ShooterTableEntry>();
+		
+		int indexCounter = 0;
+		//======================================================================================
+		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
+		//======================================================================================
+
+		table.add(new ShooterTableEntry(indexCounter++, 172, "14' 4ft", .69, -3771, -3471, false));
+		table.add(new ShooterTableEntry(indexCounter++, 175, "14' 7ft", .69, -3811, -3511, false));
+		
+		return table;
+	}
+	
 }

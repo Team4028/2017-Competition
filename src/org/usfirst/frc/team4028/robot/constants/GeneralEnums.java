@@ -23,7 +23,8 @@ public class GeneralEnums {
 		TWO_GEAR
 	}
 	
-	public enum ALLIANCE {
+	public enum ALLIANCE_COLOR {
+		USE_FMS,
 		BLUE_ALLIANCE,
 		RED_ALLIANCE
 	}

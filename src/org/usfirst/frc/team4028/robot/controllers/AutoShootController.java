@@ -37,7 +37,7 @@ public class AutoShootController {
 	}
 	
 	public void LoadTargetDistanceInInches(int inches) {
-		_shooterTableEntry = _shooterTable.getEntryForDistance(inches);
+		_shooterTableEntry = _shooterTable.getAutonEntryForDistance(inches);
 	}
 	
 	public void RunShooterAtTargetSpeed() {

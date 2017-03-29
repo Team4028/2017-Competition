@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================
 //0			Sebas	 	6.Mar.2017	Initial Version
+//1			TomB		29.Mar.2017	Implemented support for Alliance selection to determine Gyro Turn Angle
 //------------------------------------------------------
 //=====> For Changes see Sebas
 public class HangCenterGearAndShoot {
@@ -25,7 +27,16 @@ public class HangCenterGearAndShoot {
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
+	private ALLIANCE_COLOR _allianceColor;
 	
+	private double _gyroTurnTargetAngle;
+	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -45.0;
+	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -55.0;
+
+	private int _targetShootingDistanceInInches;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 175;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 172;
+
 	private enum AUTON_STATE {
 		UNDEFINED, 
 		MOVE_TO_TARGET,
@@ -49,7 +60,7 @@ public class HangCenterGearAndShoot {
 	// constructors follow
 	//============================================================================================
 	public HangCenterGearAndShoot(AutoShootController autoShoot, GearHandler gearHandler, ChassisAutoAimController autoAim,  
-			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController) {
+			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
 		// these are the subsystems that this auton routine needs to control
 		_autoShootController = autoShoot;
 		_gearHandler = gearHandler;
@@ -57,6 +68,22 @@ public class HangCenterGearAndShoot {
 		_shooter = shooter;
 		_autoAim = autoAim;
 		_trajController = trajController;
+		_allianceColor = allianceColor;
+		
+		// determine Fixed Gyro Turn Angle based on Alliance Color
+		switch(_allianceColor)
+		{
+			case BLUE_ALLIANCE:
+				_gyroTurnTargetAngle = BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE;
+				_targetShootingDistanceInInches = BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+				break;
+				
+			case RED_ALLIANCE:
+				_gyroTurnTargetAngle = RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE;
+				_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+				break;
+		}
+		
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -68,7 +95,7 @@ public class HangCenterGearAndShoot {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
-		_autoShootController.LoadTargetDistanceInInches(175);
+		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
 		
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
@@ -137,13 +164,16 @@ public class HangCenterGearAndShoot {
       			
       		case MOVE_BACK:
       			_autoShootController.RunShooterAtTargetSpeed();
+      			
       			if (_trajController.onTarget()) {
       				// disable the thread
       				_trajController.disable();
       				
       				// set target delta turn angle
       				//_autoAim.loadNewTarget(-45.0);   // red
-      				_autoAim.loadNewTarget(55.0);	 // BLUE
+      				//_autoAim.loadNewTarget(55.0);	 // BLUE
+      				_autoAim.loadNewTarget(_gyroTurnTargetAngle);
+      				
       				// chg state
       				_autonState = AUTON_STATE.GYRO_TURN;
       				DriverStation.reportError("===> Chg state from MOVE_BACK to TURN", false);
@@ -168,15 +198,20 @@ public class HangCenterGearAndShoot {
       			
       		case VISION_TURN:
       			_autoShootController.AimWithVision();
+      			
       			if(_autoShootController.IsReadyToShoot()) {
-      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				// start shooter feeder motors
       				_shooter.ToggleRunShooterFeeder();
+      				
+      				// chg state
       				_autonState = AUTON_STATE.SHOOT;
+      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
       			}
-      			//_autonState = AUTON_STATE.FINISHED;
+      			
       			break;
       			
       		case SHOOT:
+      			// start shooter feeder motors reentrant function
       			_shooter.RunShooterFeederReentrant();
       			break;
       			

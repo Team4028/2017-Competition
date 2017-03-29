@@ -10,6 +10,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.HangRetrievalGear;
 import org.usfirst.frc.team4028.robot.autonRoutines.HitHopper;
 import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
@@ -81,6 +82,7 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	private TELEOP_MODE _teleopMode;
 	private AUTON_MODE _autonMode;
+	private ALLIANCE_COLOR _allianceColor;
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Controllers
@@ -110,6 +112,7 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	String _buildMsg = "?";
 	ShooterTable _shooterTable;
+	String _fmsDebugMsg = "?";
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// Code executed 1x at robot startup																		ROBOT INIT
@@ -174,6 +177,12 @@ public class Robot extends IterativeRobot {
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
+		// debug info for FMS Alliance sensing
+		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
+		ALLIANCE_COLOR allianceColor = _dashboardInputs.get_allianceColor();
+		_fmsDebugMsg = "Is FMS Attached: [" + isFMSAttached + "] Alliance: [" + allianceColor + "]";
+		DriverStation.reportWarning(">>>>> " + _fmsDebugMsg + " <<<<<<", false);
+		
 		//Update Dashboard Fields (push all fields to dashboard)
 		OutputAllToSmartDashboard();
 	}
@@ -271,6 +280,8 @@ public class Robot extends IterativeRobot {
     	// =====================================
 		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
+    	_allianceColor = _dashboardInputs.get_allianceColor();
+    	
     	_autonMode = _dashboardInputs.get_autonMode();
 
     	// =====================================
@@ -306,7 +317,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassisAutoAimGyro, _hangGearController, _shooter, _trajController);
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassisAutoAimGyro, _hangGearController, _shooter, _trajController, _allianceColor);
 				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
@@ -906,6 +917,7 @@ public class Robot extends IterativeRobot {
     	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
     	
     	SmartDashboard.putString("Robot Build", _buildMsg);
+    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
