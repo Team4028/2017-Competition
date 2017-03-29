@@ -702,7 +702,7 @@ public class Shooter
 		}
 		
 		// currentShooterTableValues
-		currentShooterTableValues = String.format("[%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
+		currentShooterTableValues = String.format("[#%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
 				_currentShooterTableEntry.Index,
 				suffix,
 				_currentShooterTableEntry.SliderPosition,
@@ -711,6 +711,7 @@ public class Shooter
 				_currentShooterTableEntry.Description);
 		
 		SmartDashboard.putString("ShooterTable", currentShooterTableValues);
+		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);
 	}
 	
 	//============================================================================================
