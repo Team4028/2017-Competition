@@ -229,6 +229,7 @@ public class Shooter
 		_currentShooterTableEntry = shooterTableEntry;
 		_lastShooterTableEntry = shooterTableEntry;
 		
+		ShooterMotorsReentrant();
 		// we use a 2% error threshhold
 		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
 				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {

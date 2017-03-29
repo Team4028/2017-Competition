@@ -170,6 +170,13 @@ public class Chassis {
 	// stop the motors
 	public void FullStop() { ArcadeDrive(0.0, 0.0); }
 	
+	public void EnableBrakeMode(boolean isEnabled) {
+		_leftDriveMaster.enableBrakeMode(isEnabled);
+		_leftDriveSlave.enableBrakeMode(isEnabled);
+		_rightDriveMaster.enableBrakeMode(isEnabled);
+		_rightDriveSlave.enableBrakeMode(isEnabled);
+	}
+	
 	// shifts between high & low gear
 	public void ShiftGear(GearShiftPosition gear) {
 		// send cmd to to solenoids
@@ -190,14 +197,10 @@ public class Chassis {
 		}
 	}
 	
-	public void ToggleShiftGear()
-	{
-		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) 
-		{
+	public void ToggleShiftGear() {
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
 			ShiftGear(GearShiftPosition.LOW_GEAR);
-		} 
-		else 
-		{	
+		} else {	
 			ShiftGear(GearShiftPosition.HIGH_GEAR);
 		}
 	}
@@ -235,16 +238,6 @@ public class Chassis {
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
-	
-	// Returns the current shifter position (gear)
-	/*public GearShiftPosition getGearShiftPosition() {
-		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION)
-			return GearShiftPosition.HIGH_GEAR;
-		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION)
-			return GearShiftPosition.LOW_GEAR;
-		else
-			return GearShiftPosition.UNKNOWN;		
-	}*/
 	
 	public void setDriveSpeedScalingFactor(double speedScalingFactor) {
 		// for safety, clamp the scaling factor to max of +1, -1

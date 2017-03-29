@@ -15,11 +15,8 @@ public class NavXGyro {
 	
 	public NavXGyro(SPI.Port port) {
         try {
-			/***********************************************************************
-			 * navX-MXP:
-			 * - Communication via RoboRIO MXP (SPI, I2C, TTL UART) and USB.            
-			 * - See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface.
-			 ************************************************************************/
+			// Communication via RoboRIO MXP (SPI)           
+			 
         	_navXSensor = new AHRS(port); 
         } 
         catch (RuntimeException ex ) {
@@ -40,9 +37,7 @@ public class NavXGyro {
 	}
 	
 	// update the Dashboard with any NavX specific data values
-	public void OutputToSmartDashboard() {
-	}
+	public void OutputToSmartDashboard() {}
 	
-	public void UpdateLogData(LogData logData) {
-	}
+	public void UpdateLogData(LogData logData) {}
 }

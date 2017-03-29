@@ -3,12 +3,8 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
-import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -24,7 +20,6 @@ public class TurnAndShoot {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
-	private Chassis _chassis;
 	private TrajectoryDriveController _trajController;
 	private ChassisAutoAimController _autoAim;
 	
@@ -37,11 +32,10 @@ public class TurnAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TurnAndShoot(GearHandler gearHandler, Chassis chassis, ChassisAutoAimController autoAim, NavXGyro navX, Shooter shooter, TrajectoryDriveController trajController) {
+	public TurnAndShoot(GearHandler gearHandler, ChassisAutoAimController autoAim, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_shooter = shooter;
-		_chassis = chassis;
 		_autoAim = autoAim;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
@@ -56,7 +50,6 @@ public class TurnAndShoot {
 		_isStillRunning = true;
 		
 		_autoAim.loadNewTarget(-45.0);
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.TURN_AND_SHOOT, false);
 		_trajController.enable();

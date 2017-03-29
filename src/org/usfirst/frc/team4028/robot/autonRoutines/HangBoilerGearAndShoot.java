@@ -3,9 +3,6 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
@@ -21,8 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class HangBoilerGearAndShoot {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
-	private Chassis _chassis;
-	private NavXGyro _navX;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
@@ -46,12 +41,10 @@ public class HangBoilerGearAndShoot {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangBoilerGearAndShoot(GearHandler gearHandler, Chassis chassis, NavXGyro navX, 
-			HangGearController hangGear, Shooter shooter, TrajectoryDriveController trajController) {
+	public HangBoilerGearAndShoot(GearHandler gearHandler, HangGearController hangGear, 
+			Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
-		_chassis = chassis;
-		_navX = navX;
 		_hangGearController = hangGear;
 		_shooter = shooter;
 		_trajController = trajController;
@@ -67,7 +60,6 @@ public class HangBoilerGearAndShoot {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
 		_trajController.enable();
