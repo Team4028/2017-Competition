@@ -16,7 +16,7 @@ public class PIDCalculator {
 	private double _setpoint = 0.0;
 	private double _error = 0.0;
 	private double _result = 0.0;
-	private double _deadband = 3.0;
+	private double _deadband = 5.0;
 	
 	public PIDCalculator(double Kp, double Ki, double Kd) {
 		_p = Kp;

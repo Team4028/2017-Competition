@@ -33,6 +33,7 @@ public class HangCenterGearAndShoot {
 		MOVE_BACK,
 		GYRO_TURN,
 		VISION_TURN,
+		SHOOT,
 		FINISHED
 	}
 	
@@ -67,7 +68,7 @@ public class HangCenterGearAndShoot {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
-		_autoShootController.LoadTargetDistanceInInches(117);
+		_autoShootController.LoadTargetDistanceInInches(175);
 		
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
@@ -141,8 +142,8 @@ public class HangCenterGearAndShoot {
       				_trajController.disable();
       				
       				// set target delta turn angle
-      				_autoAim.loadNewTarget(-45.0);
-      				
+      				//_autoAim.loadNewTarget(-45.0);   // red
+      				_autoAim.loadNewTarget(55.0);	 // BLUE
       				// chg state
       				_autonState = AUTON_STATE.GYRO_TURN;
       				DriverStation.reportError("===> Chg state from MOVE_BACK to TURN", false);
@@ -169,8 +170,14 @@ public class HangCenterGearAndShoot {
       			_autoShootController.AimWithVision();
       			if(_autoShootController.IsReadyToShoot()) {
       				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				_shooter.ToggleRunShooterFeeder();
+      				_autonState = AUTON_STATE.SHOOT;
       			}
       			//_autonState = AUTON_STATE.FINISHED;
+      			break;
+      			
+      		case SHOOT:
+      			_shooter.RunShooterFeederReentrant();
       			break;
       			
       		case FINISHED:

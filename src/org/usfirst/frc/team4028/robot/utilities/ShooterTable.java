@@ -153,6 +153,8 @@ public class ShooterTable {
 		table.add(new ShooterTableEntry(indexCounter++, 144, "12ft", .67, -3500, -3200, true));
 		table.add(new ShooterTableEntry(indexCounter++, 156, "13ft", .68, -3617, -3317, false));
 		table.add(new ShooterTableEntry(indexCounter++, 168, "14ft", .69, -3733, -3433, false));
+		table.add(new ShooterTableEntry(indexCounter++, 172, "14' 4ft", .69, -3771, -3471, false));
+		table.add(new ShooterTableEntry(indexCounter++, 175, "14' 7ft", .69, -3811, -3511, false));
 		table.add(new ShooterTableEntry(indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
 		
