@@ -13,7 +13,7 @@ import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
@@ -38,7 +38,6 @@ import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -129,7 +128,7 @@ public class Robot extends IterativeRobot {
         //===================
 		_ballInfeed = new BallInfeed(RobotMap.BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR, 
 										RobotMap.PCM_CAN_BUS_ADDR, 
-										RobotMap.BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT);
+										RobotMap.BALL_FLOOR_INFEED_EXTEND_PCM_PORT);
 		
 		_chassis = new Chassis(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR, 
 								RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR, 
@@ -497,7 +496,7 @@ public class Robot extends IterativeRobot {
     	// #### Telop Controller ####
     	_teleopMode = TELEOP_MODE.STANDARD;	// default to std mode
     	
-    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
+    	_roboRealmClient.ChangeToCamera(VISION_CAMERAS.BOILER);
     	
     	// #### Lidar starts doing ####
     	//if(_lidar != null)	{ _lidar.start(); }	//TODO: resolve timeout
@@ -752,7 +751,6 @@ public class Robot extends IterativeRobot {
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
 				//=====================
-		      	/*
 		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
 		      		_gearHandler.SpinInfeedWheelsVBus(1.0);
 		      	}
@@ -761,8 +759,8 @@ public class Robot extends IterativeRobot {
 		      	}
 		      	else {
 		      		_gearHandler.SpinInfeedWheelsVBus(0.0);
-		      	} */
-		      	
+		      	} 
+		      	/*
 		      	if (_driversStation.getIsDriver_InfeedGear_BtnJustPressed()) {
 		      		_autoShootController.InitializeVisionAiming();
 		      	}
@@ -771,7 +769,7 @@ public class Robot extends IterativeRobot {
 		      		if (_autoShootController.IsReadyToShoot()) {
 		      			DriverStation.reportError("Ready to SHOOT", false);
 		      		}
-		      	}
+		      	} */
 		      	
 				//=====================
 		    	// ====> Enter Gear Hang Mode

@@ -281,7 +281,6 @@ public class TrajectoryDriveController {
 				_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			}
 			
-			
 			_chassis.TankDrive(_leftPower - _turn, _rightPower + _turn);
 		}
 	}
@@ -298,12 +297,12 @@ public class TrajectoryDriveController {
 		DriverStation.reportError("Enabled", false);
 	}
 	
-	public void disable() {
-		_isEnabled = false;
+	public void disable() { 
+		_isEnabled = false; 
 	}
 	
-	public boolean isEnable() {
-		return _isEnabled;
+	public boolean isEnable() { 
+		return _isEnabled; 
 	}
 	
 	public void isVisionTrackingEnabled(boolean isEnabled) {
@@ -353,8 +352,7 @@ public class TrajectoryDriveController {
 				}
 				try {
 					Thread.sleep(20);
-				}
-				catch(InterruptedException e) {
+				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
 			}

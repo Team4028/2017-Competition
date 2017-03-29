@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
@@ -27,8 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 
  *     	//_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
  */
-public class RoboRealmClient 
-{
+public class RoboRealmClient {
 	// Define local working variables
  	private RoboRealmAPI _rrAPI;
  	
@@ -89,8 +88,7 @@ public class RoboRealmClient
 	// constructors follow
 	//============================================================================================
     public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, 
-    		int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
-    {        	
+    		int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
     	
@@ -98,15 +96,12 @@ public class RoboRealmClient
     	Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
     	
     	// try to connect
-        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo))
-        {
+        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo)) {
         	DriverStation.reportError("Could not connect to RoboRealm!", false);
         	System.out.println("====> Could not connect to RoboRealm!");
         	
         	_isConnected = false;
-        }
-        else
-        {
+        } else {
         	DriverStation.reportWarning("Connected to RoboRealm!", false);
         	System.out.println("====> Connected to RoboRealm!");
         	
@@ -138,19 +133,16 @@ public class RoboRealmClient
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
-    public void TestConnect()
-    {
+    public void TestConnect() {
     	Dimension fovDimensions = _rrAPI.getDimension();
     }
     
-    public void TurnAllVisionLEDsOff()
-    {
+    public void TurnAllVisionLEDsOff() {
 		_gearCamLED.set(false);
 		_shooterCamLED.set(false);
     }
     
-    public void TurnGearVisionLEDsOn()
-    {
+    public void TurnGearVisionLEDsOn() {
 		_shooterCamLED.set(false);
 		try {
 			Thread.sleep(2);
@@ -161,8 +153,7 @@ public class RoboRealmClient
 		_gearCamLED.set(true);
     }
     
-    public void TurnBoilerrVisionLEDsOn()
-    {
+    public void TurnBoilerrVisionLEDsOn() {
     	_gearCamLED.set(false);
 		try {
 			Thread.sleep(2);
@@ -174,12 +165,10 @@ public class RoboRealmClient
     }
     
     // this method changes the active roborealm camera / program
-    public void ChangeToCamera(ViSION_CAMERAS visionCamera)
-    {
+    public void ChangeToCamera(VISION_CAMERAS visionCamera) {
     	_currentVisionCameraName = visionCamera.get_cameraName();
     	
-    	switch(visionCamera)
-    	{
+    	switch(visionCamera) {
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
 	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
@@ -205,19 +194,15 @@ public class RoboRealmClient
 
     
  	// this method switches the currently running pipeline program
- 	public void SwitchProgram(String pipeLineProgramFullPathName)
- 	{
+ 	public void SwitchProgram(String pipeLineProgramFullPathName) {
  		Boolean isPauseOk = _rrAPI.pause();
  		
  		System.out.println("====> Prepare to Switch Program");
  		
- 		if(isPauseOk)
-        {
+ 		if(isPauseOk) {
         	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
         	System.out.println("====> RoboRealm Program Paused succesfully!");
-        }
-        else
-        {
+        } else {
         	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
         	System.out.println("====>Error..Could not pause RoboRealm program!");
         }
@@ -226,34 +211,27 @@ public class RoboRealmClient
  		
  		Boolean isSwitchOk = _rrAPI.loadProgram(pipeLineProgramFullPathName);
  		
- 		if(isSwitchOk)
-        {
+ 		if(isSwitchOk) {
         	//DriverStation.reportError("RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName, false);
         	System.out.println("====> RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName);
-        }
-        else
-        {
+        } else {
         	//DriverStation.reportError("Error..Could not switch RoboRealm program!", false);
         	System.out.println("====> Error..Could not switch RoboRealm program!");
         }	
  		
  		Boolean isResumeOk = _rrAPI.resume();
  		
- 		if(isResumeOk)
-        {
+ 		if(isResumeOk) {
         	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
         	System.out.println("====> RoboRealm Program Resumed succesfully!");
-        }
-        else
-        {
+        } else {
         	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
         	System.out.println("====> Error..Could not resume RoboRealm program!");
         }
  	}
  	
 	// update the Dashboard with any Vision specific data values
-	public void OutputToSmartDashboard()
-	{
+	public void OutputToSmartDashboard() {
 		String dashboardMsg = "";
 		
 		if( get_isVisionDataValid()){
@@ -262,16 +240,14 @@ public class RoboRealmClient
 							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
 							+ " Blob Count= " + _newTargetRawData.BlobCount 
 							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
-		}
-		else {
+		} else {
 			dashboardMsg = "Vision DATA NOT VALID";
 		}
 		
 		SmartDashboard.getString("VIsion", dashboardMsg);		
 	} 	
 	
-	public void UpdateLogData(LogData logData)
-	{
+	public void UpdateLogData(LogData logData) {
 		logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
 		logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
 	}
@@ -281,8 +257,7 @@ public class RoboRealmClient
 	//=========================================================================	
  	
 	// poll RoboRealm to read current values
- 	public void update() 
- 	{ 
+ 	public void update() { 
  	    synchronized (_targetDataMutex) {
 	 		long startOfCallTimestamp = new Date().getTime();
 	 		
@@ -296,19 +271,16 @@ public class RoboRealmClient
 	 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
 	 	    _newTargetRawData = null;
 	 	    
-	 	    if (_vector==null)
-	 	    {
+	 	    if (_vector==null) {
 	 	    	// write 1st 10 errors then every 50
-	 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0)
-	 	    	{
+	 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0) {
 	 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
 	 	    	}
 	 	    	
 	 	    	//Increment bad data counter
 	 	    	_badDataCounter += 1;
 	 	    }
-	 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE)
-	 	    {
+	 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE) {
 	 	    	_newTargetRawData = new RawImageData();
 	 	    	
 	 	    	// parse the results and build the image data
@@ -351,8 +323,7 @@ public class RoboRealmClient
 	 	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees * 100) / 100.0;	
 	 	    	
 	 	    	// limit spamming
-	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000)
-	 	    	{
+	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 		    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
 		    							+ "|Camera= " + _newTargetRawData.CameraType 
 		    							+ "|Angle= " + _fovCenterToTargetXAngleRawDegrees 
@@ -365,34 +336,25 @@ public class RoboRealmClient
 	 	    	
 	 	    	//Reset the counter 
 	 	    	_badDataCounter = 0;
-	 	    }
-	 	    else
-	 	    {
+	 	    } else {
 	 	    	System.out.println("Unexpected Array Size: " + _vector.size());
 	 	    	_newTargetRawData = null;
 	
 	 	    	//Increment bad data counter
 	 	    	_badDataCounter += 1;
 	 	    }
-
  	    }
  	} 
  	
-    private class RoboRealmUpdater extends TimerTask 
-    { 
- 		public void run() 
- 		{ 
- 			while(true) 
- 			{ 
+    private class RoboRealmUpdater extends TimerTask { 
+ 		public void run() { 
+ 			while(true) { 
  				update(); 
  				
- 				try 
- 				{ 
+ 				try { 
  					// sleep for 10 mSec
  					Thread.sleep(10); 
-				} 
- 				catch (InterruptedException e) 
- 				{ 
+				} catch (InterruptedException e) { 
  					e.printStackTrace(); 
 				} 
  			} 
@@ -402,40 +364,32 @@ public class RoboRealmClient
     // =========================================================
     // Property Accessors
     // =========================================================
- 	public double get_Angle() 
- 	{ 
+ 	public double get_Angle() { 
  		return _fovCenterToTargetXAngleRawDegrees; 
  	}
     
-    public double get_fovCenterToTargetXAngleRawDegrees()
-    {
+    public double get_fovCenterToTargetXAngleRawDegrees() {
     	return _fovCenterToTargetXAngleRawDegrees;
     }
     
-    public boolean get_isVisionDataValid()
-    {
+    public boolean get_isVisionDataValid() {
     	synchronized (_targetDataMutex) {
 	    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
 	    			&& (_newTargetRawData != null)
 	    			&& (_newTargetRawData.BlobCount == _expectedBlobCount)) {	
 	    		return true;
-	    	}
-	    	
-	    	else {
+	    	} else {
 	    		return false;
 	    	}
-
     	}
     }
     
-    public boolean get_isInGearHangPosition()
-    {
+    public boolean get_isInGearHangPosition() {
 		if (get_isVisionDataValid()
 				&& (_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) 
 				&& (_newTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE)) {
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
     }

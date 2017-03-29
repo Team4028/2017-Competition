@@ -319,8 +319,6 @@ public class DriversStation extends BaseDriversStation {
 		return super.getEngineeringRightTriggerCmd();
 	}
 	
-
-	
 	//============================================================================================
 	// Methods follow
 	//============================================================================================

@@ -23,8 +23,6 @@ public class CrossBaseLine {
 	private long _autonStartedTimeStamp;
 	private boolean _isStillRunning;
 	
-	// define class level constants
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================

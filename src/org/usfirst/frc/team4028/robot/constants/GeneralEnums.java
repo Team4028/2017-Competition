@@ -1,6 +1,5 @@
 package org.usfirst.frc.team4028.robot.constants;
 
-// this class contains general enums
 public class GeneralEnums {
 	public enum TELEOP_MODE {
 		STANDARD,
@@ -43,8 +42,7 @@ public class GeneralEnums {
 		TWO_GEAR_SUPER_SHORT
 	}
 	
-	public enum CAMERA_NAMES
-	{
+	public enum CAMERA_NAMES {
 		UNDEFINED 	("N/A"),
 		CAM0		("cam0"),
 		CAM1		("cam1"),
@@ -53,32 +51,27 @@ public class GeneralEnums {
 		
 		private final String _cameraName;  
 		
-		CAMERA_NAMES(String cameraName)
-		{
+		CAMERA_NAMES(String cameraName) {
 			_cameraName = cameraName;
 		}
 		
-		public String get_cameraName()
-		{
+		public String get_cameraName() {
 			return _cameraName;
 		}
 	}
 	
-	public enum ViSION_CAMERAS
-	{
+	public enum VISION_CAMERAS {
 		UNDEFINED 	("N/A"),
 		GEAR		("GEAR"),
 		BOILER		("Boiler");
 		
 		private final String _cameraName;  
 		
-		ViSION_CAMERAS(String cameraName)
-		{
+		VISION_CAMERAS(String cameraName) {
 			_cameraName = cameraName;
 		}
 		
-		public String get_cameraName()
-		{
+		public String get_cameraName() {
 			return _cameraName;
 		}
 	}

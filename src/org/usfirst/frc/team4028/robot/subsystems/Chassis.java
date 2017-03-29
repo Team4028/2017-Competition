@@ -40,7 +40,6 @@ public class Chassis {
 	private Value _shifterSolenoidPosition;
 	private long _lastCmdChgTimeStamp;
 	private double _driveSpeedScalingFactorClamped;
-	private boolean _isBrakeMode = false;
 	
 	//acc/dec variables
 	private boolean _isAccelDecelEnabled;
@@ -78,7 +77,6 @@ public class Chassis {
     	// ===================
     	_leftDriveMaster = new CANTalon(talonLeftMasterCanBusAddr);
     	_leftDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
-    	_leftDriveMaster.enableBrakeMode(_isBrakeMode);							// default to brake mode DISABLED
     	_leftDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_leftDriveMaster.configEncoderCodesPerRev(1850);
     	_leftDriveMaster.reverseSensor(false);  							// do not invert encoder feedback
@@ -87,7 +85,6 @@ public class Chassis {
 		_leftDriveSlave = new CANTalon(talonLeftSlave1CanBusAddr);
 	   	_leftDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
 	   	_leftDriveSlave.set(talonLeftMasterCanBusAddr);
-	   	_leftDriveSlave.enableBrakeMode(_isBrakeMode);							// default to brake mode DISABLED
 	    _leftDriveSlave.enableLimitSwitch(false, false);
 
     	// ===================
@@ -95,7 +92,6 @@ public class Chassis {
     	// ===================
 		_rightDriveMaster = new CANTalon(talonRightMasterCanBusAddr);
 		_rightDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
-		_rightDriveMaster.enableBrakeMode(_isBrakeMode);							// default to brake mode DISABLED
     	_rightDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_rightDriveMaster.configEncoderCodesPerRev(1850);
     	_rightDriveMaster.reverseSensor(true);  							// do not invert encoder feedback
@@ -104,7 +100,6 @@ public class Chassis {
 		_rightDriveSlave = new CANTalon(talonRightSlave1CanBusAddr);
 		_rightDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
 		_rightDriveSlave.set(talonRightMasterCanBusAddr);
-		_rightDriveSlave.enableBrakeMode(_isBrakeMode);							// default to brake mode DISABLED
 		_rightDriveSlave.enableLimitSwitch(false, false);
     	  	
     	//====================
@@ -118,6 +113,8 @@ public class Chassis {
     	// Arcade Drive configured to drive in "2 motor per side setup, 
     	//	other motors follow master as slaves 
     	_robotDrive = new RobotDrive(_leftDriveMaster, _rightDriveMaster);
+    	
+    	EnableBrakeMode(false); // Disable motors on drive talons
     
     	//set default scaling factor
     	_driveSpeedScalingFactorClamped = 1.0;

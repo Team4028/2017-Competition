@@ -31,7 +31,7 @@ public class HangCenterGearAndShoot {
 	
 	private double _gyroTurnTargetAngle;
 	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -45.0;
-	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -55.0;
+	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 55.0; // These angles are not the same since the shooter is on the side of the robot 
 
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 175;
@@ -71,8 +71,7 @@ public class HangCenterGearAndShoot {
 		_allianceColor = allianceColor;
 		
 		// determine Fixed Gyro Turn Angle based on Alliance Color
-		switch(_allianceColor)
-		{
+		switch(_allianceColor) {
 			case BLUE_ALLIANCE:
 				_gyroTurnTargetAngle = BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE;
 				_targetShootingDistanceInInches = BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
@@ -113,7 +112,6 @@ public class HangCenterGearAndShoot {
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() { 	
       	switch (_autonState) {
-      	
       		case MOVE_TO_TARGET:
       			if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so

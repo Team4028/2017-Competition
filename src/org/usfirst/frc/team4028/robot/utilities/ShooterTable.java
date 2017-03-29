@@ -10,23 +10,22 @@ import java.util.LinkedList;
 //------------------------------------------------------
 
 public class ShooterTable {
-
 	// define class level working variables
-	private LinkedList<ShooterTableEntry> _telopTable = null;
+	private LinkedList<ShooterTableEntry> _teleopTable = null;
 	private LinkedList<ShooterTableEntry> _autonTable = null;
 	private int _currentIndex = 0;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public ShooterTable(){
-		_telopTable = LoadTable();
+	public ShooterTable() {
+		_teleopTable = LoadTable();
 		_autonTable = LoadAutonTable();
 		
 		// set the initial value of the current index to the 1st one marked as default
 		_currentIndex = 1;
 		ShooterTableEntry ste;
-		Iterator<ShooterTableEntry> itr = _telopTable.iterator();
+		Iterator<ShooterTableEntry> itr = _teleopTable.iterator();
 		while(itr.hasNext()) {
 			ste = itr.next();
 			if (ste.IsDefault == true) {
@@ -39,44 +38,38 @@ public class ShooterTable {
 	//============================================================================================
 	// methods follow
 	//============================================================================================
-	public ShooterTableEntry getNextEntry()
-	{
+	public ShooterTableEntry getNextEntry() {
 		if(!get_IsAtUpperEntry()) {
 			_currentIndex++;
 		}
 		
-		return _telopTable.get(_currentIndex);
+		return _teleopTable.get(_currentIndex);
 	}
 	
-	public ShooterTableEntry getCurrentEntry()
-	{
-		return _telopTable.get(_currentIndex);
+	public ShooterTableEntry getCurrentEntry() {
+		return _teleopTable.get(_currentIndex);
 	}
 	
-	public ShooterTableEntry getPreviousEntry()
-	{
+	public ShooterTableEntry getPreviousEntry() {
 		if(!get_IsAtLowerEntry()) {
 			_currentIndex--;
 		}
 
-		return _telopTable.get(_currentIndex);
+		return _teleopTable.get(_currentIndex);
 	}
 	
-	public ShooterTableEntry getAutonEntryForDistance(int targetDistanceInInches)
-	{
-		return getEntryForDistance(targetDistanceInInches, _telopTable);
-	}
-	
-	public ShooterTableEntry getTelopEntryForDistance(int targetDistanceInInches)
-	{
+	public ShooterTableEntry getAutonEntryForDistance(int targetDistanceInInches) {
 		return getEntryForDistance(targetDistanceInInches, _autonTable);
+	}
+	
+	public ShooterTableEntry getTelopEntryForDistance(int targetDistanceInInches) {
+		return getEntryForDistance(targetDistanceInInches, _teleopTable);
 	}
 	
 	// Return the correct SHooterTableEntry for a given distance
 	// ShooterTableEntry ste = _shooterTable.getEntryForDistance(130);
 	// System.out.println("..STE Entry: " + ste.Description);
-	private ShooterTableEntry getEntryForDistance(int targetDistanceInInches, LinkedList<ShooterTableEntry> table)
-	{
+	private ShooterTableEntry getEntryForDistance(int targetDistanceInInches, LinkedList<ShooterTableEntry> table) {
 		// set the initial value of the current index to the 1st one marked as default
 		int currentIndex = 1;
 		ShooterTableEntry selectedSte = null;
@@ -105,16 +98,14 @@ public class ShooterTable {
 		}
 		else if((previousSte == null) || (currentSte == previousSte)){
 			selectedSte = currentSte;
-		}
-		else {
+		} else {
 			// we have 2 options, need to decide which one is closer
 			int previousSteDeltaDistance = Math.abs(targetDistanceInInches - previousSte.DistanceInInches);
 			int thisSteDeltaDistance = Math.abs(currentSte.DistanceInInches - targetDistanceInInches);
 			
 			if(thisSteDeltaDistance <= previousSteDeltaDistance) {
 				selectedSte = currentSte;
-			}
-			else {
+			} else {
 				selectedSte = previousSte;
 			}
 		}
@@ -126,22 +117,18 @@ public class ShooterTable {
 	// properties follow
 	//============================================================================================
 	
-	public Boolean get_IsAtUpperEntry()
-	{
-		if (_currentIndex == _telopTable.size() - 1){
+	public Boolean get_IsAtUpperEntry() {
+		if (_currentIndex == _teleopTable.size() - 1){
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
 	
-	public Boolean get_IsAtLowerEntry()
-	{
+	public Boolean get_IsAtLowerEntry() {
 		if (_currentIndex == 0){
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}

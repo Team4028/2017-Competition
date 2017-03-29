@@ -1,6 +1,6 @@
 package org.usfirst.frc.team4028.robot.controllers;
 
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
 import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
@@ -28,13 +28,9 @@ public class AutoShootController {
 		_chassisAutoAim.setMaxMinOutput(0.55, -0.55);
 	}
 	
-	public void EnableBoilerCam() {
-			_roboRealm.ChangeToCamera(ViSION_CAMERAS.BOILER);
-	}
+	public void EnableBoilerCam() { _roboRealm.ChangeToCamera(VISION_CAMERAS.BOILER); }
 	
-	public void EnableGearCam() {
-			_roboRealm.ChangeToCamera(ViSION_CAMERAS.GEAR);
-	}
+	public void EnableGearCam()   { _roboRealm.ChangeToCamera(VISION_CAMERAS.GEAR); }
 	
 	public void LoadTargetDistanceInInches(int inches) {
 		_shooterTableEntry = _shooterTable.getAutonEntryForDistance(inches);

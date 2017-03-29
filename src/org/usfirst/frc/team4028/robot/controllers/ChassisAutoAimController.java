@@ -10,16 +10,16 @@ public class ChassisAutoAimController {
 	PIDCalculator _autoAimPID;
 	Chassis _chassis;
 	NavXGyro _navX;
-	double _setError = 0.0;
-	
-	// =========================================================
-	// Constructors
 	
 	public ChassisAutoAimController(Chassis chassis, NavXGyro navX, double p, double i, double d) {
 		_chassis = chassis;
 		_navX = navX;
 		_autoAimPID = new PIDCalculator(p, i, d);
 	}
+	
+	// =========================================================
+	// Methods
+	// =========================================================
 	
 	public boolean onTarget() {
 		return _autoAimPID.onTarget(); // Check if the PID loop error is within a set deadband
@@ -37,11 +37,12 @@ public class ChassisAutoAimController {
 	
 	public void update() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
+		if (motorOutput == 0.0) {
+			_chassis.EnableBrakeMode(true);
+		} else {
+			_chassis.EnableBrakeMode(false);
+		}
 		_chassis.TankDrive(-motorOutput, motorOutput);
-	}
-	
-	public void zeroVisionError() {
-		_setError = 0.0;
 	}
 	
 	public void zeroTotalError() {

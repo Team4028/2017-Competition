@@ -2,7 +2,7 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-//this class implements the logic for the simple "Do Nothing" auton
+//this class implements the logic for the "Do Nothing" auton
 //------------------------------------------------------
 //Rev		By		 	D/T			Desc
 //===		========	===========	=================================

@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.BoundaryException;
 
 public class PIDCalculator {
-	
 	private double _p; // "proportional" term
 	private double _i; // "integral" term
 	private double _d; // "derivative" term
@@ -52,8 +51,7 @@ public class PIDCalculator {
 		_deadband = deadband;
 	}
 	
-	public void setOutputRange(double minimumOutput, double maximumOutput) 
-	{
+	public void setOutputRange(double minimumOutput, double maximumOutput) {
 		if (minimumOutput > maximumOutput) {
 			throw new BoundaryException("Lower bound is greater than upper bound");
 		}
@@ -69,10 +67,8 @@ public class PIDCalculator {
 	public boolean onTarget() {
         return (Math.abs(_error) < _deadband);
     }
-
-    /**
-     * Reset all internal terms.
-     */
+	
+    // Reset all internal terms.
     public void reset() {
         _prevError = 0;
         _totalError = 0;

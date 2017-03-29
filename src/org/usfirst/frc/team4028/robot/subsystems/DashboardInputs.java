@@ -81,8 +81,7 @@ public class DashboardInputs {
 		SmartDashboard.putData("Alliance Chooser" , _allianceChooser);		
 	}
 	
-	private void ConfigCameraChoosers()
-	{
+	private void ConfigCameraChoosers() {
 		//====================================
 		//#ALL the Cameras
 		//=====================================
@@ -95,7 +94,6 @@ public class DashboardInputs {
 		
 		SmartDashboard.putData("Gear Camera Chooser", _gearCamChooser);
 		
-		
 		_shooterCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
 		_shooterCamChooser.addObject("s.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
@@ -105,8 +103,6 @@ public class DashboardInputs {
 		
 		SmartDashboard.putData("Shooter Camera Chooser", _shooterCamChooser);
 		
-		
-		
 		_climberCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
 		_climberCamChooser.addObject("c.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
@@ -115,8 +111,6 @@ public class DashboardInputs {
 		_climberCamChooser.addObject("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
 		
 		SmartDashboard.putData("Climber Camera Chooser", _climberCamChooser);
-		
-		
 		
 		_driverCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
@@ -132,8 +126,7 @@ public class DashboardInputs {
 	// Property Accessors follow
 	//============================================================================================
 	
-	public boolean getIsFMSAttached()
-	{
+	public boolean getIsFMSAttached() {
 		return DriverStation.getInstance().isFMSAttached();
 	}
 
@@ -145,8 +138,7 @@ public class DashboardInputs {
 	public ALLIANCE_COLOR get_allianceColor() {
 		_allianceColor =  _allianceChooser.getSelected();
 
-		switch (_allianceColor)
-		{
+		switch (_allianceColor) {
 			case BLUE_ALLIANCE:
 				return ALLIANCE_COLOR.BLUE_ALLIANCE;
 				
@@ -157,8 +149,7 @@ public class DashboardInputs {
 				if(getIsFMSAttached()) {
 					Alliance fmsAlliance = DriverStation.getInstance().getAlliance();
 					
-					switch(fmsAlliance)
-					{
+					switch(fmsAlliance) {
 						case Blue:
 							return ALLIANCE_COLOR.BLUE_ALLIANCE;
 							
@@ -178,26 +169,22 @@ public class DashboardInputs {
 		}
 	}
 	
-	public CAMERA_NAMES get_gearCam()
-	{
+	public CAMERA_NAMES get_gearCam() {
 		_gearCameraName = _gearCamChooser.getSelected();
 		return _gearCameraName;
 	}
 	
-	public CAMERA_NAMES get_shooterCam()
-	{
+	public CAMERA_NAMES get_shooterCam() {
 		_shooterCameraName = _shooterCamChooser.getSelected();
 		return _shooterCameraName;
 	}
 	
-	public CAMERA_NAMES get_climberCam()
-	{
+	public CAMERA_NAMES get_climberCam() {
 		_climberCameraName = _climberCamChooser.getSelected();
 		return _climberCameraName;
 	}
 	
-	public CAMERA_NAMES get_driverCam()
-	{
+	public CAMERA_NAMES get_driverCam() {
 		_driverCameraName = _driverCamChooser.getSelected();
 		return _driverCameraName;
 	}
