@@ -163,9 +163,11 @@ public class Robot extends IterativeRobot {
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
-												RobotMap.PCM_CAN_BUS_ADDR,
-												RobotMap.GEAR_LED_RING_PCM_PORT,
-												RobotMap.BOILER_LED_RING_PCM_PORT);
+												RobotMap.LED_RINGS_DIO_PORT);
+												
+												//RobotMap.PCM_CAN_BUS_ADDR,
+												//RobotMap.GEAR_LED_RING_PCM_PORT,
+												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
