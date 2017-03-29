@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.util;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.BoundaryException;
 
 public class PIDCalculator {
@@ -11,11 +12,11 @@ public class PIDCalculator {
 	private double _minimumOutput = -0.7;
 	private double _prevError = 0.0;
 	private double _totalError = 0.0;
-	private double _totalErrorCeiling = 15.0;
+	private double _totalErrorCeiling = 20.0;
 	private double _setpoint = 0.0;
 	private double _error = 0.0;
 	private double _result = 0.0;
-	private double _deadband = 0.5;
+	private double _deadband = 3.0;
 	
 	public PIDCalculator(double Kp, double Ki, double Kd) {
 		_p = Kp;
@@ -25,7 +26,7 @@ public class PIDCalculator {
 	
 	public double calculate (double input) {
 		_error = _setpoint - input;		
-		if (Math.abs(_error) < 5.0) {
+		if (Math.abs(_error) < 6.0) {
 			if (Math.abs(_totalError + _error) < _totalErrorCeiling) {
 				_totalError += _error;
 			} else {
@@ -37,6 +38,7 @@ public class PIDCalculator {
 		double proportionalError = Math.abs(_error) < _deadband ? 0 : _error;
 		
 		_result = (_p * proportionalError + _i * _totalError + _d * (_error - _prevError));
+		//DriverStation.reportError(Double.toString(_result), false);
 		
 		if (_result > _maximumOutput) {
             _result = _maximumOutput;

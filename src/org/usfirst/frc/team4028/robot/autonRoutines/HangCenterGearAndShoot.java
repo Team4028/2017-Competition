@@ -141,7 +141,7 @@ public class HangCenterGearAndShoot {
       				_trajController.disable();
       				
       				// set target delta turn angle
-      				_autoAim.loadNewTarget(-70.0);
+      				_autoAim.loadNewTarget(-45.0);
       				
       				// chg state
       				_autonState = AUTON_STATE.GYRO_TURN;
@@ -161,12 +161,15 @@ public class HangCenterGearAndShoot {
       				// chg state
       				_autoShootController.InitializeVisionAiming();
       				_autonState = AUTON_STATE.VISION_TURN;
-      				DriverStation.reportError("===> Chg state from TURN to SHOOT", false);
+      				DriverStation.reportError("===> Chg state from GYRO_TURN to VISION_TURN", false);
       			}
       			break;
       			
       		case VISION_TURN:
-      			_autoShootController.AimAndShootWhenReady();
+      			_autoShootController.AimWithVision();
+      			if(_autoShootController.IsReadyToShoot()) {
+      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      			}
       			//_autonState = AUTON_STATE.FINISHED;
       			break;
       			

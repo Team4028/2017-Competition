@@ -123,6 +123,10 @@ public class DriversStation extends BaseDriversStation {
 	public boolean getIsDriver_StartGearScoreSequence_BtnJustPressed() {
 		return super.getIsDriverBlueBtnXJustPressed();
 	}
+	
+	public boolean getIsDriver_InfeedGear_BtnJustPressed() {
+		return super.getIsDriverLeftBumperBtnJustPressed();
+	}
 			
 	// ===================================
 	// === driver Is Pressed buttons =====

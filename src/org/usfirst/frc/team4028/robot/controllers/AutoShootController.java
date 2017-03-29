@@ -12,8 +12,12 @@ public class AutoShootController {
 	ShooterTable _shooterTable;
 	ShooterTableEntry _shooterTableEntry;
 	RoboRealmClient _roboRealm;
-	double _visionTurnError;
-	double _visionAimingDeadband;
+	private long _onTargetStartTime;
+	private double _visionAimingDeadband = 1.0;
+	private boolean _isShooterAtTargetSpeed;
+	private boolean _isOnTarget;
+	private boolean _isOnTargetLastCycle;
+	private boolean _readyToShoot;
 	
 	public AutoShootController(ChassisAutoAimController chassisAutoAim, RoboRealmClient roboRealm, Shooter shooter, ShooterTable shooterTable){
 		_chassisAutoAim = chassisAutoAim;
@@ -21,6 +25,7 @@ public class AutoShootController {
 		_shooter = shooter;
 		_shooterTable = shooterTable;
 		_chassisAutoAim.setDeadband(0.5);
+		_chassisAutoAim.setMaxMinOutput(0.55, -0.55);
 	}
 	
 	public void EnableBoilerCam() {
@@ -36,7 +41,7 @@ public class AutoShootController {
 	}
 	
 	public void RunShooterAtTargetSpeed() {
-		_shooter.ShooterMotorsReentrant(_shooterTableEntry);
+		_isShooterAtTargetSpeed = _shooter.ShooterMotorsReentrant(_shooterTableEntry);
 	}
 	
 	public void InitializeVisionAiming() {
@@ -44,9 +49,28 @@ public class AutoShootController {
 		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 	}
 	
-	public void AimAndShootWhenReady() {
+	public void AimWithVision() {
 		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 		_chassisAutoAim.update();
 		//TODO: check magnitude of error, if under threshhold, shoot ball, else turn chassis
+		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) {
+			_isOnTarget = true;
+		} else {
+			_isOnTarget = false;
+		}
+		
+		if (_isOnTarget && !_isOnTargetLastCycle) {
+			_onTargetStartTime = System.currentTimeMillis();
+		}
+		
+		_isOnTargetLastCycle = _isOnTarget;
+	}
+	
+	public boolean IsReadyToShoot() {
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 1000) && _isOnTarget) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

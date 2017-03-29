@@ -169,8 +169,8 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.08, 0.0, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter, _shooterTable);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.07, 0.01, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
@@ -486,6 +486,8 @@ public class Robot extends IterativeRobot {
     	// #### Telop Controller ####
     	_teleopMode = TELEOP_MODE.STANDARD;	// default to std mode
     	
+    	_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
+    	
     	// #### Lidar starts doing ####
     	//if(_lidar != null)	{ _lidar.start(); }	//TODO: resolve timeout
     	
@@ -739,6 +741,7 @@ public class Robot extends IterativeRobot {
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
 				//=====================
+		      	/*
 		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
 		      		_gearHandler.SpinInfeedWheelsVBus(1.0);
 		      	}
@@ -747,6 +750,16 @@ public class Robot extends IterativeRobot {
 		      	}
 		      	else {
 		      		_gearHandler.SpinInfeedWheelsVBus(0.0);
+		      	} */
+		      	
+		      	if (_driversStation.getIsDriver_InfeedGear_BtnJustPressed()) {
+		      		_autoShootController.InitializeVisionAiming();
+		      	}
+		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
+		      		_autoShootController.AimWithVision();
+		      		if (_autoShootController.IsReadyToShoot()) {
+		      			DriverStation.reportError("Ready to SHOOT", false);
+		      		}
 		      	}
 		      	
 				//=====================
