@@ -48,7 +48,6 @@ public class AutoShootController {
 	public void AimWithVision() {
 		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 		_chassisAutoAim.update();
-		//TODO: check magnitude of error, if under threshhold, shoot ball, else turn chassis
 		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) {
 			_isOnTarget = true;
 		} else {

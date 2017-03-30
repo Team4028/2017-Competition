@@ -1,6 +1,5 @@
 package org.usfirst.frc.team4028.robot.util;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.BoundaryException;
 
 public class PIDCalculator {
@@ -83,8 +82,4 @@ public class PIDCalculator {
 	public double getError() {
         return _error;
     }
-	
-	public double getSetpoint() {
-		return _setpoint;
-	}
 }

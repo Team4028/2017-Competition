@@ -54,8 +54,6 @@ public class HangCenterGearAndShoot {
 	
 	private AUTON_STATE _autonState;
 	
-	// define class level constants
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================

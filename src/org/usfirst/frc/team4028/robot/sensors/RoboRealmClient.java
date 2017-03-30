@@ -1,8 +1,5 @@
 package org.usfirst.frc.team4028.robot.sensors;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -13,9 +10,6 @@ import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
-
-//import uk.co.geolib.geopolygons.*;
-//import uk.co.geolib.geolib.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;

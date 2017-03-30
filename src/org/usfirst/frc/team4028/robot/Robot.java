@@ -306,7 +306,7 @@ public class Robot extends IterativeRobot {
 				break;
 			
 			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _hangGearController, _shooter, _trajController);
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_autoShootController, _gearHandler, _hangGearController, _shooter, _trajController, _allianceColor);
 				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
@@ -326,8 +326,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_gearHandler, _shooter, _trajController);
-				_hitHopper.Initialize();
+				_hitHopper = new HitHopper(_autoShootController, _gearHandler, _shooter, _trajController, _allianceColor);
 				break;
 				
 			case TURN_AND_SHOOT:

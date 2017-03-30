@@ -88,5 +88,4 @@ public class DataLogger {
 	public String getLogFilePathName() {
 		return _logFilePathName;
 	}
-    
 }

@@ -165,7 +165,7 @@ public class ShooterTable {
 	}
 
 	private LinkedList<ShooterTableEntry> LoadAutonTable() {
-
+		
 		LinkedList<ShooterTableEntry> table = new LinkedList<ShooterTableEntry>();
 		
 		int indexCounter = 0;
@@ -178,5 +178,4 @@ public class ShooterTable {
 		
 		return table;
 	}
-	
 }
