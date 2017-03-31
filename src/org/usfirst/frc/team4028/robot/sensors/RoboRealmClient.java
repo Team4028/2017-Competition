@@ -229,11 +229,13 @@ public class RoboRealmClient {
 		String dashboardMsg = "";
 		
 		if( get_isVisionDataValid()){
-			dashboardMsg = "Camera= " + _newTargetRawData.CameraType
-							+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
-							+ " mSec=" + _newTargetRawData.ResponseTimeMSec
-							+ " Blob Count= " + _newTargetRawData.BlobCount 
-							+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
+			synchronized (_targetDataMutex) {
+				dashboardMsg = "Camera= " + _newTargetRawData.CameraType
+								+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
+								+ " mSec=" + _newTargetRawData.ResponseTimeMSec
+								+ " Blob Count= " + _newTargetRawData.BlobCount 
+								+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
+			}
 		} else {
 			dashboardMsg = "Vision DATA NOT VALID";
 		}

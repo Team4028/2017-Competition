@@ -690,22 +690,26 @@ public class Robot extends IterativeRobot {
     					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
     				// start motors on initial press
     				_shooter.ToggleRunShooterFeeder();
+    				_shooter.ToggleHopperCarousel();
     			}
     			else if(_driversStation.getEngineering_FireBall_BtnPressed()
     					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
     				// start motors on initial press
     				_shooter.ToggleRunShooterFeeder();
+    				_shooter.ToggleHopperCarousel();
     			}
     			
     			else if(_driversStation.getOperator_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// keep calling if still pressed
     				_shooter.RunShooterFeederReentrant();
+    				_shooter.RunHopperCarousel();
     			}
     			else if(_driversStation.getEngineering_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// keep calling if still pressed
     				_shooter.RunShooterFeederReentrant();
+    				_shooter.RunHopperCarousel();
     			}
     			
     			else if(!_driversStation.getOperator_FireBall_BtnPressed()
@@ -717,11 +721,11 @@ public class Robot extends IterativeRobot {
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// if it was running and is no longer pressed
     				_shooter.ToggleRunShooterFeeder();
-    			}
-    			else {
+    			} else {
     				// we need to shut off the motors if they were running in reverse and the reverse button was released
     				_shooter.CleanupRunShooterFeederInReverse();
     			}
+    			
     					
 		    	//=====================
 		    	// Gear Tilt Cmd
@@ -764,6 +768,7 @@ public class Robot extends IterativeRobot {
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
 				//=====================
+		      	
 		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
 		      		_gearHandler.SpinInfeedWheelsVBus(1.0);
 		      	}
@@ -923,7 +928,7 @@ public class Robot extends IterativeRobot {
     	
     	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
     	
-    	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+    	//if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
     	
     	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
     	

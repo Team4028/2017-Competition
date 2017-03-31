@@ -48,6 +48,7 @@ public class Shooter {
 	private CANTalon _highRollerMtr;
 	
 	private Servo _linearActuator;
+	private Servo _hopperCarousel;
 	
 	// define class level working variables
 	private ShooterTable _shooterTable;
@@ -67,6 +68,8 @@ public class Shooter {
 	private boolean _isShooterMotorsReentrantRunning = false;
 	private boolean _isShooterInfeedReentrantRunning = false;
 	private long _shooterInfeedReentrantRunningMsec;
+	
+	private long _hopperCarouselReentrantRunningMsec;
 	
 	//define class level PID constants
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
@@ -161,6 +164,9 @@ public class Shooter {
 		
 		// Slider
 		_linearActuator = new Servo(sliderPWMPort);
+		
+		// Hopper Carousel
+		_hopperCarousel = new Servo(8);
 		
 		// Default Feeder Subsystem working variables
 		_magicCarpetMtrTargetVBus = 0;
@@ -393,8 +399,24 @@ public class Shooter {
 	}
 	
 	//============================================================================================
-	// Run Magin Carpet / High Roller Motors
+	// Run Magin Carpet / High Roller Motors / Hopper Carousel
 	//============================================================================================
+	
+	public void ToggleHopperCarousel() {
+		_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
+	}
+	
+	public void RunHopperCarousel() {
+		
+		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
+			_hopperCarousel.setPosition(0.0);
+		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
+			_hopperCarousel.setPosition(1.0);
+		} else {
+			_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
+		}
+		
+	}
 	
 	public void ToggleRunShooterFeeder() {
 		// if current cmd is 0 or - if running in reverse, then start

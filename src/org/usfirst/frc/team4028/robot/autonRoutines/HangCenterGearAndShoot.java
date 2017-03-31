@@ -30,8 +30,8 @@ public class HangCenterGearAndShoot {
 	private ALLIANCE_COLOR _allianceColor;
 	
 	private double _gyroTurnTargetAngle;
-	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -40.0;
-	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 45.0; // These angles are not the same since the shooter is on the side of the robot 
+	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -45.0;
+	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 50.0; // These angles are not the same since the shooter is on the side of the robot 
 
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 175;

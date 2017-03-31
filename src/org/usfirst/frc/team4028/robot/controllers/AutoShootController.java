@@ -13,7 +13,7 @@ public class AutoShootController {
 	ShooterTableEntry _shooterTableEntry;
 	RoboRealmClient _roboRealm;
 	private long _onTargetStartTime;
-	private double _visionAimingDeadband = 1.3;
+	private double _visionAimingDeadband = 1.2;
 	private boolean _isShooterAtTargetSpeed;
 	private boolean _isOnTarget;
 	private boolean _isOnTargetLastCycle;
@@ -24,13 +24,13 @@ public class AutoShootController {
 		_roboRealm = roboRealm;
 		_shooter = shooter;
 		_shooterTable = shooterTable;
-		_chassisAutoAim.setDeadband(0.5);
+		_chassisAutoAim.setDeadband(0.5); // if under deadband, returns output of zero
 		_chassisAutoAim.setMaxMinOutput(0.55, -0.55);
 	}
 	
-	public void EnableBoilerCam() { _roboRealm.ChangeToCamera(VISION_CAMERAS.BOILER); }
+	public void EnableBoilerCam() { _roboRealm.ChangeToCamera(VISION_CAMERAS.BOILER); } // Change to Boiler Camera
 	
-	public void EnableGearCam()   { _roboRealm.ChangeToCamera(VISION_CAMERAS.GEAR); }
+	public void EnableGearCam()   { _roboRealm.ChangeToCamera(VISION_CAMERAS.GEAR); } // Change to Gear Camera
 	
 	public void LoadTargetDistanceInInches(int inches) {
 		_shooterTableEntry = _shooterTable.getAutonEntryForDistance(inches);
@@ -41,14 +41,14 @@ public class AutoShootController {
 	}
 	
 	public void InitializeVisionAiming() {
-		_chassisAutoAim.zeroTotalError();
+		_chassisAutoAim.zeroTotalError(); // Reset total error to reset i gain
 		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 	}
 	
 	public void AimWithVision() {
-		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
+		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226); // update target continuously
 		_chassisAutoAim.update();
-		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) {
+		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) { // On target if under vision aiming deadband
 			_isOnTarget = true;
 		} else {
 			_isOnTarget = false;
@@ -62,7 +62,7 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 1000) && _isOnTarget) {
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 700) && _isOnTarget) { // Ready to shoot if within deadband for longer than target time
 			return true;
 		} else {
 			return false;
