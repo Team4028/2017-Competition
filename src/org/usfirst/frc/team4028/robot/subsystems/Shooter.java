@@ -419,25 +419,25 @@ public class Shooter {
 			// 100 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 900) {	// 800 ; 500
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1800) {	// 800 ; 500
 			// 800 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 940) {	// 40; 20; 40
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1840) {	// 40; 20; 40
 			// 40 mSec pause
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(0.0);
 			RunHighRoller(0.0);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 980) {	// 40; 40
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1880) {	// 40; 40
 			// 40 mSec rev
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1020) {	// 40; 20; 40
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1920) {	// 40; 20; 40
 			// 40 mSec pause
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(0.0);

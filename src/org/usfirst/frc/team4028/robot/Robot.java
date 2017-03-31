@@ -171,7 +171,7 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.07, 0.01, 0.0);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
 		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
@@ -330,7 +330,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassisAutoAimGyro, _shooter, _trajController);
+				_turnAndShoot = new TurnAndShoot(_autoShootController, _gearHandler, _shooter, _trajController);
 				_turnAndShoot.Initialize();
 				break;
 				
@@ -591,10 +591,24 @@ public class Robot extends IterativeRobot {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
-		    	else {
+		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    		if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
+		    			_autoShootController.InitializeVisionAiming();
+		    		}
+		    		_autoShootController.AimWithVision();
+		    	} else {
 		    		// full stop
 			    	_chassis.ArcadeDrive(0.0, 0.0);
 		    	}
+		    	
+		    	// Turn on auto aiming with vision (for boiler)
+		    	/*
+		    	if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
+		    		_autoShootController.InitializeVisionAiming(); // Reset total error
+		    	}
+		    	if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    		_autoShootController.AimWithVision();
+		    	} */
 		    	
     			//============================================================================
     			// Fuel Infeed Cmd

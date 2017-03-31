@@ -1,7 +1,7 @@
 package org.usfirst.frc.team4028.robot.autonRoutines;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
-import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
+import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
@@ -18,25 +18,32 @@ import edu.wpi.first.wpilibj.DriverStation;
 //=====> For Changes see Sebas
 public class TurnAndShoot {
 	// define class level variables for Robot subsystems
+	private AutoShootController _autoShoot;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
-	private ChassisAutoAimController _autoAim;
 	
 	// define class level working variables
 	private long _autonStartedTimeStamp;
 	private boolean _isStillRunning;
 	
-	// define class level constants
+	private enum AUTON_STATE {
+		UNDEFINED, 
+		MOVE_TO_BASELINE,
+		AIM_WITH_VISION,
+		SHOOT
+	}
+	
+	private AUTON_STATE _autonState;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public TurnAndShoot(GearHandler gearHandler, ChassisAutoAimController autoAim, Shooter shooter, TrajectoryDriveController trajController) {
+	public TurnAndShoot(AutoShootController autoShoot, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
+		_autoShoot = autoShoot;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
-		_autoAim = autoAim;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -49,9 +56,12 @@ public class TurnAndShoot {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
-		_autoAim.loadNewTarget(-45.0);
+		_autonState = AUTON_STATE.MOVE_TO_BASELINE;
+		
+		_autoShoot.LoadTargetDistanceInInches(100);
+		
 		_trajController.configureIsHighGear(false);
-		_trajController.loadProfile(MOTION_PROFILE.TURN_AND_SHOOT, false);
+		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		DriverStation.reportWarning("===== Entering TurnAndShoot Auton =====", false);
 	}
@@ -60,23 +70,42 @@ public class TurnAndShoot {
 	// This is a LONG RUNNING method (it spans multiple scan cycles)
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
-		// =======================================
-		// if not complete, this must run concurrently with all auton routines
-		// =======================================
-      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
-      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
-      		//			we must treat it as a Reentrant function
-      		//			and automatically recall it until complete
-    		_gearHandler.ZeroGearTiltAxisReentrant();
-    	}
- 
-		if(_trajController.onTarget()) {
-			_trajController.disable();
-			_autoAim.update();
-			if(_autoAim.onTarget()) {
-				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
-			}
-		}
+      	switch (_autonState) {
+      		case MOVE_TO_BASELINE:
+      			if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+      	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
+      	      		//			we must treat it as a Reentrant function
+      	      		//			and automatically recall it until complete
+      	    		_gearHandler.ZeroGearTiltAxisReentrant();
+      	    	} else {
+      	    		_gearHandler.MoveGearToScorePosition();
+      	    	}
+      			
+      			if (_trajController.getCurrentSegment() > 70) {
+      				_autoShoot.RunShooterAtTargetSpeed();
+      			}
+      			
+      			if(_trajController.onTarget()) {
+      				_trajController.disable();
+      				_autoShoot.InitializeVisionAiming();
+      				_autonState = AUTON_STATE.AIM_WITH_VISION;
+      			}
+      			break;
+      			
+      		case AIM_WITH_VISION:
+      			_autoShoot.AimWithVision();
+      			
+      			if (_autoShoot.IsReadyToShoot()) {
+      				_shooter.ToggleRunShooterFeeder();
+      				
+      				_autonState = AUTON_STATE.SHOOT;
+      			}
+      			break;
+      			
+      		case SHOOT:
+      			_shooter.RunShooterFeederReentrant();
+      			break;
+      	}
 		// cleanup
 		if(!_isStillRunning) {
 			DriverStation.reportWarning("===== Completed TurnAndShoot Auton =====", false);

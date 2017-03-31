@@ -244,6 +244,11 @@ abstract class BaseDriversStation {
 				&& !_previousValues.getIsOperatorRightThumbstickPressed());
 	}	
 	
+	protected boolean getIsOperatorLeftTriggerJustPressed() {
+		return (_currentValues.getIsOperatorLeftTriggerPressed() 
+				&& !_previousValues.getIsOperatorLeftTriggerPressed());
+	}
+	
 	//Instantaneous Operator Buttons
 	protected boolean getIsOperatorGreenBtnAPressed() {
 		return(_currentValues.getIsOperatorGreenBtnAPressed());
@@ -275,6 +280,10 @@ abstract class BaseDriversStation {
 
 	protected boolean getIsOperatorStartBtnPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed());
+	}
+	
+	protected boolean getIsOperatorLeftTriggerPressed() {
+		return (_currentValues.getIsOperatorLeftTriggerPressed());
 	}
 		
 	//Instantaneous Engineering Buttons
@@ -740,6 +749,10 @@ abstract class BaseDriversStation {
 		
 		public boolean getIsOperatorRightThumbstickPressed() {
 			return _isOperatorRightThumbstickBtnPressed;
+		}
+		
+		public boolean getIsOperatorLeftTriggerPressed() {
+			return (_operatorLeftTriggerCmd > 0.25);
 		}
 		
 		// === operator buttons ====================================

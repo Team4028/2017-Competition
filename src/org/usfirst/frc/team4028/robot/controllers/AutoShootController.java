@@ -13,7 +13,7 @@ public class AutoShootController {
 	ShooterTableEntry _shooterTableEntry;
 	RoboRealmClient _roboRealm;
 	private long _onTargetStartTime;
-	private double _visionAimingDeadband = 1.0;
+	private double _visionAimingDeadband = 1.3;
 	private boolean _isShooterAtTargetSpeed;
 	private boolean _isOnTarget;
 	private boolean _isOnTargetLastCycle;

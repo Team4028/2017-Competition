@@ -48,7 +48,7 @@ public class DriversStation extends BaseDriversStation {
 	
 							
 								Gear Tilt
-							
+						
 	==========================================================================
 		
 	--- Operator Joysticks --------
@@ -237,6 +237,14 @@ public class DriversStation extends BaseDriversStation {
 	// =====================================
 	// === operator Joysticks ==============
 	// =====================================
+	// Vision Auto Aim
+	public boolean getIsOperator_VisionAim_BtnPressed() {
+		return super.getIsOperatorLeftTriggerPressed();
+	}
+	
+	public boolean getIsOperator_VisionAim_BtnJustPressed() {
+		return super.getIsOperatorLeftTriggerJustPressed();
+	}
 	
 	// Fuel Infeed / Outfeed
 	public double getOperator_FuelInfeedOutfeed_JoystickCmd() {

@@ -10,7 +10,7 @@ public class PIDCalculator {
 	private double _minimumOutput = -0.7;
 	private double _prevError = 0.0;
 	private double _totalError = 0.0;
-	private double _totalErrorCeiling = 20.0;
+	private double _totalErrorCeiling = 30.0;
 	private double _setpoint = 0.0;
 	private double _error = 0.0;
 	private double _result = 0.0;
