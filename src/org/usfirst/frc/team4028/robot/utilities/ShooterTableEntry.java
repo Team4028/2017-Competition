@@ -1,7 +1,6 @@
 package org.usfirst.frc.team4028.robot.utilities;
 
-public class ShooterTableEntry {
-
+public class ShooterTableEntry { 
 	// define class level working variables
 	public final int Index;
 	public final int DistanceInInches;
@@ -11,12 +10,10 @@ public class ShooterTableEntry {
 	public final int Stg2MotorRPM;
 	public final boolean IsDefault;
 
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public ShooterTableEntry(int index, int distanceInInches, String description, double sliderPosition, int stg1MotorRPM, int stg2MotorRPM, boolean isDefault)
-	{
+	public ShooterTableEntry(int index, int distanceInInches, String description, double sliderPosition, int stg1MotorRPM, int stg2MotorRPM, boolean isDefault) {
 		Index = index;
 		DistanceInInches = distanceInInches;
 		Description = description;

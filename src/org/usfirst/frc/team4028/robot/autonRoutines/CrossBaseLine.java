@@ -2,9 +2,6 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,25 +16,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 //=====> For Changes see Sebas
 public class CrossBaseLine {
 	// define class level variables for Robot subsystems
-	private Chassis _chassis;
 	private GearHandler _gearHandler;
-	private NavXGyro _navX;
 	private TrajectoryDriveController _trajController;
 	
 	// define class level working variables
 	private long _autonStartedTimeStamp;
 	private boolean _isStillRunning;
 	
-	// define class level constants
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public CrossBaseLine(Chassis chassis, GearHandler gearHandler, NavXGyro navX, TrajectoryDriveController trajController) {
+	public CrossBaseLine(GearHandler gearHandler, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
-		_chassis = chassis;
 		_gearHandler = gearHandler;
-		_navX = navX;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
 	}
@@ -50,7 +41,6 @@ public class CrossBaseLine {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();

@@ -10,9 +10,10 @@ import org.usfirst.frc.team4028.robot.autonRoutines.HangRetrievalGear;
 import org.usfirst.frc.team4028.robot.autonRoutines.HitHopper;
 import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
 import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ViSION_CAMERAS;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
@@ -37,7 +38,6 @@ import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -81,6 +81,7 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	private TELEOP_MODE _teleopMode;
 	private AUTON_MODE _autonMode;
+	private ALLIANCE_COLOR _allianceColor;
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Controllers
@@ -110,6 +111,7 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	String _buildMsg = "?";
 	ShooterTable _shooterTable;
+	String _fmsDebugMsg = "?";
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// Code executed 1x at robot startup																		ROBOT INIT
@@ -126,7 +128,7 @@ public class Robot extends IterativeRobot {
         //===================
 		_ballInfeed = new BallInfeed(RobotMap.BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR, 
 										RobotMap.PCM_CAN_BUS_ADDR, 
-										RobotMap.BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT);
+										RobotMap.BALL_FLOOR_INFEED_EXTEND_PCM_PORT);
 		
 		_chassis = new Chassis(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR, 
 								RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR, 
@@ -171,11 +173,17 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.035, 0.0, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
+		// debug info for FMS Alliance sensing
+		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
+		ALLIANCE_COLOR allianceColor = _dashboardInputs.get_allianceColor();
+		_fmsDebugMsg = "Is FMS Attached: [" + isFMSAttached + "] Alliance: [" + allianceColor + "]";
+		DriverStation.reportWarning(">>>>> " + _fmsDebugMsg + " <<<<<<", false);
+		
 		//Update Dashboard Fields (push all fields to dashboard)
 		OutputAllToSmartDashboard();
 	}
@@ -273,6 +281,8 @@ public class Robot extends IterativeRobot {
     	// =====================================
 		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
+    	_allianceColor = _dashboardInputs.get_allianceColor();
+    	
     	_autonMode = _dashboardInputs.get_autonMode();
 
     	// =====================================
@@ -283,7 +293,7 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	switch (_autonMode) {
 			case CROSS_BASE_LINE:
-				_crossBaseLineAuton = new CrossBaseLine(_chassis, _gearHandler, _navX, _trajController);
+				_crossBaseLineAuton = new CrossBaseLine(_gearHandler, _trajController);
 				_crossBaseLineAuton.Initialize();
 				break;
 				
@@ -293,42 +303,41 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HANG_BOILER_GEAR:
-				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _hangGearController, _trajController);
 				_hangBoilerGearAuton.Initialize();
 				break;
 			
 			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_gearHandler, _chassis, _navX, _hangGearController, _shooter, _trajController);
+				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_autoShootController, _gearHandler, _hangGearController, _shooter, _trajController, _allianceColor);
 				_hangBoilerGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _hangGearController, _trajController);
 				_hangCenterGearAuton.Initialize();
 				break;
 				
 			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _shooter, _trajController);
+				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassisAutoAimGyro, _hangGearController, _shooter, _trajController, _allianceColor);
 				_hangCenterGearAndShootAuton.Initialize();
 				break;
 				
 			case HANG_RETRIEVAL_GEAR:
-				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _chassis, _navX, _hangGearController, _trajController);
+				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _hangGearController, _trajController);
 				_hangRetrievalGear.Initialize();
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_chassis, _gearHandler, _navX, _shooter, _trajController);
-				_hitHopper.Initialize();
+				_hitHopper = new HitHopper(_autoShootController, _gearHandler, _shooter, _trajController, _allianceColor);
 				break;
 				
 			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _shooter, _trajController);
+				_turnAndShoot = new TurnAndShoot(_autoShootController, _gearHandler, _shooter, _trajController);
 				_turnAndShoot.Initialize();
 				break;
 				
 			case TWO_GEAR:
-				_twoGearAuton = new TwoGear(_gearHandler, _chassis, _chassisAutoAimGyro, _navX, _hangGearController, _trajController);
+				_twoGearAuton = new TwoGear(_gearHandler, _chassisAutoAimGyro, _hangGearController, _trajController);
 				_twoGearAuton.Initialize();
 				break;
 				
@@ -488,6 +497,8 @@ public class Robot extends IterativeRobot {
     	// #### Telop Controller ####
     	_teleopMode = TELEOP_MODE.STANDARD;	// default to std mode
     	
+    	_roboRealmClient.ChangeToCamera(VISION_CAMERAS.BOILER);
+    	
     	// #### Lidar starts doing ####
     	//if(_lidar != null)	{ _lidar.start(); }	//TODO: resolve timeout
     	
@@ -582,10 +593,24 @@ public class Robot extends IterativeRobot {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
-		    	else {
+		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    		if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
+		    			_autoShootController.InitializeVisionAiming();
+		    		}
+		    		_autoShootController.AimWithVision();
+		    	} else {
 		    		// full stop
 			    	_chassis.ArcadeDrive(0.0, 0.0);
 		    	}
+		    	
+		    	// Turn on auto aiming with vision (for boiler)
+		    	/*
+		    	if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
+		    		_autoShootController.InitializeVisionAiming(); // Reset total error
+		    	}
+		    	if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    		_autoShootController.AimWithVision();
+		    	} */
 		    	
     			//============================================================================
     			// Fuel Infeed Cmd
@@ -667,22 +692,26 @@ public class Robot extends IterativeRobot {
     					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
     				// start motors on initial press
     				_shooter.ToggleRunShooterFeeder();
+    				_shooter.ToggleHopperCarousel();
     			}
     			else if(_driversStation.getEngineering_FireBall_BtnPressed()
     					&& !_shooter.get_isShooterInfeedReentrantRunning()) {
     				// start motors on initial press
     				_shooter.ToggleRunShooterFeeder();
+    				_shooter.ToggleHopperCarousel();
     			}
     			
     			else if(_driversStation.getOperator_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// keep calling if still pressed
     				_shooter.RunShooterFeederReentrant();
+    				_shooter.RunHopperCarousel();
     			}
     			else if(_driversStation.getEngineering_FireBall_BtnPressed()
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// keep calling if still pressed
     				_shooter.RunShooterFeederReentrant();
+    				_shooter.RunHopperCarousel();
     			}
     			
     			else if(!_driversStation.getOperator_FireBall_BtnPressed()
@@ -694,11 +723,11 @@ public class Robot extends IterativeRobot {
     					&& _shooter.get_isShooterInfeedReentrantRunning()) {
     				// if it was running and is no longer pressed
     				_shooter.ToggleRunShooterFeeder();
-    			}
-    			else {
+    			} else {
     				// we need to shut off the motors if they were running in reverse and the reverse button was released
     				_shooter.CleanupRunShooterFeederInReverse();
     			}
+    			
     					
 		    	//=====================
 		    	// Gear Tilt Cmd
@@ -741,6 +770,7 @@ public class Robot extends IterativeRobot {
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
 				//=====================
+		      	
 		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
 		      		_gearHandler.SpinInfeedWheelsVBus(1.0);
 		      	}
@@ -749,7 +779,17 @@ public class Robot extends IterativeRobot {
 		      	}
 		      	else {
 		      		_gearHandler.SpinInfeedWheelsVBus(0.0);
+		      	} 
+		      	/*
+		      	if (_driversStation.getIsDriver_InfeedGear_BtnJustPressed()) {
+		      		_autoShootController.InitializeVisionAiming();
 		      	}
+		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
+		      		_autoShootController.AimWithVision();
+		      		if (_autoShootController.IsReadyToShoot()) {
+		      			DriverStation.reportError("Ready to SHOOT", false);
+		      		}
+		      	} */
 		      	
 				//=====================
 		    	// ====> Enter Gear Hang Mode
@@ -890,11 +930,12 @@ public class Robot extends IterativeRobot {
     	
     	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
     	
-    	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+    	//if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
     	
     	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
     	
     	SmartDashboard.putString("Robot Build", _buildMsg);
+    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data

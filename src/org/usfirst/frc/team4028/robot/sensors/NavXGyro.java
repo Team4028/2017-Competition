@@ -9,18 +9,13 @@ import edu.wpi.first.wpilibj.SPI;
 // you must setup path to libraries using these instructions:
 // http://www.pdocs.kauailabs.com/navx-mxp/software/roborio-libraries/java/
 // http://www.pdocs.kauailabs.com/navx-mxp/examples/rotate-to-angle-2/
-//=====> For Changes see Sebastian
+//=====> For Changes see Seabass
 public class NavXGyro {
 	AHRS _navXSensor;
 	
 	public NavXGyro(SPI.Port port) {
-        try {
-			/***********************************************************************
-			 * navX-MXP:
-			 * - Communication via RoboRIO MXP (SPI, I2C, TTL UART) and USB.            
-			 * - See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface.
-			 ************************************************************************/
-        	_navXSensor = new AHRS(port); 
+        try {          
+        	_navXSensor = new AHRS(port); // Communication via RoboRIO MXP (SPI) 
         } 
         catch (RuntimeException ex ) {
             DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
@@ -30,19 +25,12 @@ public class NavXGyro {
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
+	public double getYaw() { return _navXSensor.getYaw(); }
 	
-	public double getYaw() {
-		return _navXSensor.getYaw();
-	}
-	
-	public void zeroYaw() {
-		_navXSensor.zeroYaw();
-	}
+	public void zeroYaw()  { _navXSensor.zeroYaw(); }
 	
 	// update the Dashboard with any NavX specific data values
-	public void OutputToSmartDashboard() {
-	}
+	public void OutputToSmartDashboard() {}
 	
-	public void UpdateLogData(LogData logData) {
-	}
+	public void UpdateLogData(LogData logData) {}
 }

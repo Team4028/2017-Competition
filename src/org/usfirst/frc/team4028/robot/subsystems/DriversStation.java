@@ -48,7 +48,7 @@ public class DriversStation extends BaseDriversStation {
 	
 							
 								Gear Tilt
-							
+						
 	==========================================================================
 		
 	--- Operator Joysticks --------
@@ -122,6 +122,10 @@ public class DriversStation extends BaseDriversStation {
 	// Gear AutoScore Sequence
 	public boolean getIsDriver_StartGearScoreSequence_BtnJustPressed() {
 		return super.getIsDriverBlueBtnXJustPressed();
+	}
+	
+	public boolean getIsDriver_InfeedGear_BtnJustPressed() {
+		return super.getIsDriverLeftBumperBtnJustPressed();
 	}
 			
 	// ===================================
@@ -233,6 +237,14 @@ public class DriversStation extends BaseDriversStation {
 	// =====================================
 	// === operator Joysticks ==============
 	// =====================================
+	// Vision Auto Aim
+	public boolean getIsOperator_VisionAim_BtnPressed() {
+		return super.getIsOperatorLeftTriggerPressed();
+	}
+	
+	public boolean getIsOperator_VisionAim_BtnJustPressed() {
+		return super.getIsOperatorLeftTriggerJustPressed();
+	}
 	
 	// Fuel Infeed / Outfeed
 	public double getOperator_FuelInfeedOutfeed_JoystickCmd() {
@@ -314,8 +326,6 @@ public class DriversStation extends BaseDriversStation {
 	public double getEngineering_SpinChassisRight_JoystickCmd() {
 		return super.getEngineeringRightTriggerCmd();
 	}
-	
-
 	
 	//============================================================================================
 	// Methods follow

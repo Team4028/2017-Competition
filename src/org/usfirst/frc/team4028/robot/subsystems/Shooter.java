@@ -27,8 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //	7		Patrick		3/4	 1:31		Changing PID Values
 //  8		TomB		9.Mar.2017		Refactor for new infeed 3 motor combo
 //-------------------------------------------------------------
-public class Shooter 
-{
+public class Shooter {
 	// =====================================================================
 	// 5 DC Motors
 	//		1 Talon w/ Encoder, 	PID V Mode		2nd Stage
@@ -49,6 +48,7 @@ public class Shooter
 	private CANTalon _highRollerMtr;
 	
 	private Servo _linearActuator;
+	private Servo _hopperCarousel;
 	
 	// define class level working variables
 	private ShooterTable _shooterTable;
@@ -68,6 +68,8 @@ public class Shooter
 	private boolean _isShooterMotorsReentrantRunning = false;
 	private boolean _isShooterInfeedReentrantRunning = false;
 	private long _shooterInfeedReentrantRunningMsec;
+	
+	private long _hopperCarouselReentrantRunningMsec;
 	
 	//define class level PID constants
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
@@ -101,14 +103,10 @@ public class Shooter
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
 	//============================================================================================
-	public Shooter(int firstStgMtrCanBusAddr, 
-					int secondStageMtrCanBusAddr, 
-					int magicCarpetMtrCanBusAddr, 
-					int highSpeedInfeedLaneMtrCanBusAddr, 
-					int highRollerMtrCanBusAddr,
-					int sliderPWMPort,
-					ShooterTable shooterTable)
-	{
+	public Shooter(int firstStgMtrCanBusAddr, int secondStageMtrCanBusAddr, 
+					int magicCarpetMtrCanBusAddr, int highSpeedInfeedLaneMtrCanBusAddr, 
+					int highRollerMtrCanBusAddr, int sliderPWMPort,
+					ShooterTable shooterTable) {
 		// First Stage Motor
 		_firstStgMtr = new CANTalon(firstStgMtrCanBusAddr);
 		_firstStgMtr.changeControlMode(CANTalon.TalonControlMode.Speed);	// open loop throttle
@@ -167,6 +165,9 @@ public class Shooter
 		// Slider
 		_linearActuator = new Servo(sliderPWMPort);
 		
+		// Hopper Carousel
+		_hopperCarousel = new Servo(8);
+		
 		// Default Feeder Subsystem working variables
 		_magicCarpetMtrTargetVBus = 0;
 		_highSpeedInfeedLaneMtrTargetVBus = 0;
@@ -185,14 +186,12 @@ public class Shooter
 	// METHODS FOLLOW
 	//============================================================================================
 	
-	public void FullStop() 
-	{
+	public void FullStop() {
 		FullShooterStop();
 		FullShooterFeederStop();
 	}
 	
-	public void FullShooterStop() 
-	{
+	public void FullShooterStop() {
 		RunStg1(0);
 		RunStg2(0);
 		RunHighSpeedInfeedLane(0.0);
@@ -211,66 +210,55 @@ public class Shooter
 		_isShooterInfeedReentrantRunning = false;
 	}
 	
-	public void ToggleShooterMotors()
-	{
+	public void ToggleShooterMotors() {
 		// base on Stg 2 since since it starts first
 		if (_stg2MtrTargetRPM == 0.0) {
 			ShooterMotorsReentrant();
-		}
-		else {
+		} else {
 			FullStop();
 		}
 	}
 	
 	// This method is provided for auton mode shooting
 	// keep calling this method until it returns false, that indicates motors are upto speed
-	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry)
-	{
+	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry) {
 		_currentShooterTableEntry = shooterTableEntry;
 		_lastShooterTableEntry = shooterTableEntry;
 		
+		ShooterMotorsReentrant();
 		// we use a 2% error threshhold
 		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
 				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {
 			return false;
-		}
-		else{
+		} else {
 			return true;
 		}
 	}
 	
 	// this is the normal method used during teleop
-	public boolean ShooterMotorsReentrant()
-	{
-		if(Math.abs(_stg2MtrTargetRPM) == 0)
-		{
+	public boolean ShooterMotorsReentrant() {
+		if(Math.abs(_stg2MtrTargetRPM) == 0) {
 			RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 			MoveActuatorToPosition(_currentShooterTableEntry.SliderPosition);
 			
 			//BumpStg2MtrRPMUp();
 			_isShooterMotorsReentrantRunning = true;
 		}
-		else if(Math.abs(getStg2RPMErrorPercent()) > 7.5 )
-		{
+		else if(Math.abs(getStg2RPMErrorPercent()) > 7.5 ) {
 			// allow time to spinup
 			_isShooterMotorsReentrantRunning = true;
 		}
-		else if (Math.abs(_stg1MtrTargetRPM) == 0)
-		{
+		else if (Math.abs(_stg1MtrTargetRPM) == 0) {
 			RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 			//BumpStg1MtrRPMUp();
 			_isShooterMotorsReentrantRunning = true;
 		}
-		else if(Math.abs(getStg1RPMErrorPercent()) > 5.0 )
-		{
+		else if(Math.abs(getStg1RPMErrorPercent()) > 5.0 ) {
 			// allow time to spinup
 			_isShooterMotorsReentrantRunning = true;
-		}
-		else 
-		{
+		} else {
 			// dynamically adjust speeds if current table entry is changed
-			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index)
-			{
+			if(_lastShooterTableEntry.Index != _currentShooterTableEntry.Index) {
 				RunStg2(_currentShooterTableEntry.Stg2MotorRPM);
 				RunStg1(_currentShooterTableEntry.Stg1MotorRPM);
 				// allow user to override slider if we have not chg to a new index in the shooter table
@@ -288,43 +276,33 @@ public class Shooter
 	// Shooter Motors
 	//============================================================================================
 
-	public void RunStg1(double targetRPM)
-	{
+	public void RunStg1(double targetRPM) {
 		_stg1MtrTargetRPM = targetRPM;
 		_firstStgMtr.set(_stg1MtrTargetRPM);
 		DriverStation.reportWarning("Stage 1 Target RPM = " + targetRPM, false);
-		
-		//ControlHighSpeedLane();
 	}
 	
-	public void RunStg2(double targetRPM)
-	{
+	public void RunStg2(double targetRPM) {
 		_stg2MtrTargetRPM = targetRPM;
 		_secondStgMtr.set(_stg2MtrTargetRPM);
 		DriverStation.reportWarning("Stage 2 Target RPM = " + targetRPM, false);
-		
-		//ControlHighSpeedLane();
 	}
 	
 	//============================================================================================
 	// Set Up Shooter Testing
 	//============================================================================================
 	
-	public void IndexShooterTableUp()
-	{
+	public void IndexShooterTableUp() {
 		_currentShooterTableEntry = _shooterTable.getNextEntry();
 	}
 	
-	public void IndexShooterTableDown()
-	{
+	public void IndexShooterTableDown() {
 		_currentShooterTableEntry = _shooterTable.getPreviousEntry();
 	}
 	
-	public void BumpStg1MtrRPMUp()
-	{
+	public void BumpStg1MtrRPMUp() {
 		// only bump if not already at max
-		if(Math.abs(_stg1MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
-		{	
+		if(Math.abs(_stg1MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM)) {	
 			//if(Math.abs(_stg1MtrTargetRPM) >  0)
 			//{
 				// if already turning, just bump
@@ -336,34 +314,26 @@ public class Shooter
 				// if currently stopped, set to default speed
 			//	RunStg1(FIRST_STAGE_MTR_DEFAULT_RPM);
 			//}
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("Stg 1 Mtr Already at MAX ", false);
 			_isStg1MtrTargetRPMBumpingUp = false;
 		}
 	}
 	
-	public void BumpStg1MtrRPMDown()
-	{
+	public void BumpStg1MtrRPMDown() {
 		// only bump if not already at min
-		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
-		{
+		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM)) {
 			//_stg1MtrTargetRPM = _stg1MtrTargetRPM -= SHOOTER_BUMP_RPM);
 			RunStg1(_stg1MtrTargetRPM += SHOOTER_BUMP_RPM);
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("Stg 1 Mtr Already at MIN ", false);
 			_isStg1MtrTargetRPMBumpingUp = true;
 		}
 	}
 	
-	public void BumpStg2MtrRPMUp()
-	{
+	public void BumpStg2MtrRPMUp() {
 		// only bump if not already at max
-		if(Math.abs(_stg2MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM))
-		{	
+		if(Math.abs(_stg2MtrTargetRPM) <= Math.abs(MAX_SHOOTER_RPM)) {	
 			//if(Math.abs(_stg2MtrTargetRPM) >  0)
 			//{
 				//_stg2MtrTargetRPM = _stg2MtrTargetRPM -= SHOOTER_BUMP_RPM;
@@ -376,24 +346,18 @@ public class Shooter
 				// if currently stopped, set to default speed
 			//	RunStg2(SECOND_STAGE_MTR_DEFAULT_RPM);
 			//}
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("Stg 2 Mtr Already at MAX ", false);
 			_isStg2MtrTargetRPMBumpingUp = false;
 		}
 	}
 
-	public void BumpStg2MtrRPMDown()
-	{
+	public void BumpStg2MtrRPMDown() {
 		// only bump if not already at min
-		if(Math.abs(_stg2MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM))
-		{
+		if(Math.abs(_stg2MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM)) {
 			//_stg2MtrTargetRPM = _stg2MtrTargetRPM += SHOOTER_BUMP_RPM;
 			RunStg2(_stg2MtrTargetRPM += SHOOTER_BUMP_RPM);
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("Stg 2 Mtr Already at MIN ", false);
 			_isStg2MtrTargetRPMBumpingUp = true;
 		}
@@ -421,115 +385,108 @@ public class Shooter
 	}
 	*/
 	
-	private void RunHighSpeedInfeedLane(double percentVbusCommand)
-	{
+	private void RunHighSpeedInfeedLane(double percentVbusCommand) {
 		_highSpeedInfeedLaneMtrTargetVBus = percentVbusCommand;
 		_highSpeedInfeedLaneMtr.set(_highSpeedInfeedLaneMtrTargetVBus);
 	}
 	
-	public void ToggleHighSpeedInfeedLane()
-	{
-		if (_highSpeedInfeedLaneMtrTargetVBus == 0.0)
-		{
+	public void ToggleHighSpeedInfeedLane() {
+		if (_highSpeedInfeedLaneMtrTargetVBus == 0.0) {
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
-		}
-		else
-		{
+		} else {
 			RunHighSpeedInfeedLane(0.0);
-
 		}
 	}
 	
 	//============================================================================================
-	// Run Magin Carpet / High Roller Motors
+	// Run Magin Carpet / High Roller Motors / Hopper Carousel
 	//============================================================================================
 	
-	public void ToggleRunShooterFeeder()
-	{
+	public void ToggleHopperCarousel() {
+		_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
+	}
+	
+	public void RunHopperCarousel() {
+		
+		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
+			_hopperCarousel.setPosition(0.0);
+		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
+			_hopperCarousel.setPosition(1.0);
+		} else {
+			_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
+		}
+		
+	}
+	
+	public void ToggleRunShooterFeeder() {
 		// if current cmd is 0 or - if running in reverse, then start
 		//if(_magicCarpetMtrTargetVBus != MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND)
 		if(!_isShooterInfeedReentrantRunning
-				|| (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0)))
-		{
+				|| (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0))) {
 			//RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			//RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			//RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
 			
 			_isShooterInfeedReentrantRunning = true;
 			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
-		}
-		else
-		{
+		} else {
 			FullShooterFeederStop();
 			
 			_isShooterInfeedReentrantRunning = false;
 		}
 	}
 	
-	public void RunShooterFeederReentrant()
-	{
-		if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 100)			// 800 ; 500
-		{
+	public void RunShooterFeederReentrant() {
+		if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 100)	{		// 800 ; 500
 			// 100 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 900)	// 800 ; 500
-		{
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1800) {	// 800 ; 500
 			// 800 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 940)	// 40; 20; 40
-		{
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1840) {	// 40; 20; 40
 			// 40 mSec pause
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(0.0);
 			RunHighRoller(0.0);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 980)	// 40; 40
-		{
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1880) {	// 40; 40
 			// 40 mSec rev
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		}
-		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1020)	// 40; 20; 40
-		{
+		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1920) {	// 40; 20; 40
 			// 40 mSec pause
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(0.0);
 			RunHighRoller(0.0);
-		}
-		else
-		{
+		} else {
 			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
 		}
 	}
 	
-	public void RunShooterFeederInReverse()
-	{
+	public void RunShooterFeederInReverse() {
 		RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
 	}
 	
-	public void CleanupRunShooterFeederInReverse()
-	{
-		if (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0))
-		{
+	public void CleanupRunShooterFeederInReverse() {
+		if (_magicCarpetMtrTargetVBus == (MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0)) {
 			FullShooterFeederStop();
 		}
 	}
 	
-	private void RunMagicCarpet(double percentVbusCommand)
-	{
+	private void RunMagicCarpet(double percentVbusCommand) {
 		_magicCarpetMtrTargetVBus = percentVbusCommand;
 		_magicCarpetMtr.set(_magicCarpetMtrTargetVBus);
 	}
 	
-	private void RunHighRoller(double percentVbusCommand)
-	{
+	private void RunHighRoller(double percentVbusCommand) {
 		_highRollerMtrTargetVBus = percentVbusCommand;
 		_highRollerMtr.set(_highRollerMtrTargetVBus);
 	}
@@ -538,27 +495,23 @@ public class Shooter
 	// Linear Actuator
 	//============================================================================================
 	
-	public void MoveActuatorToDefaultPosition()
-	{
+	public void MoveActuatorToDefaultPosition() {
 		_currentSliderPosition = INITIAL_POSITION_ACTUATOR;
 		_linearActuator.setPosition(_currentSliderPosition);
 		
 		DriverStation.reportWarning("Actuator Configured to " + _currentSliderPosition, false);
 	} 
 	
-	public void MoveActuatorToPosition(double sliderPosition)
-	{
+	public void MoveActuatorToPosition(double sliderPosition) {
 		_currentSliderPosition = sliderPosition;
 		_linearActuator.setPosition(_currentSliderPosition);
 		
 		DriverStation.reportWarning("Actuator Moved to " + _currentSliderPosition, false);
 	} 
 	
-	public void MoveActuatorUp()
-	{
+	public void MoveActuatorUp() {
 		// are we below the max?
-		if (_currentSliderPosition < MAX_THRESHOLD_ACTUATOR)
-		{
+		if (_currentSliderPosition < MAX_THRESHOLD_ACTUATOR) {
 			// increment the target position
 			_currentSliderPosition += CHANGE_INTERVAL_ACTUATOR;
 			
@@ -574,18 +527,14 @@ public class Shooter
 			_linearActuator.setPosition(_currentSliderPosition);
 			
 			DriverStation.reportWarning("Actuator Move Up To: " + _currentSliderPosition, false);
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("!=!=!=!=! Actuator Already at MAXIMUM Position", false);
 		}
 	}
 	
-	public void MoveActuatorDown()
-	{
+	public void MoveActuatorDown() {
 		// are we above the min?
-		if (_currentSliderPosition > MIN_THRESHOLD_ACTUATOR)
-		{
+		if (_currentSliderPosition > MIN_THRESHOLD_ACTUATOR) {
 			// decrement the target position
 			_currentSliderPosition -= CHANGE_INTERVAL_ACTUATOR;
 			
@@ -601,9 +550,7 @@ public class Shooter
 			_linearActuator.setPosition(_currentSliderPosition);
 			
 			DriverStation.reportWarning("Actuator Move Down To: " + _currentSliderPosition, false);
-		}
-		else
-		{
+		} else {
 			DriverStation.reportWarning("!=!=!=!=! Actuator Already at MINIMUM Position", false);
 		}
 	}
@@ -612,8 +559,7 @@ public class Shooter
 	// Update Smart Dashboard with Current Values
 	//============================================================================================	
 	
-	public void OutputToSmartDashboard()
-	{
+	public void OutputToSmartDashboard() {
 		//%s - insert a string
 		//%d - insert a signed integer (decimal)
 		//%f - insert a real number, standard notation
@@ -682,12 +628,10 @@ public class Shooter
 		//Display Current Actuator Value
 		actuatorData = String.format( "%.3f", _currentSliderPosition); //Outputs "Max" and "Min" at respective values
 		
-		if(_currentSliderPosition >= MAX_THRESHOLD_ACTUATOR)
-		{
+		if(_currentSliderPosition >= MAX_THRESHOLD_ACTUATOR) {
 			actuatorData = actuatorData + " (MAX)";
 		}
-		else if(_currentSliderPosition <= MIN_THRESHOLD_ACTUATOR)
-		{
+		else if(_currentSliderPosition <= MIN_THRESHOLD_ACTUATOR) {
 			actuatorData = actuatorData + " (MIN)";
 		}
 		
@@ -701,7 +645,7 @@ public class Shooter
 		}
 		
 		// currentShooterTableValues
-		currentShooterTableValues = String.format("[%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
+		currentShooterTableValues = String.format("[#%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
 				_currentShooterTableEntry.Index,
 				suffix,
 				_currentShooterTableEntry.SliderPosition,
@@ -710,14 +654,14 @@ public class Shooter
 				_currentShooterTableEntry.Description);
 		
 		SmartDashboard.putString("ShooterTable", currentShooterTableValues);
+		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);
 	}
 	
 	//============================================================================================
 	// Update Logging File
 	//============================================================================================	
 	
-	public void UpdateLogData(LogData logData)
-	{
+	public void UpdateLogData(LogData logData){
 		logData.AddData("Stg1Mtr:Cmd_Rpm", String.format("%f", _stg1MtrTargetRPM));
 		logData.AddData("Stg1Mtr:Act_Rpm", String.format("%f", getStg1ActualRPM()));
 		logData.AddData("Stg1Mtr:Err_%", String.format("%.2f%%", getStg1RPMErrorPercent()));
@@ -736,25 +680,19 @@ public class Shooter
 	//============================================================================================
 	
 	// ---- Stage 1 ----------------------
-	private double getStg1ActualRPM()
-	{
+	private double getStg1ActualRPM() {
 		return _firstStgMtr.getSpeed();
 	}
 	
-	private double getStg1RPMErrorPercent()
-	{
-		if(Math.abs(_stg1MtrTargetRPM) > 0 )
-		{		
+	private double getStg1RPMErrorPercent() {
+		if(Math.abs(_stg1MtrTargetRPM) > 0 ) {		
 			return ((_stg1MtrTargetRPM - getStg1ActualRPM()) / _stg1MtrTargetRPM) * 100.0 * -1.0;
-		}
-		else
-		{
+		} else {
 			return 0.0;
 		}
 	}
 	
-	private double getStg1CurrentPercentVBus()
-	{
+	private double getStg1CurrentPercentVBus() {
 		double currentOutputVoltage = _firstStgMtr.getOutputVoltage();
 		double currentBusVoltage = _firstStgMtr.getBusVoltage();
 		
@@ -764,23 +702,19 @@ public class Shooter
 	}
 	
 	// ---- Stage 2 ----------------------
-	private double getStg2ActualRPM()
-	{
+	private double getStg2ActualRPM() {
 		return _secondStgMtr.getSpeed();
 	}
 	
-	private double getStg2RPMErrorPercent()
-	{
+	private double getStg2RPMErrorPercent() {
 		if(Math.abs(_stg2MtrTargetRPM) > 0 ) {		
 			return ((_stg2MtrTargetRPM - getStg2ActualRPM()) / _stg2MtrTargetRPM) * 100.0 * -1.0;
-		}
-		else {
+		} else {
 			return 0.0;
 		}
 	}
 	
-	private double getStg2CurrentPercentVBus()
-	{
+	private double getStg2CurrentPercentVBus() {
 		double currentOutputVoltage = _secondStgMtr.getOutputVoltage();
 		double currentBusVoltage = _secondStgMtr.getBusVoltage();
 		
@@ -789,13 +723,11 @@ public class Shooter
 		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
 	}
 	
-	public boolean get_isShooterMotorsReentrantRunning()
-	{
+	public boolean get_isShooterMotorsReentrantRunning() {
 		return _isShooterMotorsReentrantRunning;
 	}
 	
-	public boolean get_isShooterInfeedReentrantRunning()
-	{
+	public boolean get_isShooterInfeedReentrantRunning() {
 		return _isShooterInfeedReentrantRunning;
 	}
 }
