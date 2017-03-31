@@ -11,6 +11,8 @@ import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -75,14 +77,16 @@ public class RoboRealmClient {
  	private long _lastDebugWriteTimeMSec;
  	private final Object _targetDataMutex;
  	private int _expectedBlobCount;
- 	private Solenoid _gearCamLED;
- 	private Solenoid _shooterCamLED;
+ 	//private Solenoid _gearCamLED;
+ 	//private Solenoid _shooterCamLED;
+ 	DigitalOutput _visionLedsRelay;
  	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, 
-    		int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) {        	
+    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int visioLEDsDIOPort)
+    		//int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
+    {        	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
     	
@@ -108,19 +112,18 @@ public class RoboRealmClient {
 		// create a timer to fire events
 		_updaterTimer = new java.util.Timer();
 		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
-			
-		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
-		//TODO: create the relay object
-		//ChangeToCamera(ViSION_CAMERAS.BOILER);
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
 		
 		_targetDataMutex = new Object();
 		
+		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
+		//TODO: create the relay object
 		//Set up LED PCM Rings
-		_gearCamLED = new Solenoid(PCMCanAddr, gearCamLEDPCMPort);
-		_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
+		//_gearCamLED = new Solenoid(PCMCanAddr, gearCamLEDPCMPort);
+		//_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
+		_visionLedsRelay = new DigitalOutput(visioLEDsDIOPort);
 		TurnAllVisionLEDsOff();
     }
     
@@ -131,31 +134,37 @@ public class RoboRealmClient {
     	Dimension fovDimensions = _rrAPI.getDimension();
     }
     
-    public void TurnAllVisionLEDsOff() {
-		_gearCamLED.set(false);
-		_shooterCamLED.set(false);
+    public void TurnAllVisionLEDsOff()
+    {
+    	_visionLedsRelay.set(false);
+		//_gearCamLED.set(false);
+		//_shooterCamLED.set(false);
     }
     
-    public void TurnGearVisionLEDsOn() {
-		_shooterCamLED.set(false);
-		try {
-			Thread.sleep(2);
-		} catch (InterruptedException e) {
+    public void TurnGearVisionLEDsOn()
+    {
+		//_shooterCamLED.set(false);
+		//try {
+		//	Thread.sleep(2);
+		//} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		_gearCamLED.set(true);
+		//	e.printStackTrace();
+		//}
+		//_gearCamLED.set(true);
+    	_visionLedsRelay.set(true);
     }
     
-    public void TurnBoilerrVisionLEDsOn() {
-    	_gearCamLED.set(false);
-		try {
-			Thread.sleep(2);
-		} catch (InterruptedException e) {
+    public void TurnBoilerrVisionLEDsOn()
+    {
+    	//_gearCamLED.set(false);
+		//try {
+		//	Thread.sleep(2);
+		//} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		_shooterCamLED.set(true);
+		//	e.printStackTrace();
+		//}
+		//_shooterCamLED.set(true);
+    	_visionLedsRelay.set(true);
     }
     
     // this method changes the active roborealm camera / program
@@ -166,15 +175,18 @@ public class RoboRealmClient {
 	    	case GEAR:
 	        	_cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
 	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
-	        	_gearCamLED.set(true);
-	        	_shooterCamLED.set(false);
+	        	//_gearCamLED.set(true);
+	        	//_shooterCamLED.set(false);
+	        	_visionLedsRelay.set(true);
+	        	
 	    		break;
 	    		
 	    	case BOILER:
 	        	_cameraCalibrationFactor = BOILER_CAMERA_CALIBRATION_FACTOR;
 	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
-	        	_gearCamLED.set(false);
-	        	_shooterCamLED.set(true);
+	        	//_gearCamLED.set(false);
+	        	//_shooterCamLED.set(true);
+	        	_visionLedsRelay.set(true);
 	    		break;
     	}
     	

@@ -55,6 +55,7 @@ public class RobotMap {
 	// ======================================
 	// define constants for DIO Ports on RoboRio
 	// ======================================
+	public static final int LED_RINGS_DIO_PORT = 9;
 	
 	// ======================================
 	// define constants for Sensor Ports on RoboRio
