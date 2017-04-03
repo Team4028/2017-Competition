@@ -203,8 +203,8 @@ public class Chassis {
 	}
 	
 	public void ZeroDriveEncoders() {
-		_leftDriveMaster.setPosition(0);
-		_rightDriveMaster.setPosition(0);
+		_leftDriveMaster.setPosition(0.0);
+		_rightDriveMaster.setPosition(0.0);
 	}
 	
 	// update the Dashboard with any Chassis specific data values
@@ -220,6 +220,8 @@ public class Chassis {
 		}
 		
 		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
+		
+		SmartDashboard.putNumber("Chassis Velocity", getLeftEncoderCurrentVelocity());
 	}
 	
 	public void UpdateLogData(LogData logData) {

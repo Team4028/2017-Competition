@@ -14,10 +14,9 @@ public class AutoShootController {
 	RoboRealmClient _roboRealm;
 	private long _onTargetStartTime;
 	private double _visionAimingDeadband = 1.2;
-	private boolean _isShooterAtTargetSpeed;
 	private boolean _isOnTarget;
 	private boolean _isOnTargetLastCycle;
-	private boolean _readyToShoot;
+	private boolean _isShooterAtTargetSpeed;
 	
 	public AutoShootController(ChassisAutoAimController chassisAutoAim, RoboRealmClient roboRealm, Shooter shooter, ShooterTable shooterTable){
 		_chassisAutoAim = chassisAutoAim;

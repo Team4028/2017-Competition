@@ -757,7 +757,7 @@ public class Robot extends IterativeRobot {
 		      	else if (_driversStation.getIsDriver_SendGearTiltToScore_BtnJustPressed()) {
 		      		// 5th priority is Goto Score
 		      		_gearHandler.MoveGearToScorePosition();
-		      	}
+		      	} 
 		      	else if (_driversStation.getIsDriver_SendGearTiltToFloor_BtnJustPressed()
 		      				|| !_gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
 		      		// 6th priority is Goto Floor
@@ -765,7 +765,15 @@ public class Robot extends IterativeRobot {
 		      		//			we must treat it as a Reentrant function
 		      		//			and automatically recall it until complete
 		      		_gearHandler.MoveGearToFloorPositionReentrant();
-		      	}  
+		      	} 
+		      	//else if(_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
+	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
+	      		//	_gearHandler.MoveTiltAxisVBus(0.1);
+	      		//} 
+		      	//else if (!_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
+	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()){
+	      		//	_gearHandler.MoveTiltAxisVBus(0.0);
+	      		//}
 		      	
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd

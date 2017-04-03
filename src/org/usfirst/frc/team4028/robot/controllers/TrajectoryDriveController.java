@@ -292,8 +292,8 @@ public class TrajectoryDriveController {
 		_rightFollower.reset();
 		_chassis.ZeroDriveEncoders();
 		_navX.zeroYaw();
-		_isEnabled = true;
 		_currentSegment = 0;
+		_isEnabled = true;
 		DriverStation.reportError("Enabled", false);
 	}
 	

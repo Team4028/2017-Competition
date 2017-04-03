@@ -148,6 +148,11 @@ public class DriversStation extends BaseDriversStation {
 		return super.getIsDriverRightBumperBtnPressed();
 	}
 	
+	// Gear Tilt Floor
+	public boolean getIsDriver_SendGearTiltToFloor_BtnPressed() {
+		return super.getIsDriverGreenBtnAPressed();
+	}	
+	
 	// ===================================
 	// === driver Joysticks ==============
 	// ===================================

@@ -66,8 +66,8 @@ public class HangCenterGear {
 	public boolean ExecuteRentrant() {
 		// =======================================
 		// if not complete, this must run concurrently with all auton routines
-		// =======================================
-      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+		// =======================================/*
+      	/*if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
@@ -75,10 +75,20 @@ public class HangCenterGear {
     	} else {
     		DriverStation.reportError("Zeroed", false);
     		_gearHandler.MoveGearToScorePosition();
-    	}
+    	} */
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
+      			if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+      	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
+      	      		//			we must treat it as a Reentrant function
+      	      		//			and automatically recall it until complete
+      	    		_gearHandler.ZeroGearTiltAxisReentrant();
+      	    	} else {
+      	    		DriverStation.reportError("Zeroed", false);
+      	    		_gearHandler.MoveGearToScorePosition();
+      	    	}
+      			
       			if (_trajController.getCurrentSegment() == 1) {
       				//_trajController.isVisionTrackingEnabled(true);
       			}

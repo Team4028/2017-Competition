@@ -20,7 +20,6 @@ public class ChassisAutoAimController {
 	// =========================================================
 	// Methods
 	// =========================================================
-	
 	public boolean onTarget() {
 		return _autoAimPID.onTarget(); // Check if the PID loop error is within a set deadband
 	}
