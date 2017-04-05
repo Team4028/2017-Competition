@@ -655,6 +655,9 @@ public class Shooter {
 		
 		SmartDashboard.putString("ShooterTable", currentShooterTableValues);
 		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);
+		
+		// Light will come on when the shooter is turned on. To keep Mikey from running it the whole match!! :) 
+		SmartDashboard.putBoolean("Is Shooter Running?", _isShooterMotorsReentrantRunning);
 	}
 	
 	//============================================================================================
