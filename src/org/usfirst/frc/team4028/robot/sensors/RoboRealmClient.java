@@ -13,6 +13,7 @@ import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
+import org.usfirst.frc.team4028.robot.subsystems.DashboardInputs;
 
 import edu.wpi.first.wpilibj.DigitalOutput;
 
@@ -84,6 +85,7 @@ public class RoboRealmClient
  	private long _lastDebugWriteTimeMSec;
  	private final Object _targetDataMutex;
  	private int _expectedBlobCount;
+ 	private double _degreesFromCenter;
  	//private Solenoid _gearCamLED;
  	//private Solenoid _shooterCamLED;
  	DigitalOutput _visionLedsRelay;
@@ -275,7 +277,13 @@ public class RoboRealmClient
 			dashboardMsg = "Vision DATA NOT VALID";
 		}
 		
-		SmartDashboard.getString("VIsion", dashboardMsg);		
+		SmartDashboard.getString("VIsion", dashboardMsg);
+		
+		// Calculating and displaying the degrees from center
+		_degreesFromCenter = ((((SOUTHEAST_X_IDX + SOUTHWEST_X_IDX)/2)/CALIBRATED_WIDTH_IDX) * 34);
+		String degreesFromCenter = "?";
+		degreesFromCenter = String.format("%.3f", _degreesFromCenter);
+		SmartDashboard.putString("Degrees From Center", degreesFromCenter);
 	} 	
 	
 	public void UpdateLogData(LogData logData)
