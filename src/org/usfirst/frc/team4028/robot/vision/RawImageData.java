@@ -21,7 +21,7 @@ public class RawImageData
 
     public double SouthEastY;
 
-    //public int HighestMiddleY;
+    public double HighMiddleY;
 
     public Dimension FOVDimensions;
 

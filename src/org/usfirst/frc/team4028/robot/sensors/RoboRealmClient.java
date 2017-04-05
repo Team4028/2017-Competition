@@ -47,17 +47,16 @@ public class RoboRealmClient
  	private static final int SOUTHWEST_Y_IDX = 1;
  	private static final int SOUTHEAST_X_IDX = 2;
  	private static final int SOUTHEAST_Y_IDX = 3;
- 	private static final int  CALIBRATED_WIDTH_IDX = 4;
- 	private static final int  CALIBRATED_HEIGHT_IDX = 5;
- 	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
- 	private static final int BLOB_COUNT_IDX = 6;
- 	private static final int CAMERA_TYPE_IDX = 7;
+ 	private static final int HIGH_MIDDLE_Y_IDX = 4;
+ 	private static final int  RAW_WIDTH_IDX = 5;
+ 	private static final int  RAW_HEIGHT_IDX = 6;
+ 	private static final int BLOB_COUNT_IDX = 7;
+ 	private static final int CAMERA_TYPE_IDX = 8;
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 100;
- 	
 
- 	private static final int EXPECTED_ARRAY_SIZE = 8;
+ 	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
  	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
@@ -280,10 +279,11 @@ public class RoboRealmClient
 		SmartDashboard.getString("VIsion", dashboardMsg);
 		
 		// Calculating and displaying the degrees from center
-		_degreesFromCenter = ((((SOUTHEAST_X_IDX + SOUTHWEST_X_IDX)/2)/CALIBRATED_WIDTH_IDX) * 34);
-		String degreesFromCenter = "?";
-		degreesFromCenter = String.format("%.3f", _degreesFromCenter);
-		SmartDashboard.putString("Degrees From Center", degreesFromCenter);
+		//_degreesFromCenter = ((((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX)/2.0)
+		//					/_newTargetRawData.FOVDimensions.width) * CAMERA_FOV_HORIZONTAL_DEGREES);
+		String degreesFromCenterAndHeight = "?";
+		degreesFromCenterAndHeight = String.format("%.3f", _fovCenterToTargetXAngleRawDegrees + _newTargetRawData.HighMiddleY);
+		SmartDashboard.putString("Degrees From Center & Height", degreesFromCenterAndHeight);
 	} 	
 	
 	public void UpdateLogData(LogData logData)
@@ -308,7 +308,7 @@ public class RoboRealmClient
 	 	    // get multiple variables
 	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
 	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
-	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HIGH_MIDDLE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
 	 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
 	 	    _newTargetRawData = null;
 	 	    
@@ -334,12 +334,13 @@ public class RoboRealmClient
 	 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
 	 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
 	 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
+	 	    	_newTargetRawData.HighMiddleY = Double.parseDouble((String)_vector.elementAt(HIGH_MIDDLE_Y_IDX));
 	 	    	
 	 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
 	 	    	
 	 	    	_fovDimensions = new Dimension();
-	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
-	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(CALIBRATED_HEIGHT_IDX));
+	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(RAW_WIDTH_IDX));
+	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
