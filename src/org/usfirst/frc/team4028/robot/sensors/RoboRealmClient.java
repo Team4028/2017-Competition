@@ -47,7 +47,7 @@ public class RoboRealmClient {
  	private static final int CAMERA_TYPE_IDX = 8;
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
- 	private static final int POLLING_CYCLE_IN_MSEC = 100;
+ 	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
 
  	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
@@ -58,7 +58,7 @@ public class RoboRealmClient {
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -12.0;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = 0.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
@@ -69,6 +69,7 @@ public class RoboRealmClient {
  	private Dimension _fovDimensions;
  	private Vector _vector;
  	private long _callElapsedTimeMSec;
+ 	private long _lastCallTimestamp;
  	private RawImageData _newTargetRawData;
  	private double _fovXCenterPoint;
  	private double _targetXCenterPoint;
@@ -111,6 +112,7 @@ public class RoboRealmClient {
 		_task = new RoboRealmUpdater();
 		
 		// create a timer to fire events
+		_lastCallTimestamp = new Date().getTime();
 		_updaterTimer = new java.util.Timer();
 		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
 		
@@ -245,27 +247,25 @@ public class RoboRealmClient {
 			synchronized (_targetDataMutex) {
 				dashboardMsg = "Camera= " + _newTargetRawData.CameraType
 								+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
+								+ " MidHiY= " +  _newTargetRawData.HighMiddleY
 								+ " mSec=" + _newTargetRawData.ResponseTimeMSec
 								+ " Blob Count= " + _newTargetRawData.BlobCount 
 								+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
+				
 			}
 		} else {
 			dashboardMsg = "Vision DATA NOT VALID";
 		}
 		
-		SmartDashboard.getString("VIsion", dashboardMsg);
-		
-		// Calculating and displaying the degrees from center
-		//_degreesFromCenter = ((((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX)/2.0)
-		//					/_newTargetRawData.FOVDimensions.width) * CAMERA_FOV_HORIZONTAL_DEGREES);
-		String degreesFromCenterAndHeight = "?";
-		degreesFromCenterAndHeight = String.format("%.3f", _fovCenterToTargetXAngleRawDegrees + _newTargetRawData.HighMiddleY);
-		SmartDashboard.putString("Degrees From Center & Height", degreesFromCenterAndHeight);
+		SmartDashboard.putString("VIsion", dashboardMsg);
 	} 	
 	
 	public void UpdateLogData(LogData logData) {
-		logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
-		logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
+		synchronized (_targetDataMutex) {
+			logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
+			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
+			logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+		}
 	}
 	
 	//=========================================================================
@@ -275,7 +275,6 @@ public class RoboRealmClient {
 	// poll RoboRealm to read current values
  	public void update() { 
  	    synchronized (_targetDataMutex) {
-	 		long startOfCallTimestamp = new Date().getTime();
 	 		
 	 		// get the Field Of View Dimensions
 	 		//_fovDimensions = _rrAPI.getDimension();
@@ -283,8 +282,8 @@ public class RoboRealmClient {
 	 	    // get multiple variables
 	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
 	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
-	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HIGH_MIDDLE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
-	 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
+	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+	 	    _callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
 	 	    _newTargetRawData = null;
 	 	    
 	 	    if (_vector==null) {
@@ -315,6 +314,13 @@ public class RoboRealmClient {
 	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
+	 	    	//y = -2E-07x3 + 0.0002x2 - 0.0698x + 18.456
+	 	    	double estDistance = (-0.0000002 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    							+ (0.0002 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    							- (0.0698 * _newTargetRawData.HighMiddleY)
+	 	    							+ 18.456;
+	 	    	_newTargetRawData.EstimatedDistance = estDistance;
+	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
 	 	
 	 	    	// debug
@@ -342,17 +348,20 @@ public class RoboRealmClient {
 	 	    	// limit spamming
 	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 		    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
-		    							+ "|Camera= " + _newTargetRawData.CameraType 
-		    							+ "|Angle= " + _fovCenterToTargetXAngleRawDegrees 
-		    							+ "|mSec=" + _newTargetRawData.ResponseTimeMSec
-		    							+ "|Blob Count= " + _newTargetRawData.BlobCount 
-		    							+ "|Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
+		    							+ " |Camera= " + _newTargetRawData.CameraType 
+		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
+		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
+		    							+ " |DistInFeet= " + _newTargetRawData.EstimatedDistance
+		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
+		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
+		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
 		    		// reset last time
 		    		_lastDebugWriteTimeMSec = new Date().getTime();
 	 	    	}
 	 	    	
 	 	    	//Reset the counter 
 	 	    	_badDataCounter = 0;
+	 	    	_lastCallTimestamp = new Date().getTime();
 	 	    } else {
 	 	    	System.out.println("Unexpected Array Size: " + _vector.size());
 	 	    	_newTargetRawData = null;
