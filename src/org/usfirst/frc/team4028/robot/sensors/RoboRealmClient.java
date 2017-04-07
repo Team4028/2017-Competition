@@ -315,10 +315,18 @@ public class RoboRealmClient {
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
 	 	    	//y = -2E-07x3 + 0.0002x2 - 0.0698x + 18.456
-	 	    	double estDistance = (-0.0000002 * Math.pow(_newTargetRawData.HighMiddleY, 3))
-	 	    							+ (0.0002 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-	 	    							- (0.0698 * _newTargetRawData.HighMiddleY)
-	 	    							+ 18.456;
+	 	    	//y = -2E-07x3 + 0.0002x2 - 0.0698x + 18.456
+	 	    	//double estDistance = (-0.0000002 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    	//						+ (0.0002 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    	//						- (0.0698 * _newTargetRawData.HighMiddleY)
+	 	    	//						+ 18.456;
+	 	    	
+	 	    	//=((-1.724236*10^-7) * A26^3) + ((1.6430741*10^-4) * A26^2) - (0.06984136 * A26) + 18.45576757
+	 	    	double estDistance =(Math.pow(-1.724236, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+	 	    							+ (Math.pow(1.6430741, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
+	 	    							+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
+	 	    							+ 18.45576757;
+	 	    	
 	 	    	_newTargetRawData.EstimatedDistance = estDistance;
 	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
