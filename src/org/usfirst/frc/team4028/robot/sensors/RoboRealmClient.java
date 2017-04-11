@@ -418,6 +418,10 @@ public class RoboRealmClient {
     	}
     }
     
+    public double get_DistanceToBoilerInches() {
+    	return 0.0;
+    }
+    
     public boolean get_isInGearHangPosition() {
 		if (get_isVisionDataValid()
 				&& (_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) 

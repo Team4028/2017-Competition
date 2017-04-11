@@ -319,7 +319,10 @@ public class Shooter {
 			_isStg1MtrTargetRPMBumpingUp = false;
 		}
 	}
-	
+	public void CalcAutomaticShooter (double distanceInInches)
+	{
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues(distanceInInches);
+	}
 	public void BumpStg1MtrRPMDown() {
 		// only bump if not already at min
 		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM)) {

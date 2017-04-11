@@ -14,6 +14,7 @@ public class ShooterTable {
 	private LinkedList<ShooterTableEntry> _teleopTable = null;
 	private LinkedList<ShooterTableEntry> _autonTable = null;
 	private int _currentIndex = 0;
+	private int _indexCounter;
 	
 	//============================================================================================
 	// constructors follow
@@ -38,6 +39,11 @@ public class ShooterTable {
 	//============================================================================================
 	// methods follow
 	//============================================================================================
+	public ShooterTableEntry CalcShooterValues (double distanceInInches)
+	{
+		return null;
+	}
+	
 	public ShooterTableEntry getNextEntry() {
 		if(!get_IsAtUpperEntry()) {
 			_currentIndex++;
@@ -141,24 +147,24 @@ public class ShooterTable {
 
 		LinkedList<ShooterTableEntry> table = new LinkedList<ShooterTableEntry>();
 		
-		int indexCounter = 0;
+		_indexCounter = 0;
 		//======================================================================================
 		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
 		//======================================================================================
 		
-		table.add(new ShooterTableEntry(indexCounter++, 36, " 3ft", .40, -2800, -2600, false));
-		table.add(new ShooterTableEntry(indexCounter++, 48, " 4ft", .46, -2867, -2633, false));
-		table.add(new ShooterTableEntry(indexCounter++, 60, " 5ft", .51, -2933, -2667, false));
-		table.add(new ShooterTableEntry(indexCounter++, 72, " 6ft", .57, -3000, -2700, false));
-		table.add(new ShooterTableEntry(indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
-		table.add(new ShooterTableEntry(indexCounter++, 96, " 8ft", .60, -3133, -2833, false));
-		table.add(new ShooterTableEntry(indexCounter++, 108, " 9ft", .62, -3200, -2900, false));
-		table.add(new ShooterTableEntry(indexCounter++, 120, "10ft", .64, -3300, -3000, false));
-		table.add(new ShooterTableEntry(indexCounter++, 132, "11ft", .65, -3400, -3100, false));
-		table.add(new ShooterTableEntry(indexCounter++, 144, "12ft", .67, -3500, -3200, true));
-		table.add(new ShooterTableEntry(indexCounter++, 156, "13ft", .68, -3617, -3317, false));
-		table.add(new ShooterTableEntry(indexCounter++, 168, "14ft", .69, -3733, -3433, false));
-		table.add(new ShooterTableEntry(indexCounter++, 180, "15ft", .70, -3850, -3550, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 48, " 4ft", .46, -2867, -2633, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 60, " 5ft", .51, -2933, -2667, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 72, " 6ft", .57, -3000, -2700, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 96, " 8ft", .60, -3133, -2833, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .62, -3200, -2900, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 120, "10ft", .64, -3300, -3000, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 144, "12ft", .67, -3500, -3200, true));
+		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .69, -3733, -3433, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
 		
 		return table;
