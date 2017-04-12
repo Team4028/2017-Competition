@@ -17,16 +17,18 @@ import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TrajectoryDriveController {
 	
 	private Chassis _chassis;
 	private NavXGyro _navX;
 	private UpdaterTask _updaterTask;
-	private TrajectoryFollower _leftFollower = new TrajectoryFollower("left");
-	private TrajectoryFollower _rightFollower = new TrajectoryFollower("right");
+	private TrajectoryFollower _leftFollower = new TrajectoryFollower();
+	private TrajectoryFollower _rightFollower = new TrajectoryFollower();
 	private RoboRealmClient _roboRealm;
 	private java.util.Timer _updaterTimer;
 	private double _angleDiff;
@@ -104,6 +106,8 @@ public class TrajectoryDriveController {
 				}
 				_direction = 1.0;
 				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case CENTER_GEAR:
@@ -112,6 +116,8 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case HOPPER_TO_SHOOTING_POSITION:
@@ -120,6 +126,8 @@ public class TrajectoryDriveController {
 				_direction = -1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = HopperToBoilerTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 				break;
 				
 			case MOVE_TO_BOILER:
@@ -134,6 +142,8 @@ public class TrajectoryDriveController {
 				}
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case MOVE_TO_HOPPER:
@@ -142,6 +152,8 @@ public class TrajectoryDriveController {
 				_heading = 1.0;
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToHopperTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 				break;
 				
 			case RETRIEVAL_GEAR:
@@ -156,6 +168,8 @@ public class TrajectoryDriveController {
 				}
 				_direction = 1.0;
 				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TURN_AND_SHOOT:
@@ -164,6 +178,8 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TWO_GEAR_LONG:
@@ -172,6 +188,8 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearLong.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TWO_GEAR_SHORT_FWD:
@@ -180,6 +198,8 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TWO_GEAR_SHORT_REV:
@@ -188,6 +208,8 @@ public class TrajectoryDriveController {
 				_direction = -1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TWO_GEAR_SUPER_SHORT:
@@ -196,6 +218,8 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 		}
 	}
@@ -257,7 +281,6 @@ public class TrajectoryDriveController {
 				_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			}
 			
-			
 			_chassis.TankDrive(_leftPower - _turn, _rightPower + _turn);
 		}
 	}
@@ -274,12 +297,12 @@ public class TrajectoryDriveController {
 		DriverStation.reportError("Enabled", false);
 	}
 	
-	public void disable() {
-		_isEnabled = false;
+	public void disable() { 
+		_isEnabled = false; 
 	}
 	
-	public boolean isEnable() {
-		return _isEnabled;
+	public boolean isEnable() { 
+		return _isEnabled; 
 	}
 	
 	public void isVisionTrackingEnabled(boolean isEnabled) {
@@ -312,6 +335,12 @@ public class TrajectoryDriveController {
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
 	}
 	
+	public void OutputToSmartDashboard() {
+		if(_roboRealm.get_isVisionDataValid()) {
+			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
+		}
+	}
+	
 	private class UpdaterTask extends TimerTask {
 		public void run() {
 			while(_isUpdaterTaskRunning) {
@@ -323,8 +352,7 @@ public class TrajectoryDriveController {
 				}
 				try {
 					Thread.sleep(20);
-				}
-				catch(InterruptedException e) {
+				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
 			}

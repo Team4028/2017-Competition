@@ -17,8 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //------------------------------------------------------
 //
 //=====> For Changes see Sydney Sauer
-public class Climber 
-{
+public class Climber {
 	// =====================================================================
 	// 1 DC Motor
 	//		1 Talon w/o Encoder		Climber
@@ -48,8 +47,7 @@ public class Climber
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public Climber(int talonClimberCanBusAddr)
-	{
+	public Climber(int talonClimberCanBusAddr) {
 		_climberMtr = new CANTalon(talonClimberCanBusAddr);
 		_climberMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_climberMtr.enableBrakeMode(true);							// default to brake mode DISABLED
@@ -66,8 +64,7 @@ public class Climber
 	//============================================================================================
 	
 	// Simple single direction, 2 speed mode controlled by joystick
-	public void RunMotorUsingJoyStick(double joyStickCmd)
-	{
+	public void RunMotorUsingJoyStick(double joyStickCmd) {
 		// push joystick up (0 => -1.0)
 		if(joyStickCmd < -0.8) {
 			// more than 1/2 way, climb @ high speed
@@ -80,24 +77,22 @@ public class Climber
 		else {
 			_climberMtr.set(0.0);
 		}
+		
+		
 	}
 	
 	// This method starts the climber when the button is pressed
-	public void RunClimberReentrant()
-	{
+	public void RunClimberReentrant() {
 		RunMotor(CLIMBER_MOTOR_VBUS);
 		_isClimbing = true;
 	}
 		
 	// This is the main drive method
-	private void RunMotor(double percentVBusCmd)
-	{
+	private void RunMotor(double percentVBusCmd){
 		_climberMotorCurrent = _climberMtr.getOutputCurrent();
 		
-		if (Math.abs(_climberMotorCurrent) >= CLIMBER_MAX_CURRENT)
-		{	
-			if (_wasLastCycleOverMax == false)
-			{
+		if (Math.abs(_climberMotorCurrent) >= CLIMBER_MAX_CURRENT) {	
+			if (_wasLastCycleOverMax == false) {
 				_wasLastCycleOverMax = true;
 				_timeWhenMotorExceededThreshhold = System.currentTimeMillis();
 			}
@@ -109,40 +104,33 @@ public class Climber
 			System.out.println("Time " + _elapsedTimeSinceMotorCurrentExceededMaxThreshholdInMSec
 								+  "  i: " + _climberMotorCurrent);
 			
-			if (_elapsedTimeSinceMotorCurrentExceededMaxThreshholdInMSec >= MAX_TIME_OVER_THRESHHOLD)
-			{
+			if (_elapsedTimeSinceMotorCurrentExceededMaxThreshholdInMSec >= MAX_TIME_OVER_THRESHHOLD) {
 				_climberMtr.set(0.0);
 				_isClimberMotorStalled = true;
 			}
-		}
-		else
-		{
+		} else {
 			_wasLastCycleOverMax = false;
 		}
 		
-		if (!_isClimberMotorStalled)
-		{
+		if (!_isClimberMotorStalled) {
 			// send cmd to mtr controller
 			_currentPercentVBusCmd = percentVBusCmd;
 			_climberMtr.set(percentVBusCmd);
 		}	
 	}
 	
-	public void FullStop()
-	{
+	public void FullStop() {
 		_climberMtr.set(0.0);
 		_isClimbing = false;
 	}
 	
-	public void SetUpClimberStatus()
-	{
+	public void SetUpClimberStatus() {
 		// This is called in Teleop Init, and it resets the climbing mechanism. 
 		_isClimberMotorStalled = false;
 	}
 
 	// update the Dashboard with any Climber specific data values
-	public void OutputToSmartDashboard()
-	{
+	public void OutputToSmartDashboard() {
 		SmartDashboard.putNumber("Climber Motor Current", getActualMotorCurrent());
 		SmartDashboard.putString(" ", getIsClimberBuckets());
 	}
@@ -163,30 +151,23 @@ public class Climber
 	// Property Accessors follow
 	//============================================================================================
 	
-	public boolean getIsClimbing()
-	{
+	public boolean getIsClimbing() {
 		return _isClimbing;
 	}
 	
-	private double getActualMotorCurrent()
-	{
+	private double getActualMotorCurrent() {
 		return _climberMtr.getOutputCurrent();
 	}
 	
-	private double getActualPercentVBus()
-	{
+	private double getActualPercentVBus() {
 		return GeneralUtilities.RoundDouble((_climberMtr.getOutputVoltage() / _climberMtr.getBusVoltage()), 2);
 	}
 	
 	// Per the request of the drive team
-	private String getIsClimberBuckets()
-	{
-		if (_isClimberMotorStalled)
-		{
+	private String getIsClimberBuckets() {
+		if (_isClimberMotorStalled) {
 			return "BUCKETS!";
-		}
-		else
-		{
+		} else {
 			return "";
 		}
 	}

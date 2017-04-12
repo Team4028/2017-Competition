@@ -1,10 +1,12 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.CAMERA_NAMES;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -17,20 +19,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //	1		TomB		26.Feb.2017	Updated w/ new Auton Options
 //  2 		Sebas		6.Mar.2017	Updated w/ more Auton Options
 //  3       Nick        8.Mar.2017  Updated with Camera Options
+//	4		TomB		29.Mar.2017	Added support to get Alliance color from FMS
 //------------------------------------------------------
 //
 //=====> For Changes see Sydney
 public class DashboardInputs { 
 	
 	private AUTON_MODE _autonModeChoice;
-	private ALLIANCE _alliance;
+	private ALLIANCE_COLOR _allianceColor;
 	private CAMERA_NAMES _gearCameraName;
 	private CAMERA_NAMES _shooterCameraName;
 	private CAMERA_NAMES _climberCameraName;
 	private CAMERA_NAMES _driverCameraName;
 	
 	private SendableChooser<AUTON_MODE> _autonModeChooser;
-	private SendableChooser<ALLIANCE> _allianceChooser;
+	private SendableChooser<ALLIANCE_COLOR> _allianceChooser;
 	private SendableChooser<CAMERA_NAMES> _gearCamChooser;
 	private SendableChooser<CAMERA_NAMES> _shooterCamChooser;
 	private SendableChooser<CAMERA_NAMES> _climberCamChooser;
@@ -58,10 +61,10 @@ public class DashboardInputs {
 		_autonModeChooser.addObject("Right Side Gear", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR);
 		//_autonModeChooser.addObject("Hang Gear on the Boiler Side and Shoot", GeneralEnums.AUTON_MODE.HANG_BOILER_GEAR_AND_SHOOT);
 		_autonModeChooser.addDefault("Center Gear", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR);
-		//_autonModeChooser.addObject("Hang Gear in Center and Shoot", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR_AND_SHOOT);
+		_autonModeChooser.addObject("Hang Gear in Center and Shoot", GeneralEnums.AUTON_MODE.HANG_CENTER_GEAR_AND_SHOOT);
 		_autonModeChooser.addObject("Left Side Gear", GeneralEnums.AUTON_MODE.HANG_RETRIEVAL_GEAR);
 		//_autonModeChooser.addObject("Hit the Hopper and Shoot", GeneralEnums.AUTON_MODE.HIT_HOPPER);
-		//_autonModeChooser.addObject("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
+		_autonModeChooser.addObject("Turn and Shoot", GeneralEnums.AUTON_MODE.TURN_AND_SHOOT);
 		//_autonModeChooser.addObject("Two Gears", GeneralEnums.AUTON_MODE.TWO_GEAR);
 		
 		SmartDashboard.putData("Auton Mode Chooser", _autonModeChooser);
@@ -69,16 +72,16 @@ public class DashboardInputs {
 		//============================
 		// Alliance Choice
 		//============================
-		_allianceChooser = new SendableChooser<ALLIANCE>();
+		_allianceChooser = new SendableChooser<ALLIANCE_COLOR>();
 		
-		_allianceChooser.addDefault("Red Alliance", GeneralEnums.ALLIANCE.RED_ALLIANCE);
-		_allianceChooser.addObject("Blue Alliance", GeneralEnums.ALLIANCE.BLUE_ALLIANCE);
+		_allianceChooser.addDefault("FMS", GeneralEnums.ALLIANCE_COLOR.USE_FMS);
+		_allianceChooser.addObject("Red Alliance", GeneralEnums.ALLIANCE_COLOR.RED_ALLIANCE);
+		_allianceChooser.addObject("Blue Alliance", GeneralEnums.ALLIANCE_COLOR.BLUE_ALLIANCE);
 		
 		SmartDashboard.putData("Alliance Chooser" , _allianceChooser);		
 	}
 	
-	private void ConfigCameraChoosers()
-	{
+	private void ConfigCameraChoosers() {
 		//====================================
 		//#ALL the Cameras
 		//=====================================
@@ -91,7 +94,6 @@ public class DashboardInputs {
 		
 		SmartDashboard.putData("Gear Camera Chooser", _gearCamChooser);
 		
-		
 		_shooterCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
 		_shooterCamChooser.addObject("s.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
@@ -101,8 +103,6 @@ public class DashboardInputs {
 		
 		SmartDashboard.putData("Shooter Camera Chooser", _shooterCamChooser);
 		
-		
-		
 		_climberCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
 		_climberCamChooser.addObject("c.cam0", GeneralEnums.CAMERA_NAMES.CAM0);
@@ -111,8 +111,6 @@ public class DashboardInputs {
 		_climberCamChooser.addObject("cam3", GeneralEnums.CAMERA_NAMES.CAM3);
 		
 		SmartDashboard.putData("Climber Camera Chooser", _climberCamChooser);
-		
-		
 		
 		_driverCamChooser = new SendableChooser<CAMERA_NAMES>();
 		
@@ -127,36 +125,66 @@ public class DashboardInputs {
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
+	
+	public boolean getIsFMSAttached() {
+		return DriverStation.getInstance().isFMSAttached();
+	}
+
 	public AUTON_MODE get_autonMode() {
 		_autonModeChoice = _autonModeChooser.getSelected();
 		return _autonModeChoice;
 	}
 	
-	public ALLIANCE get_allianceMode() {
-		_alliance =  _allianceChooser.getSelected();
-		return _alliance;
+	public ALLIANCE_COLOR get_allianceColor() {
+		_allianceColor =  _allianceChooser.getSelected();
+
+		switch (_allianceColor) {
+			case BLUE_ALLIANCE:
+				return ALLIANCE_COLOR.BLUE_ALLIANCE;
+				
+			case RED_ALLIANCE:
+				return ALLIANCE_COLOR.RED_ALLIANCE;
+				
+			case USE_FMS:
+				if(getIsFMSAttached()) {
+					Alliance fmsAlliance = DriverStation.getInstance().getAlliance();
+					
+					switch(fmsAlliance) {
+						case Blue:
+							return ALLIANCE_COLOR.BLUE_ALLIANCE;
+							
+						case Red:
+							return ALLIANCE_COLOR.RED_ALLIANCE;
+							
+						default:
+							return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
+					}
+				}
+				else {
+					return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
+				}
+				
+			default:
+				return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
+		}
 	}
 	
-	public CAMERA_NAMES get_gearCam()
-	{
+	public CAMERA_NAMES get_gearCam() {
 		_gearCameraName = _gearCamChooser.getSelected();
 		return _gearCameraName;
 	}
 	
-	public CAMERA_NAMES get_shooterCam()
-	{
+	public CAMERA_NAMES get_shooterCam() {
 		_shooterCameraName = _shooterCamChooser.getSelected();
 		return _shooterCameraName;
 	}
 	
-	public CAMERA_NAMES get_climberCam()
-	{
+	public CAMERA_NAMES get_climberCam() {
 		_climberCameraName = _climberCamChooser.getSelected();
 		return _climberCameraName;
 	}
 	
-	public CAMERA_NAMES get_driverCam()
-	{
+	public CAMERA_NAMES get_driverCam() {
 		_driverCameraName = _driverCamChooser.getSelected();
 		return _driverCameraName;
 	}

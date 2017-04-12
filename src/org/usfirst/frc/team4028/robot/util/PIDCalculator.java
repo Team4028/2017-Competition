@@ -3,25 +3,18 @@ package org.usfirst.frc.team4028.robot.util;
 import edu.wpi.first.wpilibj.util.BoundaryException;
 
 public class PIDCalculator {
-	
 	private double _p; // "proportional" term
 	private double _i; // "integral" term
 	private double _d; // "derivative" term
-	private double _maximumOutput = 0.6; 
-	private double _minimumOutput = -0.6;
-	private double _maximumInput = 180.0;
-	private double _minimumInput = -180.0;
-	private boolean _isContinuous = false; // do the endpoints wrap around e.g. absolute encoder
+	private double _maximumOutput = 0.7; 
+	private double _minimumOutput = -0.7;
 	private double _prevError = 0.0;
 	private double _totalError = 0.0;
+	private double _totalErrorCeiling = 30.0;
 	private double _setpoint = 0.0;
 	private double _error = 0.0;
 	private double _result = 0.0;
-	private double _lastInput = Double.NaN;
-	private double _deadband = 0.0;
-	
-	public PIDCalculator() {
-	}
+	private double _deadband = 5.0;
 	
 	public PIDCalculator(double Kp, double Ki, double Kd) {
 		_p = Kp;
@@ -30,27 +23,20 @@ public class PIDCalculator {
 	}
 	
 	public double calculate (double input) {
-		_lastInput = input;
-		_error = _setpoint - input;
-		if (_isContinuous) {
-			if (Math.abs(_error) > (_maximumInput - _minimumInput) / 2) {
-				if (_error > 0) {
-					_error = _error - _maximumInput + _minimumInput;
-				} else {
-					_error = _error + _maximumInput - _minimumInput;
-				}
+		_error = _setpoint - input;		
+		if (Math.abs(_error) < 6.0) {
+			if (Math.abs(_totalError + _error) < _totalErrorCeiling) {
+				_totalError += _error;
+			} else {
 			}
-		}
-		
-		if ((_error * _p < _maximumOutput) && (_error *_p > _minimumOutput)) {
-			_totalError += _error;
 		} else {
 			_totalError = 0.0;
 		}
 		
 		double proportionalError = Math.abs(_error) < _deadband ? 0 : _error;
 		
-		_result = (_p * proportionalError + _i * _totalError * _d * (_error - _prevError));
+		_result = (_p * proportionalError + _i * _totalError + _d * (_error - _prevError));
+		//DriverStation.reportError(Double.toString(_result), false);
 		
 		if (_result > _maximumOutput) {
             _result = _maximumOutput;
@@ -60,35 +46,11 @@ public class PIDCalculator {
         return _result;  
 	}
 	
-	public void setPID(double p, double i, double d) {
-		_p = p;
-		_i = i;
-		_d = d;
-	}
-	
-	public void setContinuous(boolean isContinuous) {
-		_isContinuous = isContinuous;
-	}
-	
 	public void setDeadband (double deadband) {
 		_deadband = deadband;
 	}
 	
-	public void setContinuous() {
-		this._isContinuous = true;
-	}
-	
-	public void setInputRange(double minimumInput, double maximumInput) {
-        if (minimumInput > maximumInput) {
-            throw new BoundaryException("Lower bound is greater than upper bound");
-        }
-        _minimumInput = minimumInput;
-        _maximumInput = maximumInput;
-        setSetpoint(_setpoint);
-    }
-	
-	public void setOutputRange(double minimumOutput, double maximumOutput) 
-	{
+	public void setOutputRange(double minimumOutput, double maximumOutput) {
 		if (minimumOutput > maximumOutput) {
 			throw new BoundaryException("Lower bound is greater than upper bound");
 		}
@@ -98,43 +60,26 @@ public class PIDCalculator {
 	}
 	
 	public void setSetpoint(double setpoint) {
-        if (_maximumInput > _minimumInput) {
-            if (setpoint > _maximumInput) {
-                _setpoint = _maximumInput;
-            } else if (setpoint < _minimumInput) {
-                _setpoint = _minimumInput;
-            } else {
-                _setpoint = setpoint;
-            }
-        } else {
-            _setpoint = setpoint;
-        }
+        _setpoint = setpoint;
     }
 	
 	public boolean onTarget() {
-        return _lastInput != Double.NaN && Math.abs(_lastInput - _setpoint) < _deadband;
+        return (Math.abs(_error) < _deadband);
     }
-
-    /**
-     * Reset all internal terms.
-     */
+	
+    // Reset all internal terms.
     public void reset() {
-        _lastInput = Double.NaN;
         _prevError = 0;
         _totalError = 0;
         _result = 0;
         _setpoint = 0;
     }
+    
+    public void resetTotalError() {
+    	_totalError = 0;
+    }
 	
 	public double getError() {
         return _error;
     }
-	
-	public double getSetpoint() {
-		return _setpoint;
-	}
-
-	public double get() {
-		return _result;
-	}
 }

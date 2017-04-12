@@ -7,8 +7,7 @@ import java.util.List;
 //	Subsystem classes use the Add method to add data in their UpdateLogData method as Name/Value pairs
 //  Internally, this class holds the Names & Values in 2 arrays
 //  Therefore this class does not need to be changed to support addl data to be logged, it grows dynamically
-public class LogData 
-{
+public class LogData {
 	// define class level working variables
 	private List<String> _names;
 	private List<String> _values;
@@ -16,8 +15,7 @@ public class LogData
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public LogData()
-	{
+	public LogData() {
 		_names = new ArrayList<String>();
 		_values = new ArrayList<String>();
 	}
@@ -25,38 +23,32 @@ public class LogData
 	//============================================================================================
 	// Methods follow
 	//============================================================================================
-	public void AddData(String name, String value)
-	{
+	public void AddData(String name, String value) {
 		_names.add(name);
 		_values.add(value);
 	}
 	
 	// discard any data currently being held
-	public void ResetData()
-	{
+	public void ResetData() {
 		_names = new ArrayList<String>();
 		_values = new ArrayList<String>();	
 	}
 
 	// build a TSV (tab separated value) string for the header row
-	public String BuildTSVHeader()
-	{
+	public String BuildTSVHeader() {
 		return BuildTSVString(_names);
 	}
 
 	// build a TSV (tab separated value) string for a data row
-	public String BuildTSVData()
-	{
+	public String BuildTSVData() {
 		return BuildTSVString(_values);
 	}
 	
 	// build a TSV string from a List<string>
-	private String BuildTSVString(List<String> myList)
-	{
+	private String BuildTSVString(List<String> myList) {
 		StringBuilder sb = new StringBuilder();
 		
-		for(String item : myList)
-		{
+		for(String item : myList) {
 			// add the item + a tab character
 			sb.append(item + "\t");
 		}

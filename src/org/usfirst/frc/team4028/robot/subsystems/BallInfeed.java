@@ -24,11 +24,6 @@ public class BallInfeed {
 	CANTalon _fuelInfeedMtr;
 	Solenoid _fuelInfeedSolenoid;
 	
-	//======================================
-	//define class level constants
-	//=======================================
-	//private static final double FUEL_INFEED_MOTOR_SPEED = -1.0;
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
@@ -63,7 +58,7 @@ public class BallInfeed {
 		}
 	}
 		
-	// update the Dashboard with any Climber specific data values
+	// update the Dashboard with any Infeed specific data values
 	public void OutputToSmartDashboard() {
 		SmartDashboard.putBoolean("Is Fuel Infeed Tilt Extended", _fuelInfeedSolenoid.get());
 		
@@ -73,8 +68,7 @@ public class BallInfeed {
 			ballInfeedMtrData = String.format("%s (%.0f%%)", 
 												"ON", 
 												(_fuelInfeedMtr.getOutputVoltage() / _fuelInfeedMtr.getBusVoltage())* 100);
-		}
-		else {
+		} else {
 			ballInfeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
 		}
 		

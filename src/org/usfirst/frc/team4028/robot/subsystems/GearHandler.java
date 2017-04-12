@@ -18,8 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //------------------------------------------------------
 //
 // =====> For Changes see Nick Donahue (javadotmakeitwork)
-public class GearHandler 
-{
+public class GearHandler {
 	// =====================================================================
 	// 2 DC Motors
 	//		1 Talon w/ Encoder	w/ Rev Limit Switch		Tilt
@@ -51,8 +50,7 @@ public class GearHandler
 	
 	// --------------------------------------------------------
 	// define Working variables and constants for homing the tilt axix
-	private enum GEAR_TILT_HOMING_STATE
-	{
+	private enum GEAR_TILT_HOMING_STATE {
 		UNDEFINED,
 		MOVING_TO_HOME,
 		AT_HOME,
@@ -60,8 +58,7 @@ public class GearHandler
 		ZEROED
 	}
 	
-	private enum GEAR_TILT_MOVE_LAST_TARGET_POSITION
-	{
+	private enum GEAR_TILT_MOVE_LAST_TARGET_POSITION {
 		UNDEFINED,
 		MOVING_TO_SCORING_POSITION,
 		MOVING_TO_HOME,
@@ -83,13 +80,11 @@ public class GearHandler
 	private boolean _isLastTiltMoveToFloorCallComplete;
 
 	// --------------------------------------------------------
-		
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public GearHandler(int talonTiltCanBusAddr, int talonInfeedCanBusAddr)
-	{
+	public GearHandler(int talonTiltCanBusAddr, int talonInfeedCanBusAddr) {
 		// Tilt Motor
 		_gearTiltMotor = new CANTalon(talonTiltCanBusAddr);
 		_gearTiltMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
@@ -100,9 +95,7 @@ public class GearHandler
 		_gearTiltMotor.ConfigRevLimitSwitchNormallyOpen(false);
 		
 		_gearTiltMotor.setProfile(TILT_PID_P_PROFILE);
-		_gearTiltMotor.setP(TILT_PID_P_CONSTANT);
-		_gearTiltMotor.setI(TILT_PID_I_CONSTANT);
-		_gearTiltMotor.setD(TILT_PID_D_CONSTANT);
+		_gearTiltMotor.setPID(TILT_PID_P_CONSTANT, TILT_PID_I_CONSTANT, TILT_PID_D_CONSTANT);
 		_gearTiltMotor.configNominalOutputVoltage(0.0f, -0.0f);
 		_gearTiltMotor.configPeakOutputVoltage(TILT_MAX_V_DOWN_TILT, TILT_MAX_V_UP_TILT);
     	//_gearTiltMotor.reverseOutput(true);
@@ -111,10 +104,7 @@ public class GearHandler
 		_gearInfeedMotor = new CANTalon(talonInfeedCanBusAddr);
 		_gearInfeedMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_gearInfeedMotor.enableBrakeMode(false);							// default to brake mode DISABLED
-    	//_gearInfeedMotor.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
-    	//_gearInfeedMotor.reverseSensor(false);  							// do not invert encoder feedback
 		_gearInfeedMotor.enableLimitSwitch(false, false);
-    	//_gearInfeedMotor.reverseOutput(true);
 		
 		ZeroGearTiltAxisInit();
 	}
@@ -123,63 +113,48 @@ public class GearHandler
 	// Methods follow
 	//============================================================================================	
 	
-    public void ZeroGearTiltAxisInit()
-    {
+    public void ZeroGearTiltAxisInit() {
 		_gearTiltMoveLastTargetPosition = GEAR_TILT_MOVE_LAST_TARGET_POSITION.UNDEFINED;   	
 		
 		// snapshot the current time so we can enforce the timeout
 		_gearTiltAxisStateStartTime = System.currentTimeMillis();
     	
     	// did we start on the limit switch? (remember switch is normally closed!)
-		if(getIsOnTiltHomeLimtSwitch())
-		{
+		if(getIsOnTiltHomeLimtSwitch()) {
 			_gearTiltAxisZeroCurrentState = GEAR_TILT_HOMING_STATE.AT_HOME;
 			DriverStation.reportWarning("TiltAxis (Zero State) [INITIAL] ==> [AT_HOME]", false);
-		}
-		else
-		{
+		} else {
 			_gearTiltAxisZeroCurrentState = GEAR_TILT_HOMING_STATE.MOVING_TO_HOME;
 			DriverStation.reportWarning("TiltAxis (Zero State) [INITIAL] ==> [MOVING_TO_HOME]", false);
 		}
     }
 	
 	// Re-entrant method that will zero the Tilt Axis
-    public void ZeroGearTiltAxisReentrant()
-    {
-    	switch(_gearTiltAxisZeroCurrentState)
-    	{    					
+    public void ZeroGearTiltAxisReentrant() {
+    	switch(_gearTiltAxisZeroCurrentState) {    					
     		case MOVING_TO_HOME:
     			// are we on the limit switch? (remember switch is normally closed!
-    			if(getIsOnTiltHomeLimtSwitch())
-    			{
+    			if(getIsOnTiltHomeLimtSwitch()) {
     				_gearTiltAxisZeroCurrentState = GEAR_TILT_HOMING_STATE.AT_HOME;
     				DriverStation.reportWarning("TiltAxis (Zero State) [MOVING_TO_HOME] ==> [AT_HOME]", false);
-    			}
-    			else
-    			{
+    			} else {
     				// check for timeout
     				long elapsedTime = System.currentTimeMillis() - _gearTiltAxisStateStartTime;
-    				if (elapsedTime < GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC)
-    				{
-    					if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.PercentVbus)
-    					{
+    				if (elapsedTime < GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC) {
+    					if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.PercentVbus) {
     						_gearTiltMotor.changeControlMode(TalonControlMode.PercentVbus);
     					}
     					_gearTiltMotor.set(GEAR_MOVE_TO_HOME_VELOCITY_CMD);
-    				}
-    				else
-    				{
+    				} else {
     					_gearTiltAxisZeroCurrentState = GEAR_TILT_HOMING_STATE.TIMEOUT;
     					DriverStation.reportWarning("TiltAxis (Zero State) [MOVING_TO_HOME] ==> [TIMEOUT]", false);
     				}		
     			}
-    			
     			break;
     			
     		case AT_HOME:
     			// chg to PID-Position mode
-    			if(_gearTiltMotor.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
-    			{
+    			if(_gearTiltMotor.getControlMode() == CANTalon.TalonControlMode.PercentVbus) {
     				_gearTiltMotor.set(0);
     				_gearTiltMotor.changeControlMode(CANTalon.TalonControlMode.Position);
     			}
@@ -205,32 +180,26 @@ public class GearHandler
     	}
     }
     
-    public void MoveGearToHomePosition()
-    {
+    public void MoveGearToHomePosition() {
     	MoveTiltAxisPIDP(GEAR_TILT_AXIS_HOME_POSITION_IN_ROTATIONS);
     	_isLastTiltMoveToFloorCallComplete = true;
     	
     	DriverStation.reportWarning("Move Gear To Home Position", false);
     }
     
-    public void MoveGearToScorePosition()
-    {
+    public void MoveGearToScorePosition() {
     	MoveTiltAxisPIDP(GEAR_TILT_SCORING_POSITION_IN_ROTATIONS);
     	_isLastTiltMoveToFloorCallComplete = true;
     	
-    	DriverStation.reportWarning("Move Gear To Score Position", false);
+    	//DriverStation.reportWarning("Move Gear To Score Position", false);
     }
     
-    public void MoveGearToFloorPositionReentrant()
-    {
-		if(_gearTiltMotor.getPosition() >= (GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS - TARGET_DEADBAND))
-		{
+    public void MoveGearToFloorPositionReentrant() {
+		if(_gearTiltMotor.getPosition() >= (GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS - TARGET_DEADBAND)) {
 			// gravity fall to floor
 			MoveTiltAxisVBus(0.0);
 			_isLastTiltMoveToFloorCallComplete = true;
-		}
-		else
-		{
+		} else {
 			MoveTiltAxisPIDP(GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS);
 			_isLastTiltMoveToFloorCallComplete = false;
 		}
@@ -238,33 +207,25 @@ public class GearHandler
 		DriverStation.reportWarning("Move Gear To Floor Position", false);
     }
     
-    public void MoveTiltAxisPIDP (double positionCmd)
-    {
-    	if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.Position)
-		{
+    public void MoveTiltAxisPIDP (double positionCmd) {
+    	if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.Position) {
 			_gearTiltMotor.changeControlMode(TalonControlMode.Position);
 		}
     	_gearTiltMotor.set(positionCmd);
     }
 
-	public void MoveTiltAxisVBus(double percentVBusCmd)
-	{
+	public void MoveTiltAxisVBus(double percentVBusCmd) {
 		MoveTiltAxisVBus(percentVBusCmd, true);
 	}
     
-	public void MoveTiltAxisVBus(double percentVBusCmd, boolean isUseRawCmd)
-	{
-		if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.PercentVbus)
-		{
+	public void MoveTiltAxisVBus(double percentVBusCmd, boolean isUseRawCmd) {
+		if(_gearTiltMotor.getControlMode() != CANTalon.TalonControlMode.PercentVbus) {
 			_gearTiltMotor.changeControlMode(TalonControlMode.PercentVbus);
 		}
 		
-		if(isUseRawCmd)
-		{
+		if(isUseRawCmd) {
 			_gearTiltMotor.set(percentVBusCmd);			
-		}
-		else
-		{
+		} else {
 			// limit max speed to 25%	=>  * 0.25
 			_gearTiltMotor.set(percentVBusCmd * 0.25);	
 		}
@@ -273,15 +234,13 @@ public class GearHandler
 		_isLastTiltMoveToFloorCallComplete = true;
 	}
 	
-	public void SpinInfeedWheelsVBus(double percentVBusCmd)
-	{
+	public void SpinInfeedWheelsVBus(double percentVBusCmd) {
 		// invert motor command		=>	* -1.0
 		// limit max speed to 50%	=>  * 0.50
 		_gearInfeedMotor.set(percentVBusCmd * -1.0 * 0.50);
 	}
 	
-	private  String getTiltPosition()
-	{
+	private  String getTiltPosition() {
 		if((_gearTiltMotor.getControlMode() == CANTalon.TalonControlMode.PercentVbus) 
 				&& (Math.abs(_gearTiltMotor.get()) > 0.0)) {
 			_gearTiltState = "Joystick";
@@ -298,23 +257,20 @@ public class GearHandler
 		else if(Math.abs(_gearTiltMotor.getPosition() - GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS) > 0) {
 			_gearTiltState = "Floor";
 		}
-		else
-		{
+		else {
 			_gearTiltState = "Unknown.";
 		}
 		
 		return _gearTiltState;
 	}
 		
-	public void FullStop()
-	{
+	public void FullStop() {
 		MoveTiltAxisVBus(0.0);
 		_gearInfeedMotor.set(0.0);
 	}
 	
 	// update the Dashboard with any Climber specific data values
-	public void OutputToSmartDashboard()
-	{
+	public void OutputToSmartDashboard() {
 		//%s - insert a string
 		//%d - insert a signed integer (decimal)
 		//%f - insert a real number, standard notation
@@ -323,8 +279,7 @@ public class GearHandler
 		// we only really knwo position after we have zeroed
 		if(_gearTiltAxisZeroCurrentState == GEAR_TILT_HOMING_STATE.ZEROED) {
 			gearTiltMtrData = String.format("%s (%.3f)", getTiltPosition(), _gearTiltMotor.getPosition());
-		}
-		else {
+		} else {
 			gearTiltMtrData = String.format("%s (%s)", getTiltPosition(), "???");
 		}
 		SmartDashboard.putString("Gear Tilt Position", gearTiltMtrData);
@@ -336,16 +291,14 @@ public class GearHandler
 			gearInFeedMtrData = String.format("%s (%.0f%%)", 
 												"ON", 
 												(_gearInfeedMotor.getOutputVoltage() / _gearInfeedMotor.getBusVoltage())* 100);
-		}
-		else {
+		} else {
 			gearInFeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
 		}
 		
 		SmartDashboard.putString("Gear In/OutFeed Cmd", gearInFeedMtrData);		
 	}
 	
-	public void UpdateLogData(LogData logData)
-	{
+	public void UpdateLogData(LogData logData) {
 		logData.AddData("Gear:TiltPos", String.format("%.2f", _gearTiltMotor.getPosition()));
 		logData.AddData("Gear:Tilt%VBus", String.format("%.4f", (_gearTiltMotor.getOutputVoltage()) / _gearTiltMotor.getBusVoltage()));
 		logData.AddData("Gear:Outfeed%Vbus", String.format("%.2f", _gearTiltMotor.get()));
@@ -354,44 +307,33 @@ public class GearHandler
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
-	private boolean getIsOnTiltHomeLimtSwitch()
-	{
+	private boolean getIsOnTiltHomeLimtSwitch() {
 		// remember switch is normally closed!
 		return !_gearTiltMotor.isRevLimitSwitchClosed();
 	}
 	
-	public boolean hasTiltAxisBeenZeroed()
-	{
-		if (_gearTiltAxisZeroCurrentState == GEAR_TILT_HOMING_STATE.ZEROED)
-		{
+	public boolean hasTiltAxisBeenZeroed() {
+		if (_gearTiltAxisZeroCurrentState == GEAR_TILT_HOMING_STATE.ZEROED) {
 			return true;
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 	
 	//allows robot class to check if we are in moving to floor mode so it can keep calling
-	public GEAR_TILT_MOVE_LAST_TARGET_POSITION get_gearTiltMoveToPosition()
-	{
+	public GEAR_TILT_MOVE_LAST_TARGET_POSITION get_gearTiltMoveToPosition() {
 		return _gearTiltMoveLastTargetPosition;
 	}
 	
-	public boolean IsGearInScoringPosition()
-	{
-		if(Math.abs(_gearTiltMotor.getPosition() - GEAR_TILT_SCORING_POSITION_IN_ROTATIONS) <= TARGET_DEADBAND)
-		{
+	public boolean IsGearInScoringPosition() {
+		if(Math.abs(_gearTiltMotor.getPosition() - GEAR_TILT_SCORING_POSITION_IN_ROTATIONS) <= TARGET_DEADBAND) {
 			return true;
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 	
-	public boolean getIsLastTiltMoveToFloorCallComplete()
-	{
+	public boolean getIsLastTiltMoveToFloorCallComplete() {
 		return _isLastTiltMoveToFloorCallComplete;
 	}
 }

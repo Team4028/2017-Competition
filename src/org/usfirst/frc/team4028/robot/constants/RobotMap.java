@@ -43,7 +43,7 @@ public class RobotMap {
 	public static final int HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR = 4;
 	public static final int HIGH_ROLLER_CAN_BUS_ADDR = 13;
 	
-	public static final int BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR = 3;	// from the floor
+	public static final int BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR = 3; 
 	
 	public static final int EXTRA_MOTOR_BUS_ADDR = 14;
 	
@@ -55,7 +55,7 @@ public class RobotMap {
 	// ======================================
 	// define constants for DIO Ports on RoboRio
 	// ======================================
-	public static final int LED_RINGS_RELAY_DIO_PORT = 9;
+	public static final int LED_RINGS_DIO_PORT = 9;
 	
 	// ======================================
 	// define constants for Sensor Ports on RoboRio
@@ -73,20 +73,18 @@ public class RobotMap {
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
+	public static final int GEAR_LED_RING_PCM_PORT = 0;
+	public static final int BOILER_LED_RING_PCM_PORT = 1;	
+	
 	public static final int SHIFTER_SOLENOID_RETRACT_PCM_PORT = 7;
 	public static final int SHIFTER_SOLENOID_EXTEND_PCM_PORT = 6;
-	public static final int BALL_FLOOR_INFEED_TILT_EXTEND_PCM_PORT = 5;
+	public static final int BALL_FLOOR_INFEED_EXTEND_PCM_PORT = 5;
 	
 	// ======================================
 	// Define constants for solenoid positions 
 	// ======================================
 	public static final Value SHIFTER_SOLENOID_LOW_GEAR_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_SOLENOID_HIGH_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
-	
-	// TODO: validate these
-	//2/18/17 Don't believe these are necessary Nick Donahue
-	//public static final Value BALL_INFEED_TILT_RETRACT_POSITION = DoubleSolenoid.Value.kForward;
-	//public static final Value BALL_INFEED_TILT_EXTEND_POSITION = DoubleSolenoid.Value.kReverse;
 	
 	// ======================================
 	// define constants for logging
@@ -99,5 +97,5 @@ public class RobotMap {
 	// define constants for the Kangaroo & RoboRealm
 	// ======================================
 	public static final String KANGAROO_IPV4_ADDR = "10.40.28.78";
-	public static final int RR_API_PORT = 6060;
+	public static final int RR_API_PORT = 5800;
 }

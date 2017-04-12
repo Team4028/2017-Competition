@@ -3,10 +3,6 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.HangGearController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,8 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class HangCenterGear {
 	// define class level variables for Robot subsystems
 	private GearHandler _gearHandler;
-	private Chassis _chassis;
-	private NavXGyro _navX;
 	private TrajectoryDriveController _trajController;
 	private HangGearController _hangGearController;
 	
@@ -39,16 +33,12 @@ public class HangCenterGear {
 	
 	private AUTON_STATE _autonState;
 	
-	// define class level constants
-	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangCenterGear(GearHandler gearHandler, Chassis chassis, NavXGyro navX, HangGearController hangGear, TrajectoryDriveController trajController) {
+	public HangCenterGear(GearHandler gearHandler, HangGearController hangGear, TrajectoryDriveController trajController) {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
-		_chassis = chassis;
-		_navX = navX;
 		_hangGearController = hangGear;
 		_trajController = trajController;
 		DriverStation.reportError("Auton Initialized", false);
@@ -63,7 +53,6 @@ public class HangCenterGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();

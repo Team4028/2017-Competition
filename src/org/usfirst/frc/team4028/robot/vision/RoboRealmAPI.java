@@ -11,8 +11,7 @@ import java.net.URL;
  * This class implements a TCP Socket based client to the RoboRealm API
  * It is largely based on sample code available at: http://www.roborealm.com/downloads/API.zip
  */
-public class RoboRealmAPI
-{
+public class RoboRealmAPI {
   // default read and write socket timeout
   public final static int DEFAULT_TIMEOUT = 60000;
 
@@ -50,25 +49,21 @@ public class RoboRealmAPI
   /* Text string manipulation routines */
   /******************************************************************************/
 
-  public RoboRealmAPI()
-  {
-  }
+  public RoboRealmAPI() {}
 
   /*
   Generalized string replace routine used in escaping strings
   to the appropriate XML string. Java only has the character
   replace routine as apposed to string replace.
   */
-  private String replace(String txt, String src, String dest)
-  {
+  private String replace(String txt, String src, String dest) {
     if (txt==null) return new String("");
     int i,j;
     int len=src.length();
     StringBuffer sb=new StringBuffer(txt.length());
 
     j=0;
-    while ((i=txt.indexOf(src,j))>=0)
-    {
+    while ((i=txt.indexOf(src,j))>=0) {
         sb.append(txt.substring(j,i));
         sb.append(dest);
         i+=len;
@@ -87,8 +82,7 @@ public class RoboRealmAPI
     < -> &lt;
     > -> &gt;
   */
-  private String escape(String txt)
-  {
+  private String escape(String txt) {
     txt = replace(txt, "&", "&amp;");
     txt = replace(txt, "\"", "&quot;");
     txt = replace(txt, "<", "&lt;");
@@ -100,28 +94,23 @@ public class RoboRealmAPI
   /* Socket Routines */
   /******************************************************************************/
 
-  public boolean connect(String hostname)
-  {
+  public boolean connect(String hostname) {
     return this.connect(hostname, SERVER_PORTNUM);
   }
   
   
   /* Initiates a socket connection to the RoboRealm server */
-  public boolean connect(String hostname, int portNumber)
-  {
+  public boolean connect(String hostname, int portNumber) {
     connected=false;
 
-    try
-    {
+    try {
       handle = new Socket(hostname, portNumber);
 
       handle.setSoTimeout(timeout);
 
       bufferedReader = new BufferedInputStream(handle.getInputStream());
       bufferedWriter = new BufferedOutputStream(handle.getOutputStream());
-    }
-    catch (IOException e2)
-    {
+    } catch (IOException e2) {
       //Unable to open connection to RoboRealm port 6060
       return false;
     }
@@ -130,33 +119,24 @@ public class RoboRealmAPI
 
     return true;
   }
-
-
   
   /* close the socket handle */
-  public void disconnect()
-  {
-    try
-    {
+  public void disconnect() {
+    try {
       if (connected)
         handle.close();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
     }
   }
 
   // cause the roborealm application to close
-  public boolean close()
-  {
+  public boolean close() {
     if (!connected) return false;
 
-    if (send("<request><close/></request>"))
-    {
+    if (send("<request><close/></request>")) {
       // read in variable length
       String buffer;
-      if ((buffer = readMessage())!=null)
-      {
+      if ((buffer = readMessage())!=null) {
         return buffer.equals("<response>ok</response>");
       }
     }
@@ -165,15 +145,11 @@ public class RoboRealmAPI
   }
 
   // sends a String over the socket port to RoboRealm
-  private boolean send(String txt)
-  {
-    try
-    {
+  private boolean send(String txt) {
+    try {
       bufferedWriter.write(txt.getBytes(), 0, txt.length());
       bufferedWriter.flush();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       return false;
     }
     return true;
@@ -188,14 +164,12 @@ public class RoboRealmAPI
   read data to the front of the buffer and continuing reading in the
   complete image size from that point.
   */
-  public int readImageData(byte pixels[], int len)
-  {
+  public int readImageData(byte pixels[], int len) {
     int num;
 
     // check if we have any information left from the previous read
     num = lastDataSize-lastDataTop;
-    if (num>len)
-    {
+    if (num>len) {
       System.arraycopy(pixels, lastDataTop, buffer, 0, len);
       lastDataTop+=num;
       return num;
@@ -205,20 +179,15 @@ public class RoboRealmAPI
     lastDataSize=lastDataTop=0;
 
     // then keep reading until we're read in the entire image length
-    do
-    {
+    do {
       int res;
-      try
-      {
+      try {
         res = bufferedReader.read(pixels, num, len);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         return 0;
       }
 
-      if (res<0)
-      {
+      if (res<0) {
         lastDataSize=lastDataTop=0;
         return -1;
       }
@@ -233,26 +202,21 @@ public class RoboRealmAPI
   /* If an image is too large for the provided buffer the rest of the data needs
   to be skipped so we can continue to interact with the XML API. This routine
   will remove that additional data from the socket*/
-  public int skipData(int len)
-  {
+  public int skipData(int len) {
     int num;
 
     // check if we have any information left from the previous read
     num = lastDataSize-lastDataTop;
-    if (num>len)
-    {
+    if (num>len) {
       lastDataTop+=num;
       return num;
     }
     len-=num;
     lastDataSize=lastDataTop=0;
 
-    try
-    {
+    try {
       bufferedReader.skip(len);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       return 0;
     }
 
@@ -264,41 +228,32 @@ public class RoboRealmAPI
   this tag is seen. Sometimes this will accidentally read more than needed
   into the buffer such as when the message is followed by image data. We
   need to keep this information for the next readImage call.*/
-  private String readMessage()
-  {
+  private String readMessage() {
     int num=0;
     byte delimiter[] = "</response>".getBytes();
     int top=0;
     int i;
 
     // read in blocks of data looking for the </response> delimiter
-    while (true)
-    {
+    while (true) {
       int res;
-      try
-      {
+      try {
         res = bufferedReader.read(buffer, num, 4096-num);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         System.out.println(e.getMessage());
         return null;
       }
 
-      if (res<0)
-      {
+      if (res<0) {
         lastDataSize=lastDataTop=0;
         return null;
       }
 
       lastDataSize=num+res;
-      for (i=num;i<num+res;i++)
-      {
-        if (buffer[i]==delimiter[top])
-        {
+      for (i=num;i<num+res;i++) {
+        if (buffer[i]==delimiter[top]) {
           top++;
-          if (top>=delimiter.length)
-          {
+          if (top>=delimiter.length) {
             num=i+1;
             buffer[num]=0;
             lastDataTop=num;
@@ -317,18 +272,14 @@ public class RoboRealmAPI
   /******************************************************************************/
 
   /* Returns the current image dimension */
-  public Dimension getDimension()
-  {
+  public Dimension getDimension() {
     if (!connected) return null;
 
-    if (send("<request><get_dimension/></request>"))
-    {
+    if (send("<request><get_dimension/></request>")) {
       // read in variable length
       String buffer;
-      if ((buffer = readMessage())!=null)
-      {
-        if (xml.parse(buffer))
-        {
+      if ((buffer = readMessage())!=null) {
+        if (xml.parse(buffer)) {
           return new Dimension(xml.getInt("response.width"), xml.getInt("response.height"));
         }
       }
@@ -341,18 +292,15 @@ public class RoboRealmAPI
   Returns the current processed image as a Java image.
   */
 
-  public int[] getImage(String name)
-  {
+  public int[] getImage(String name) {
     if (!connected) return null;
     if (name==null) name="";
 
     // create the message request
-    if (send("<request><get_image>"+escape(name)+"</get_image></request>"))
-    {
+    if (send("<request><get_image>"+escape(name)+"</get_image></request>")) {
       String buffer;
       // read in response which contains image information
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         // parse image width and height
         xml.parse(buffer);
         int len = xml.getInt("response.length");
@@ -361,8 +309,7 @@ public class RoboRealmAPI
         // ensure that we have enough room in pixels
         byte pixels[] = new byte[len];
         // actual image data follows the message
-        if (readImageData(pixels, len)==len)
-        {
+        if (readImageData(pixels, len)==len) {
           //DataBuffer db = new DataBufferByte(pixels, width*height*3, 0);
           //WritableRaster raster = Raster.createWritableRaster(BufferedImage.TYPE_3BYTE_BGR, db, null);
           //return new BufferedImage(ColorModel.getRGBdefault(), raster, false, null);
@@ -388,8 +335,7 @@ public class RoboRealmAPI
     len - input - maximum size of pixels to read
   */
 
-  public Dimension getImage(byte pixels[], int len)
-  {
+  public Dimension getImage(byte pixels[], int len) {
     return getImage((String)"processed", pixels, len);
   }
 
@@ -402,26 +348,22 @@ public class RoboRealmAPI
     len - input - maximum size of pixels to read
   */
 
-  public Dimension getImage(String name, byte pixels[], int max)
-  {
+  public Dimension getImage(String name, byte pixels[], int max) {
     if (!connected) return null;
     if (name==null) name="";
 
     // create the message request
-    if (send("<request><get_image>"+escape(name)+"</get_image></request>"))
-    {
+    if (send("<request><get_image>"+escape(name)+"</get_image></request>")) {
       String buffer;
       // read in response which contains image information
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         // parse image width and height
         xml.parse(buffer);
         int len = xml.getInt("response.length");
         int width = xml.getInt("response.width");
         int height = xml.getInt("response.height");
         // ensure that we have enough room in pixels
-        if (len>max)
-        {
+        if (len>max) {
           skipData(len);
           return null;
         }
@@ -442,8 +384,7 @@ public class RoboRealmAPI
     height - input - contains image height
   */
 
-  public boolean setImage(byte pixels[], int width, int height)
-  {
+  public boolean setImage(byte pixels[], int width, int height) {
     return setImage(null, pixels, width, height);
   }
 
@@ -455,28 +396,22 @@ public class RoboRealmAPI
     height - input - contains image height
   */
 
-  public boolean setImage(String name, byte pixels[], int width, int height)
-  {
+  public boolean setImage(String name, byte pixels[], int width, int height) {
     if (!connected) return false;
     if (name==null) name="";
 
     // setup the message request
-    if (send("<request><set_image><source>"+escape(name)+"</source><width>"+width+"</width><height>"+height+"</height></set_image></request>"))
-    {
+    if (send("<request><set_image><source>"+escape(name)+"</source><width>"+width+"</width><height>"+height+"</height></set_image></request>")) {
       // send the RGB triplet pixels after message
-      try
-      {
+      try {
         bufferedWriter.write(pixels, 0, width*height*3);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         return false;
       }
 
       // read message response
       String buffer;
-      if ((buffer = readMessage())!=null)
-      {
+      if ((buffer = readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -491,19 +426,15 @@ public class RoboRealmAPI
     max - input - the maximum size of what the result can hold
   */
 
-  public String getVariable(String name)
-  {
+  public String getVariable(String name) {
     if (!connected) return null;
     if ((name==null)||(name.length()==0)) return null;
 
-    if (send("<request><get_variable>"+escape(name)+"</get_variable></request>"))
-    {
+    if (send("<request><get_variable>"+escape(name)+"</get_variable></request>")) {
       // read in variable length
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
-        if (xml.parse(buffer))
-        {
+      if ((buffer=readMessage())!=null) {
+        if (xml.parse(buffer)) {
           return xml.getFirst();
         }
       }
@@ -519,19 +450,16 @@ public class RoboRealmAPI
     max - input - the maximum size of what the result can hold
   */
 
-  public Vector getVariables(String names)
-  {
+  public Vector getVariables(String names) {
     if (!connected) 
     	return null;
     
     if ((names==null)||(names.length()==0)) 
     	return null;
 
-    if (send("<request><get_variables>"+escape(names)+"</get_variables></request>"))
-    {
+    if (send("<request><get_variables>"+escape(names)+"</get_variables></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         return xml.parseVector(buffer);
       }
     }
@@ -544,20 +472,17 @@ public class RoboRealmAPI
     name - input - the name of the variable to set
     value - input - contains the current value of the variable to be set
   */
-  public boolean setVariable(String name, String value)
-  {
+  public boolean setVariable(String name, String value) {
     if (!connected) 
     	return false;
     
     if ((name==null)||(name.length()==0)) 
     	return false;
 
-    if (send("<request><set_variable><name>"+escape(name)+"</name><value>"+escape(value)+"</value></set_variable></request>"))
-    {
+    if (send("<request><set_variable><name>"+escape(name)+"</name><value>"+escape(value)+"</value></set_variable></request>")) {
       // read in confirmation
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -572,8 +497,7 @@ public class RoboRealmAPI
     values - input - contains the current value of the variable to be set
   */
 
-  public boolean setVariables(String names[], String values[], int num)
-  {
+  public boolean setVariables(String names[], String values[], int num) {
     if (!connected) return false;
     if ((names==null)||(values==null)||(names[0].length()==0)) return false;
 
@@ -584,8 +508,7 @@ public class RoboRealmAPI
 
     // create request message
     sb.append("<request><set_variables>");
-    for (i=0;(i<num);i++)
-    {
+    for (i=0;(i<num);i++) {
       sb.append("<variable><name>");
       sb.append(escape(names[i]));
       sb.append("</name><value>");
@@ -595,12 +518,10 @@ public class RoboRealmAPI
     sb.append("</set_variables></request>");
 
     // send that message to RR Server
-    if (send(sb.toString()))
-    {
+    if (send(sb.toString())) {
       // read in confirmation
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -614,17 +535,14 @@ public class RoboRealmAPI
     name - input - the name of the variable to delete
   */
 
-  public boolean deleteVariable(String name)
-  {
+  public boolean deleteVariable(String name) {
     if (!connected) return false;
     if ((name==null)||(name.length()==0)) return false;
 
-    if (send("<request><delete_variable>"+escape(name)+"</delete_variable></request>"))
-    {
+    if (send("<request><delete_variable>"+escape(name)+"</delete_variable></request>")) {
       // read in variable length
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -638,18 +556,15 @@ public class RoboRealmAPI
     source - the XML .robo file string
   */
 
-  public boolean execute(String source)
-  {
+  public boolean execute(String source) {
     if (!connected) return false;
     if ((source==null)||(source.length()==0)) return false;
 
     //send the string
-    if (send("<request><execute>"+escape(source)+"</execute></request>"))
-    {
+    if (send("<request><execute>"+escape(source)+"</execute></request>")) {
       // read in result
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -663,16 +578,13 @@ public class RoboRealmAPI
   main RoboRealm dialog.
     filename - the XML .robo file to run
   */
-  public boolean loadProgram(String filename)
-  {
+  public boolean loadProgram(String filename) {
     if (!connected) return false;
     if ((filename==null)||(filename.length()==0)) return false;
 
-    if (send("<request><load_program>"+escape(filename)+"</load_program></request>"))
-    {
+    if (send("<request><load_program>"+escape(filename)+"</load_program></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -691,18 +603,15 @@ public class RoboRealmAPI
     name - name of the image. Can be "source" or a marker name,
     filename - the filename of the image to load
   */
-  public boolean loadImage(String name, String filename)
-  {
+  public boolean loadImage(String name, String filename) {
     if (!connected) return false;
 
     if ((filename==null)||(filename.length()==0)) return false;
     if ((name==null)||(name.length()==0)) name="source";
 
-    if (send("<request><load_image><filename>"+escape(filename)+"</filename><name>"+escape(name)+"</name></load_image></request>"))
-    {
+    if (send("<request><load_image><filename>"+escape(filename)+"</filename><name>"+escape(name)+"</name></load_image></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -721,19 +630,16 @@ public class RoboRealmAPI
     name - name of the image. Can be "source","processed", or a marker name,
     filename - the filename of the image to save
   */
-  public boolean saveImage(String source, String filename)
-  {
+  public boolean saveImage(String source, String filename) {
     if (!connected) return false;
 
     if ((filename==null)||(filename.length()==0)) return false;
     if ((source==null)||(source.length()==0)) source="processed";
 
     // create the save image message
-    if (send("<request><save_image><filename>"+escape(filename)+"</filename><source>"+escape(source)+"</source></save_image></request>"))
-    {
+    if (send("<request><save_image><filename>"+escape(filename)+"</filename><source>"+escape(source)+"</source></save_image></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -750,17 +656,14 @@ public class RoboRealmAPI
   For example, specifying "Logitech" will select any installed Logitech camera including
   "Logitech QuickCam PTZ".
   */
-  public boolean setCamera(String name)
-  {
+  public boolean setCamera(String name) {
     if (!connected) return false;
     if ((name==null)||(name.length()==0)) return false;
 
     // create the save image message
-    if (send("<request><set_camera>"+escape(name)+"</set_camera></request>"))
-    {
+    if (send("<request><set_camera>"+escape(name)+"</set_camera></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -778,17 +681,14 @@ public class RoboRealmAPI
   "run" button in the main RoboRealm dialog.
     mode - can be toggle, on, off, once, or a number of frames to process
     */
-  public boolean run(String mode)
-  {
+  public boolean run(String mode) {
     if (!connected) return false;
     if ((mode==null)||(mode.length()==0)) return false;
 
     // create the save image message
-    if (send("<request><run>"+escape(mode)+"</run></request>"))
-    {
+    if (send("<request><run>"+escape(mode)+"</run></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -808,43 +708,31 @@ public class RoboRealmAPI
     timeout - the maximum time to wait for the variable value to be set
   */
 
-  public boolean waitVariable(String name, String value, int timeout)
-  {
+  public boolean waitVariable(String name, String value, int timeout) {
     if (timeout==0) timeout=100000000;
 
     if (!connected) return false;
     if ((name==null)||(name.length()==0)) return false;
 
-    if (send("<request><wait_variable><name>"+escape(name)+"</name><value>"+escape(value)+"</value><timeout>"+timeout+"</timeout></wait_variable></request>"))
-    {
-      try
-      {
+    if (send("<request><wait_variable><name>"+escape(name)+"</name><value>"+escape(value)+"</value><timeout>"+timeout+"</timeout></wait_variable></request>")) {
+      try {
         handle.setSoTimeout(timeout);
-      }
-      catch (SocketException e)
-      {
+      } catch (SocketException e) {
         return false;
       }
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
-        try
-        {
+      if ((buffer=readMessage())!=null) {
+        try {
           handle.setSoTimeout(DEFAULT_TIMEOUT);
-        }
-        catch (SocketException e)
-        {
+        } catch (SocketException e) {
           return false;
         }
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
-      try
-      {
+      try {
         handle.setSoTimeout(DEFAULT_TIMEOUT);
-      }
-      catch (SocketException e)
-      {
+      } catch (SocketException e) {
         return false;
       }
     }
@@ -859,15 +747,12 @@ public class RoboRealmAPI
   you may be grabbing the same image more than once.
   */
 
-  public boolean waitImage(int timeout)
-  {
+  public boolean waitImage(int timeout) {
     if (!connected) return false;
 
-    if (send("<request><wait_image><timeout>"+timeout+"</timeout></wait_image></request>"))
-    {
+    if (send("<request><wait_image><timeout>"+timeout+"</timeout></wait_image></request>")) {
       String buffer;
-      if ((buffer=readMessage())!=null)
-      {
+      if ((buffer=readMessage())!=null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -878,13 +763,10 @@ public class RoboRealmAPI
 
 
   /* Pauses RoboRealm processing to ensure a stable state while quering variables */
-  public boolean pause()
-  {
-    if (send("<request><pause></pause></request>"))
-    {
+  public boolean pause() {
+    if (send("<request><pause></pause></request>")) {
       String buffer;
-      if ((buffer = readMessage()) != null)
-      {
+      if ((buffer = readMessage()) != null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -894,13 +776,10 @@ public class RoboRealmAPI
   }
 
   /* Resumes RoboRealm processing after a pause */
-  public boolean resume()
-  {
-    if (send("<request><resume></resume></request>"))
-    {
+  public boolean resume() {
+    if (send("<request><resume></resume></request>")) {
       String buffer;
-      if ((buffer = readMessage()) != null)
-      {
+      if ((buffer = readMessage()) != null) {
         if (buffer.equals("<response>ok</response>"))
           return true;
       }
@@ -911,43 +790,33 @@ public class RoboRealmAPI
 
   //////////////////////////////////// Basic Image Load/Save routines ////////////////////////
   // Utility routine to save a basic PPM
-  public boolean savePPM(String filename, byte buffer[], int width, int height)
-  {
-    try
-    {
+  public boolean savePPM(String filename, byte buffer[], int width, int height) {
+    try {
       FileOutputStream fos = new FileOutputStream(new File(filename));
       String header = "P6\n"+width+" "+height+"\n255\n";
       fos.write(header.getBytes(), 0, header.length());
       fos.write(buffer, 0, width*height*3);
       fos.close();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       return false;
     };
 
     return true;
   }
 
-  private String readLine(FileInputStream fis)
-  {
+  private String readLine(FileInputStream fis) {
     StringBuffer sb = new StringBuffer();
-    while (true)
-    {
-      try
-      {
+    while (true) {
+      try {
         int c = fis.read();
-        if (c=='\n')
-        {
+        if (c=='\n') {
           if (sb.charAt(0)!='#')
             return sb.toString();
 
           sb.setLength(0);
         }
         sb.append((char)c);
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         return null;
       }
     }
@@ -955,12 +824,10 @@ public class RoboRealmAPI
 
   // Utility routine to load a basic PPM. Note that this routine does NOT handle
   // comments and is only included as a quick example.
-  public Dimension loadPPM(String filename, byte buffer[], int max)
-  {
+  public Dimension loadPPM(String filename, byte buffer[], int max) {
     int width=0, height=0;
 
-    try
-    {
+    try {
       FileInputStream fis = new FileInputStream(new File(filename));
 
       // read in P6 header skipping comments
@@ -977,13 +844,10 @@ public class RoboRealmAPI
       if ((width*height*3)>max) return null;
       fis.read(buffer, 0, width*height*3);
       fis.close();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       return null;
     };
 
     return new Dimension(width, height);
   }
 }
-

@@ -11,16 +11,13 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 
  * This class contains implements logic to log data to a text file
  * 
  * Date			Rev		Author						Comments
  * -----------	------	-------------------------	---------------------------------- 
  * 26.Jul.2015	0.1		Tom Bruns					initial version
- *
  */
-public class DataLogger 
-{
+public class DataLogger {
     private PrintWriter _writer;
     
     private String _logFilePathName;
@@ -30,8 +27,7 @@ public class DataLogger
     private boolean _isHeadersWrittenAlready;
 
     // constructor, open a new timestamped log file in the target directory
-    public DataLogger(String parentFolder, String fileSuffix) throws IOException 
-    {
+    public DataLogger(String parentFolder, String fileSuffix) throws IOException {
     	SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
 		outputFormatter.setTimeZone(TimeZone.getTimeZone("US/Eastern")); 
 		String newDateString = outputFormatter.format(new Date());
@@ -45,8 +41,7 @@ public class DataLogger
     }
     
     // Write a string to the file
-    public void WriteHeaderLine(String textToLog) 
-    {              
+    public void WriteHeaderLine(String textToLog) {              
         _writer.print("StartDeltaMS" + "\t" + "LastScanDeltaMS" + "\t" + textToLog);
         _writer.flush();
         
@@ -56,10 +51,8 @@ public class DataLogger
     }
 
     // Write a structured data object to the log file
-    public void WriteDataLine(LogData dataToLog) 
-    {
-    	if(!_isHeadersWrittenAlready)
-    	{
+    public void WriteDataLine(LogData dataToLog) {
+    	if(!_isHeadersWrittenAlready) {
     		WriteHeaderLine(dataToLog.BuildTSVHeader());
     		_isHeadersWrittenAlready = true;
     	}
@@ -80,24 +73,19 @@ public class DataLogger
         _lastScanDT = new Date();
     }
         
-    // close the file
-    public void close() 
-    {
-    	_writer.close();
+    public void close() {
+    	_writer.close(); // close the file
     }
     
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
 	
-	public boolean IsLoggingEnabled()
-	{
+	public boolean IsLoggingEnabled() {
 		return _isLoggingEnabled;
 	}
 	
-	public String getLogFilePathName()
-	{
+	public String getLogFilePathName() {
 		return _logFilePathName;
 	}
-    
 }

@@ -3,6 +3,7 @@ package org.usfirst.frc.team4028.robot.subsystems;
 import org.usfirst.frc.team4028.robot.constants.LogitechF310;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.HIDType;
 import edu.wpi.first.wpilibj.Joystick;
 
 // this class encapsulates all interactions with the DriversStation 
@@ -44,17 +45,18 @@ abstract class BaseDriversStation {
 		_engineeringGamepad = new Joystick(engineerimgGamePadUsbPort);		// std Logitech F310 Gamepad  
 		
 		
-		if(_driverGamepad == null)
-		{
+		if(_driverGamepad == null) {
 			DriverStation.reportError("DriverGamepad not present!", false);
 		}
-		if(_operatorGamepad == null)
-		{
+		if(_operatorGamepad == null) {
 			DriverStation.reportError("OperatorGamepad not present!", false);
 		}
-		if(_engineeringGamepad == null)
-		{
+		if(_engineeringGamepad == null) {
 			DriverStation.reportError("EngineeringGamepad not present!", false);
+		}
+		
+		if(!getIsGamePadConnected(_engineeringGamepad)) {
+			_engineeringGamepad = null;
 		}
 	}
 
@@ -81,6 +83,20 @@ abstract class BaseDriversStation {
 	// ======================================================
 	// Public Property Accessors
 	// ======================================================
+	
+	private static boolean getIsGamePadConnected(Joystick gamePad) {
+		boolean isGamepadConnected = false;
+		try
+		{
+			HIDType joyStickType = gamePad.getType();
+			isGamepadConnected = true;
+		}
+		catch (Exception ex) {
+			//System.out.println("_driverGamepad not connected!");
+		}
+		
+		return isGamepadConnected;
+	}
 	
 	// === driver buttons ===============================================
 	protected boolean getIsDriverGreenBtnAJustPressed() {
@@ -228,6 +244,11 @@ abstract class BaseDriversStation {
 				&& !_previousValues.getIsOperatorRightThumbstickPressed());
 	}	
 	
+	protected boolean getIsOperatorLeftTriggerJustPressed() {
+		return (_currentValues.getIsOperatorLeftTriggerPressed() 
+				&& !_previousValues.getIsOperatorLeftTriggerPressed());
+	}
+	
 	//Instantaneous Operator Buttons
 	protected boolean getIsOperatorGreenBtnAPressed() {
 		return(_currentValues.getIsOperatorGreenBtnAPressed());
@@ -259,6 +280,10 @@ abstract class BaseDriversStation {
 
 	protected boolean getIsOperatorStartBtnPressed() {
 		return (_currentValues.getIsOperatorStartBtnPressed());
+	}
+	
+	protected boolean getIsOperatorLeftTriggerPressed() {
+		return (_currentValues.getIsOperatorLeftTriggerPressed());
 	}
 		
 	//Instantaneous Engineering Buttons
@@ -503,8 +528,8 @@ abstract class BaseDriversStation {
 	    	// ==========================
 	    	// get values from the gamepads
 	    	// ==========================
-			// digital inputs
-			if(_driverGamepad != null) {
+			// digital inputs			
+			if(_driverGamepad != null && getIsGamePadConnected(_driverGamepad)) {
 				_isDriverGreenBtnAPressed = _driverGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
 		    	_isDriverRedBtnBPressed = _driverGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
 		    	_isDriverBlueBtnXPressed = _driverGamepad.getRawButton(LogitechF310.BLUE_BUTTON_X);
@@ -549,7 +574,7 @@ abstract class BaseDriversStation {
 		    	_driverRightYAxisCmd = 0.0;	
 			}
 			
-			if(_operatorGamepad != null)
+			if(_operatorGamepad != null && getIsGamePadConnected(_operatorGamepad))
 			{
 				_isOperatorGreenBtnAPressed = _operatorGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
 		    	_isOperatorRedBtnBPressed = _operatorGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
@@ -591,7 +616,7 @@ abstract class BaseDriversStation {
 		    	_operatorRightYAxisCmd = 0.0;
 			}
 			
-			if(_engineeringGamepad != null)
+			if(_engineeringGamepad != null && getIsGamePadConnected(_engineeringGamepad))
 			{
 				_isEngineeringGreenBtnAPressed = _engineeringGamepad.getRawButton(LogitechF310.GREEN_BUTTON_A);
 		    	_isEngineeringRedBtnBPressed = _engineeringGamepad.getRawButton(LogitechF310.RED_BUTTON_B);
@@ -633,6 +658,8 @@ abstract class BaseDriversStation {
 		    	_engineeringRightYAxisCmd = 0.0;
 			}
 		}
+		
+
 		
 		// === driver buttons ====================================
 		public boolean getIsDriverGreenBtnAPressed() {
@@ -722,6 +749,10 @@ abstract class BaseDriversStation {
 		
 		public boolean getIsOperatorRightThumbstickPressed() {
 			return _isOperatorRightThumbstickBtnPressed;
+		}
+		
+		public boolean getIsOperatorLeftTriggerPressed() {
+			return (_operatorLeftTriggerCmd > 0.25);
 		}
 		
 		// === operator buttons ====================================
