@@ -70,15 +70,15 @@ public class Shooter
 	private long _shooterInfeedReentrantRunningMsec;
 	
 	//define class level PID constants
-	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
-	private static final double FIRST_STAGE_MTG_P_GAIN = 0.325; //0.25; //0.2; //0.1;
+	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.03; //0.028; //0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.225; //0.29; //0.325; //0.25; //0.2; //0.1;
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
-	private static final double FIRST_STAGE_MTG_D_GAIN = 5.0; //3.0;
+	private static final double FIRST_STAGE_MTG_D_GAIN = 7.5; //5.0; //3.0;
 
-	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.03; //0.0274;
-	private static final double SECOND_STAGE_MTG_P_GAIN = 0.175; //0.2; //0.15;
+	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.028; //0.03; //0.0274;
+	private static final double SECOND_STAGE_MTG_P_GAIN = 0.1; //0.165; //0.17; //0.175; //0.2; //0.15;
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
-	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; //5.0; //4.0;//3.5; //0.0;//5; //6; //0.115;
+	private static final double SECOND_STAGE_MTG_D_GAIN = 4.0; //6.0; //5.0; //4.0;//3.5; //0.0;//5; //6; //0.115;
 
 	//define class level Actuator Constants
 	private static final double MAX_THRESHOLD_ACTUATOR = 0.80; //0.7; 
@@ -598,6 +598,9 @@ public class Shooter
 		//%s - insert a string
 		//%d - insert a signed integer (decimal)
 		//%f - insert a real number, standard notation
+		
+		SmartDashboard.putNumber("Current Stage One RPM", getStg1ActualRPM());
+		SmartDashboard.putNumber("Current Stage Two RPM", getStg2ActualRPM());
 		
 		// working varibles
 		String stg1MtrData = "?";
