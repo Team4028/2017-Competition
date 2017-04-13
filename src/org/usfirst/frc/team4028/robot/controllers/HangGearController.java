@@ -38,6 +38,7 @@ public class HangGearController {
 	// define class level working variables
 	private long _seqStartedTimeStamp;
 	private boolean _isStillRunning;
+	private int _msecSecondChange = 750;
 	
 	// define class level constants
 	private static final long MAX_TIME_BEFORE_ABORT_IN_MSEC = 2000; 
@@ -45,7 +46,7 @@ public class HangGearController {
 	private static final double GEAR_OUTFEED_SPEED = -1.0;
 	private static final double GEAR_TILT_SPEED = 0.2;
 	private static final int MSEC_FIRST_CHANGE = 350;
-	private static final int MSEC_SECOND_CHANGE = 750;
+	//private static final int MSEC_SECOND_CHANGE = 750;
 	
 	//============================================================================================
 	// constructors follow
@@ -83,13 +84,13 @@ public class HangGearController {
 			_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);			// 0 = no turn
 			_isStillRunning = true;
 		}
-		else if(elapsedTimeInMSec > MSEC_FIRST_CHANGE && elapsedTimeInMSec <= MSEC_SECOND_CHANGE) { // third state of gear Sequence
+		else if(elapsedTimeInMSec > MSEC_FIRST_CHANGE && elapsedTimeInMSec <= _msecSecondChange) { // third state of gear Sequence
 			_gearHandler.MoveTiltAxisVBus(0);		//sets drive speed, starts zeroing of axis
 			_gearHandler.SpinInfeedWheelsVBus(0);
 			_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);
 			_isStillRunning = true;
 		}
-		else if(elapsedTimeInMSec > MSEC_SECOND_CHANGE && elapsedTimeInMSec < MAX_TIME_BEFORE_ABORT_IN_MSEC) { //final state of gear sequence
+		else if(elapsedTimeInMSec > _msecSecondChange && elapsedTimeInMSec < MAX_TIME_BEFORE_ABORT_IN_MSEC) { //final state of gear sequence
 			_gearHandler.MoveGearToHomePosition();
 			_gearHandler.SpinInfeedWheelsVBus(0);
 			_chassis.ArcadeDrive(0, 0);
@@ -102,5 +103,9 @@ public class HangGearController {
 		}
 
 		return _isStillRunning;
+	}
+	
+	public void setMsecSecondChange(int msec) {
+		_msecSecondChange = msec;
 	}
 }

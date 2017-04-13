@@ -55,12 +55,16 @@ public class CrossBaseLine {
 		// =======================================
 		// if not complete, this must run concurrently with all auton routines
 		// =======================================
+		/*
       	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       		//			we must treat it as a Reentrant function
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
-      	}
+      	} */
+		if (_trajController.getCurrentSegment() == 1) {
+			DriverStation.reportError(Long.toString(System.currentTimeMillis() - _autonStartedTimeStamp), false);
+		}
       	
 		if (_trajController.onTarget()) {
 			_trajController.disable();	// Disable Motion Profile Controller once it has completed

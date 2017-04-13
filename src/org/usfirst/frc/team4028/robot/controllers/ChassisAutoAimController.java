@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.controllers;
 
+import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.PIDCalculator;
 import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
@@ -34,7 +35,7 @@ public class ChassisAutoAimController {
 		_autoAimPID.setSetpoint(_navX.getYaw() - angle);
 	}
 	
-	public void update() {
+	public void moveToTarget() {
 		double motorOutput = _autoAimPID.calculate(_navX.getYaw()); // Pass in current angle to calculate motor output
 		if (motorOutput == 0.0) {
 			_chassis.EnableBrakeMode(true);
@@ -42,6 +43,17 @@ public class ChassisAutoAimController {
 			_chassis.EnableBrakeMode(false);
 		}
 		_chassis.TankDrive(-motorOutput, motorOutput);
+	}
+	
+	public void motionMagicMoveToTarget(double target) {
+		double angleError = target - _navX.getYaw();
+		
+		double encoderError = BeefyMath.degreesToEncoderRotations(angleError);
+		
+		double leftDriveTargetPosition = _chassis.getLeftEncoderCurrentPosition() - encoderError;
+		double rightDriveTargetPosition = _chassis.getRightEncoderCurrentPosition() + encoderError;
+		
+		_chassis.SetMotionMagicTargetPosition(leftDriveTargetPosition, rightDriveTargetPosition);
 	}
 	
 	public void zeroTotalError() {

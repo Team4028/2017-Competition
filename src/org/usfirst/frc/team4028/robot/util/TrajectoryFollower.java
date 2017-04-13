@@ -39,7 +39,11 @@ public class TrajectoryFollower {
 	      } else {
 	    	  _positionOutput = _kp * error + _kd * ((error - _lastError) / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]);
 	      }
-	      _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      if (motionProfile[currentSegment][2] > 0.0) {
+	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      } else {
+	    	  _velocityOutput = _kv * motionProfile[currentSegment][1];
+	      }
 	      
 	      double output = _positionOutput + _velocityOutput;
 	

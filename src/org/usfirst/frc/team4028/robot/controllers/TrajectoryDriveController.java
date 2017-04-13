@@ -6,10 +6,10 @@ import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
 import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
-import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
 import org.usfirst.frc.team4028.robot.util.TwoGearLong;
 import org.usfirst.frc.team4028.robot.util.TwoGearShort;
 import org.usfirst.frc.team4028.robot.util.TwoGearSuperShort;
+import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import java.util.TimerTask;
 
@@ -37,8 +37,10 @@ public class TrajectoryDriveController {
 	private double _heading;
 	private double _kTurnGyro;
 	private double _kTurnVision = -0.006;
-	private double _leftPower;
-	private double _rightPower;
+	private double _leftCommand;
+	private double _rightCommand;
+	private double _leftOutput;
+	private double _rightOutput;
 	private double _setVisionError;
 	private double _turn;
 	private double _visionTurnThreshold = 0.15;
@@ -58,16 +60,17 @@ public class TrajectoryDriveController {
 		_updaterTask = new UpdaterTask();
 		_roboRealm = roboRealm;
 		startTrajectoryController();
+		setIsFeedbackDisabled(true);
 	}
 	
 	public void configureIsHighGear(boolean isHighGear) {
 		if(isHighGear) {
-			_leftFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
-			_rightFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
+			_leftFollower.configure(0.05, 0.0, 0.0, 0.15, 0.0); // High Gear Constants
+			_rightFollower.configure(0.05, 0.0, 0.0, 0.15, 0.0);
 			_kTurnGyro = -0.01;
 		} else {
-			_leftFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
-			_rightFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
+			_leftFollower.configure(0.135,  0.0,  0.0,  0.174,  0.032); // Low Gear Constants
+			_rightFollower.configure(0.135,  0.0,  0.0,  0.174,  0.032);
 			_kTurnGyro = -0.01;
 		}
 	}
@@ -172,16 +175,6 @@ public class TrajectoryDriveController {
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
-			case TURN_AND_SHOOT:
-				_leftMotionProfile = TurnAndShootTrajectory.LeftPoints;
-				_rightMotionProfile = TurnAndShootTrajectory.RightPoints;
-				_direction = 1.0;
-				_heading = 1.0;
-				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
-				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-				break;
-				
 			case TWO_GEAR_LONG:
 				_leftMotionProfile = TwoGearLong.LeftPoints;
 				_rightMotionProfile = TwoGearLong.RightPoints;
@@ -269,19 +262,25 @@ public class TrajectoryDriveController {
 			
 			if(_isAutoStopEnabled && _roboRealm.get_isVisionDataValid()) {
 				if (!_roboRealm.get_isInGearHangPosition()) {
-					_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
-					_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+					_leftCommand = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+					_rightCommand = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 				} else {
-					_leftPower = 0.0;
-					_rightPower = 0.0;
+					_leftCommand = 0.0;
+					_rightCommand = 0.0;
 					DriverStation.reportError("AUTO STOP!", false);
 				}
 			} else {
-				_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
-				_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+				_leftCommand = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+				_rightCommand = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			}
-			
-			_chassis.TankDrive(_leftPower - _turn, _rightPower + _turn);
+			if (_direction == 1.0) {
+				_leftOutput = GeneralUtilities.ClampValue(_leftCommand - _turn, 0.0, 1.0);
+				_rightOutput = GeneralUtilities.ClampValue(_rightCommand + _turn, 0.0, 1.0);
+			} else if (_direction == -1.0) {
+				_leftOutput = GeneralUtilities.ClampValue(_leftCommand - _turn, -1.0, 0.0);
+				_rightOutput = GeneralUtilities.ClampValue(_rightCommand + _turn, -1.0, 0.0);
+			}
+			_chassis.TankDrive(_leftOutput, _rightOutput);
 		}
 	}
 	
@@ -339,6 +338,8 @@ public class TrajectoryDriveController {
 		if(_roboRealm.get_isVisionDataValid()) {
 			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
 		}
+		
+		SmartDashboard.putNumber("Motor Output", _leftOutput);
 	}
 	
 	private class UpdaterTask extends TimerTask {

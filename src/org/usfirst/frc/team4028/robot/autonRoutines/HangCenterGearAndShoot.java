@@ -41,7 +41,6 @@ public class HangCenterGearAndShoot {
 		UNDEFINED, 
 		MOVE_TO_TARGET,
 		RUN_GEAR_SEQUENCE,
-		MOVE_BACK,
 		GYRO_TURN,
 		VISION_TURN,
 		SHOOT,
@@ -146,33 +145,11 @@ public class HangCenterGearAndShoot {
       				// chg vision camera to Boiler
       				_autoShootController.EnableBoilerCam();
       				
-      				// load new motion profile
-      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_REV, false);
-      				
-      				// start thread
-      				_trajController.enable();
-      				
-      				// chg state
-      				_autonState = AUTON_STATE.MOVE_BACK;
-      				DriverStation.reportError("===> Chg state from RUN_GEAR_SEQUENCE to MOVE_BACK", false);
-      			}
-      			break;
-      			
-      		case MOVE_BACK:
-      			_autoShootController.RunShooterAtTargetSpeed();
-      			
-      			if (_trajController.onTarget()) {
-      				// disable the thread
-      				_trajController.disable();
-      				
-      				// set target delta turn angle
-      				//_autoAim.loadNewTarget(-45.0);   // red
-      				//_autoAim.loadNewTarget(55.0);	 // BLUE
       				_autoAim.loadNewTarget(_gyroTurnTargetAngle);
       				
       				// chg state
       				_autonState = AUTON_STATE.GYRO_TURN;
-      				DriverStation.reportError("===> Chg state from MOVE_BACK to TURN", false);
+      				DriverStation.reportError("===> Chg state from RUN_GEAR_SEQUENCE to MOVE_BACK", false);
       			}
       			break;
       			
@@ -180,7 +157,7 @@ public class HangCenterGearAndShoot {
       			_autoShootController.RunShooterAtTargetSpeed();
       			
       			// call turn controller
-      			_autoAim.update();
+      			_autoAim.moveToTarget();
       			
       			// have we reached the target angle w/i the threshhold ?
       			if (_autoAim.onTarget()) {

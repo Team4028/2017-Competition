@@ -14,8 +14,15 @@ package org.usfirst.frc.team4028.robot.util;
  */
 
 public class BeefyMath {
-  public static double arctan(double heading) {
-	  double degrees = Math.toDegrees(Math.atan(heading));
-	  return degrees;
-  }
+	
+	private static final double ENCODER_ROTATIONS_PER_DEGREE = 77.371/3600; // Check if this needs to be in encoder rotations
+	public static double arctan(double heading) {
+		double degrees = Math.toDegrees(Math.atan(heading));
+		return degrees;
+    }
+  
+    public static double degreesToEncoderRotations(double degrees) {
+	    double encoderRotations = ENCODER_ROTATIONS_PER_DEGREE * degrees;
+	    return encoderRotations;
+    }
 }

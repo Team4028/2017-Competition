@@ -46,7 +46,7 @@ public class AutoShootController {
 	
 	public void AimWithVision() {
 		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226); // update target continuously
-		_chassisAutoAim.update();
+		_chassisAutoAim.moveToTarget();
 		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) { // On target if under vision aiming deadband
 			_isOnTarget = true;
 		} else {

@@ -42,7 +42,7 @@ public class Shooter {
 	
 	// define class level variables for Robot objects`
 	private CANTalon _firstStgMtr;
-	private CANTalon _secondStgMtr;
+	private CANTalon _secondStgMtr; 
 	private CANTalon _magicCarpetMtr;
 	private CANTalon _highSpeedInfeedLaneMtr;
 	private CANTalon _highRollerMtr;

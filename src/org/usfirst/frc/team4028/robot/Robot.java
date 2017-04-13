@@ -173,7 +173,7 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.18, 0.0, 0.1);
 		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
@@ -272,6 +272,8 @@ public class Robot extends IterativeRobot {
 		// stop gear
     	_gearHandler.FullStop();
     	_gearHandler.ZeroGearTiltAxisInit();
+    	
+    	_hangGearController.setMsecSecondChange(1000);
     	
     	// start the lidar polling
     	if(_lidar != null)	{
@@ -456,6 +458,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Log Data
     	// =====================================
 		WriteLogData();
+		
+		OutputAllToSmartDashboard();
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -482,6 +486,8 @@ public class Robot extends IterativeRobot {
     	if(!_gearHandler.hasTiltAxisBeenZeroed()) { 
     		_gearHandler.ZeroGearTiltAxisInit(); 
     	}
+    	
+    	_hangGearController.setMsecSecondChange(750);
 
     	// #### Shooter ####
     	_shooter.FullStop();
@@ -569,8 +575,9 @@ public class Robot extends IterativeRobot {
 				//=====================
 		    	if ((Math.abs(_driversStation.getDriver_ChassisThrottle_JoystickCmd()) > 0.0) 
 		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0)) {
+		    		_chassis.EnablePercentVBusMode();
 		    		// std drive
-			    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1), 	// added -1 gear is front
+			    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1.0), 	// added -1 gear is front
 											_driversStation.getDriver_ChassisTurn_JoystickCmd());
 		    	} 
 		    	else if ((Math.abs(_driversStation.getDriver_SpinChassisLeft_JoystickCmd()) > 0.0)
@@ -594,13 +601,18 @@ public class Robot extends IterativeRobot {
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
 		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    		/*
 		    		if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
 		    			_autoShootController.InitializeVisionAiming();
 		    		}
 		    		_autoShootController.AimWithVision();
+		    		*/
+		    		_chassis.EnableMotionMagicMode();
+		    		_chassisAutoAimGyro.motionMagicMoveToTarget(_navX.getYaw() - (_roboRealmClient.get_Angle()/3.7));
 		    	} else {
 		    		// full stop
-			    	_chassis.ArcadeDrive(0.0, 0.0);
+		    		//_chassis.EnablePercentVBusMode();
+//			    	//_chassis.ArcadeDrive(0.0, 0.0);
 		    	}
 		    	
 		    	// Turn on auto aiming with vision (for boiler)
