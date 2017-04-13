@@ -42,11 +42,22 @@ public class ShooterTable {
 	public ShooterTableEntry CalcShooterValues (double distanceInInches)
 	{
 		// y = -0.0000000013inches4 + 0.0000007088inches3 - 0.0001473231inches2 + 0.0148431960inches + 0.0216283716
-		double actuatorCalcValue = (-0.0000000013 * Math.pow(distanceInInches, 4)) 
-									+ (0.0000007088 * Math.pow(distanceInInches, 3)) 
-									+ (-0.0001473231 * Math.pow(distanceInInches, 2)) 
-									+ (0.0148431960 * distanceInInches) 
-									+ 0.0216283716;
+		//double actuatorCalcValue = (-0.0000000013 * Math.pow(distanceInInches, 4)) 
+		//							+ (0.0000007088 * Math.pow(distanceInInches, 3)) 
+		//							+ (-0.0001473231 * Math.pow(distanceInInches, 2)) 
+		//							+ (0.0148431960 * distanceInInches) 
+		//							+ 0.0216283716;
+		
+		double actuatorCalcValue = 0.3;
+		if(distanceInInches >= 72.0 && distanceInInches < 144.0)
+		{
+			actuatorCalcValue = ((distanceInInches - 72) * 0.00138889) + 0.57;
+		}
+		else if(distanceInInches >= 144.0)
+		{
+			actuatorCalcValue = ((distanceInInches - 144) * 0.00083333) + 0.67;
+		}
+		
 		
 		// Stage 1 = -0.0000754 inches3 + 0.0022174 inches2 - 4.7583458 inches - 2,633.7902098
 		int stg1CalculatedRPM = (int) (Math.round(-0.0000754 * Math.pow(distanceInInches, 3)) 
