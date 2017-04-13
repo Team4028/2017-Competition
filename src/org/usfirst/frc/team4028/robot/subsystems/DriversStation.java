@@ -228,6 +228,13 @@ public class DriversStation extends BaseDriversStation {
 	// =====================================
 	// === operator Is Pressed buttons =====
 	// =====================================
+	public boolean getIsOperator_IndexShooterSettingsDown_BtnPressed() {
+		return super.getIsOperatorLeftBumperBtnPressed();
+	}
+	
+	public boolean getIsOperator_IndexShooterSettingsUp_BtnPressed() {
+		return super.getIsOperatorRightBumperBtnPressed();
+	}
 	
 	public boolean getIsOperator_RunShooterFeederInReverse_BtnPressed()
 	{

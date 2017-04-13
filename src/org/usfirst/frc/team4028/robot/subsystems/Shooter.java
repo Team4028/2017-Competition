@@ -3,6 +3,9 @@ package org.usfirst.frc.team4028.robot.subsystems;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTableEntry;
+
+import java.util.Date;
+
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import com.ctre.CANTalon;
@@ -70,17 +73,18 @@ public class Shooter {
 	private long _shooterInfeedReentrantRunningMsec;
 	
 	private long _hopperCarouselReentrantRunningMsec;
+	private long _lastDebugWriteTimeMSec;
 	
 	//define class level PID constants
-	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
-	private static final double FIRST_STAGE_MTG_P_GAIN = 0.325; //0.25; //0.2; //0.1;
+	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.030; //*0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.225; //*0.325; //0.25; //0.2; //0.1;
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
-	private static final double FIRST_STAGE_MTG_D_GAIN = 5.0; //3.0;
+	private static final double FIRST_STAGE_MTG_D_GAIN = 7.5; //*5.0; //3.0;
 
-	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.03; //0.0274;
-	private static final double SECOND_STAGE_MTG_P_GAIN = 0.175; //0.2; //0.15;
+	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.028; //*0.03; //0.0274;
+	private static final double SECOND_STAGE_MTG_P_GAIN = 0.1; //*0.175; //0.2; //0.15;
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
-	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; //5.0; //4.0;//3.5; //0.0;//5; //6; //0.115;
+	private static final double SECOND_STAGE_MTG_D_GAIN = 4.0; //*6.0; //5.0; //4.0;//3.5; //0.0;//5; //6; //0.115;
 
 	//define class level Actuator Constants
 	private static final double MAX_THRESHOLD_ACTUATOR = 0.80; //0.7; 
@@ -318,6 +322,14 @@ public class Shooter {
 			DriverStation.reportWarning("Stg 1 Mtr Already at MAX ", false);
 			_isStg1MtrTargetRPMBumpingUp = false;
 		}
+	}
+	public void CalcAutomaticShooter (double distanceInInches)
+	{
+		// full calc from formulas
+		//_currentShooterTableEntry = _shooterTable.CalcShooterValues(distanceInInches);
+		
+		// linear interpolation between shooter table values
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(distanceInInches);
 	}
 	
 	public void BumpStg1MtrRPMDown() {
@@ -645,13 +657,23 @@ public class Shooter {
 		}
 		
 		// currentShooterTableValues
-		currentShooterTableValues = String.format("[#%d] %s | S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
+		currentShooterTableValues = String.format("[#%d] %s | In:%.1f  |S:%.3f | M1:%d RPM | M2:%d RPM | %s", 
 				_currentShooterTableEntry.Index,
 				suffix,
+				_currentShooterTableEntry.DistanceInInches,
 				_currentShooterTableEntry.SliderPosition,
 				_currentShooterTableEntry.Stg1MotorRPM,
 				_currentShooterTableEntry.Stg2MotorRPM,
 				_currentShooterTableEntry.Description);
+		
+		
+	    	// limit spamming
+	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+	    		System.out.println(currentShooterTableValues);
+	    		// reset last time
+	    		_lastDebugWriteTimeMSec = new Date().getTime();
+	    	}
+
 		
 		SmartDashboard.putString("ShooterTable", currentShooterTableValues);
 		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);

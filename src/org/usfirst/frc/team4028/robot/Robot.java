@@ -620,7 +620,12 @@ public class Robot extends IterativeRobot {
     			//=====================
     			// Shooter Table
     			//=====================	
-    			if(_driversStation.getIsOperator_IndexShooterSettingsUp_BtnJustPressed()) {
+    			if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnPressed()
+    				&& _driversStation.getIsOperator_IndexShooterSettingsUp_BtnPressed())
+    			{
+    				_shooter.CalcAutomaticShooter(_roboRealmClient.get_DistanceToBoilerInches());
+    			}
+    			else if(_driversStation.getIsOperator_IndexShooterSettingsUp_BtnJustPressed()) {
     				_shooter.IndexShooterTableUp();
     			} 
     			else if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnJustPressed()) {
