@@ -10,6 +10,7 @@ import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
 import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
+import org.usfirst.frc.team4028.robot.subsystems.DashboardInputs;
 
 import edu.wpi.first.wpilibj.DigitalOutput;
 
@@ -39,17 +40,16 @@ public class RoboRealmClient {
  	private static final int SOUTHWEST_Y_IDX = 1;
  	private static final int SOUTHEAST_X_IDX = 2;
  	private static final int SOUTHEAST_Y_IDX = 3;
- 	private static final int  CALIBRATED_WIDTH_IDX = 4;
- 	private static final int  CALIBRATED_HEIGHT_IDX = 5;
- 	//private static final int HIGHESTMIDDLE_Y_IDX = 2;
- 	private static final int BLOB_COUNT_IDX = 6;
- 	private static final int CAMERA_TYPE_IDX = 7;
+ 	private static final int HIGH_MIDDLE_Y_IDX = 4;
+ 	private static final int  RAW_WIDTH_IDX = 5;
+ 	private static final int  RAW_HEIGHT_IDX = 6;
+ 	private static final int BLOB_COUNT_IDX = 7;
+ 	private static final int CAMERA_TYPE_IDX = 8;
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
- 	private static final int POLLING_CYCLE_IN_MSEC = 100;
- 	
+ 	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
 
- 	private static final int EXPECTED_ARRAY_SIZE = 8;
+ 	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
  	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
@@ -58,7 +58,7 @@ public class RoboRealmClient {
  	// =============================================================
  	// Camera Adjustment Factor
  	// =============================================================
- 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = -12.0;
+ 	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = 0.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
@@ -69,6 +69,7 @@ public class RoboRealmClient {
  	private Dimension _fovDimensions;
  	private Vector _vector;
  	private long _callElapsedTimeMSec;
+ 	private long _lastCallTimestamp;
  	private RawImageData _newTargetRawData;
  	private double _fovXCenterPoint;
  	private double _targetXCenterPoint;
@@ -77,6 +78,7 @@ public class RoboRealmClient {
  	private long _lastDebugWriteTimeMSec;
  	private final Object _targetDataMutex;
  	private int _expectedBlobCount;
+ 	private double _degreesFromCenter;
  	//private Solenoid _gearCamLED;
  	//private Solenoid _shooterCamLED;
  	DigitalOutput _visionLedsRelay;
@@ -110,6 +112,7 @@ public class RoboRealmClient {
 		_task = new RoboRealmUpdater();
 		
 		// create a timer to fire events
+		_lastCallTimestamp = new Date().getTime();
 		_updaterTimer = new java.util.Timer();
 		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
 		
@@ -244,20 +247,32 @@ public class RoboRealmClient {
 			synchronized (_targetDataMutex) {
 				dashboardMsg = "Camera= " + _newTargetRawData.CameraType
 								+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
+								+ " MidHiY= " +  _newTargetRawData.HighMiddleY
 								+ " mSec=" + _newTargetRawData.ResponseTimeMSec
 								+ " Blob Count= " + _newTargetRawData.BlobCount 
 								+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
+				
 			}
 		} else {
 			dashboardMsg = "Vision DATA NOT VALID";
 		}
 		
-		SmartDashboard.getString("VIsion", dashboardMsg);		
+		SmartDashboard.putString("VIsion", dashboardMsg);
 	} 	
 	
 	public void UpdateLogData(LogData logData) {
-		logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
-		logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
+		synchronized (_targetDataMutex) {
+			logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
+			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));
+			if(_newTargetRawData != null)
+			{
+				logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+			}
+			else {
+				logData.AddData("RR:HiMidY", "N/A");	
+			}
+				
+		}
 	}
 	
 	//=========================================================================
@@ -267,7 +282,6 @@ public class RoboRealmClient {
 	// poll RoboRealm to read current values
  	public void update() { 
  	    synchronized (_targetDataMutex) {
-	 		long startOfCallTimestamp = new Date().getTime();
 	 		
 	 		// get the Field Of View Dimensions
 	 		//_fovDimensions = _rrAPI.getDimension();
@@ -275,8 +289,8 @@ public class RoboRealmClient {
 	 	    // get multiple variables
 	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
 	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
-	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
-	 	    _callElapsedTimeMSec = new Date().getTime() - startOfCallTimestamp;
+	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+	 	    _callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
 	 	    _newTargetRawData = null;
 	 	    
 	 	    if (_vector==null) {
@@ -298,13 +312,43 @@ public class RoboRealmClient {
 	 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
 	 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
 	 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
+	 	    	_newTargetRawData.HighMiddleY = Double.parseDouble((String)_vector.elementAt(HIGH_MIDDLE_Y_IDX));
 	 	    	
 	 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
 	 	    	
 	 	    	_fovDimensions = new Dimension();
-	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(CALIBRATED_WIDTH_IDX));
-	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(CALIBRATED_HEIGHT_IDX));
+	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(RAW_WIDTH_IDX));
+	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
+	 	    	
+	 	    	
+	 	    	//=((-1.724236*10^-7) * A26^3) + ((1.6430741*10^-4) * A26^2) - (0.06984136 * A26) + 18.45576757
+	 	    	//double estDistance =(-1.724236 * Math.pow(10, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+	 	    	//						+ (1.6430741 * Math.pow(10, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
+	 	    	//						+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
+	 	    	//						+ 18.45576757;
+	 	    	
+	 	    	// inches = -0.00005952 pixels^3 + 0.04060523pixels^2 - 10.34270244pixels + 963.84165834
+	 	    	//double estDistance = (-0.00005952 * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+	 	    	//						+ (0.04060523 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    	//						+ (-10.34270244 * _newTargetRawData.HighMiddleY) 
+	 	    	//						+ 963.84165834;
+	 	    	
+	 	    	// charlie's original numbers to front of can
+	 	    	// inches= -0.00000207pixels^3 + 0.00209429pixels^2 - 0.91180787pixels + 235.66718419
+	 	    	//double estDistance = (-0.00000207 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    	//						+ (0.00209429 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    	//						+ (-0.91180787 * _newTargetRawData.HighMiddleY)
+	 	    	//						+ 235.66718419;
+	 	    	
+	 	    	// charlie's numbers to center of can
+	 	    	// inches= -0.00005952pixels^3 + 0.04198913pixels^2 - 10.982809pixels + 1046.4642
+	 	    	double estDistance = (-0.000001 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    							+ (0.001388 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    							+ (-0.783982 * _newTargetRawData.HighMiddleY)
+	 	    							+ 239.332871;
+	 	    	
+	 	    	_newTargetRawData.EstimatedDistance = estDistance;
 	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
 	 	
@@ -333,17 +377,20 @@ public class RoboRealmClient {
 	 	    	// limit spamming
 	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 		    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
-		    							+ "|Camera= " + _newTargetRawData.CameraType 
-		    							+ "|Angle= " + _fovCenterToTargetXAngleRawDegrees 
-		    							+ "|mSec=" + _newTargetRawData.ResponseTimeMSec
-		    							+ "|Blob Count= " + _newTargetRawData.BlobCount 
-		    							+ "|Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition()));
+		    							+ " |Camera= " + _newTargetRawData.CameraType 
+		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
+		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
+		    							+ " |DistInches= " + _newTargetRawData.EstimatedDistance
+		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
+		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
+		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
 		    		// reset last time
 		    		_lastDebugWriteTimeMSec = new Date().getTime();
 	 	    	}
 	 	    	
 	 	    	//Reset the counter 
 	 	    	_badDataCounter = 0;
+	 	    	_lastCallTimestamp = new Date().getTime();
 	 	    } else {
 	 	    	System.out.println("Unexpected Array Size: " + _vector.size());
 	 	    	_newTargetRawData = null;
@@ -389,6 +436,15 @@ public class RoboRealmClient {
 	    	} else {
 	    		return false;
 	    	}
+    	}
+    }
+    
+    public double get_DistanceToBoilerInches() {
+    	if(get_isVisionDataValid()) {
+    		return _newTargetRawData.EstimatedDistance;
+    	}
+    	else {
+    		return 0.0;
     	}
     }
     
