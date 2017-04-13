@@ -41,14 +41,32 @@ public class ShooterTable {
 	//============================================================================================
 	public ShooterTableEntry CalcShooterValues (double distanceInInches)
 	{
-		// y = -0.0000000013inches4 + 0.0000007088inches3 - 0.0001473231inches2 + 0.0148431960inches + 0.0216283716
-		double actuatorCalcValue = 0.0;
-		//  -0.0000754 inches3 + 0.0022174 inches2 - 4.7583458 inches - 2,633.7902098
-		int stg1CalculatedRPM = 0;
-		// 0.0000757 inches3 - 0.0571191 inches2 + 2.7158189 inches - 2,633.6683317
-		int stg2CalculatedRPM = 0;
-		ShooterTableEntry ste = new ShooterTableEntry(_indexCounter++, 180, "15ft", actuatorCalcValue, 
-														stg1CalculatedRPM, stg2CalculatedRPM, false);
+		// y = -0.0000000013inches4 + 0.0000007088inches3 - 0.0001473231inches2 + 0.0148431960inches + 0.0216283716
+		double actuatorCalcValue = (-0.0000000013 * Math.pow(distanceInInches, 4)) 
+									+ (0.0000007088 * Math.pow(distanceInInches, 3)) 
+									+ (-0.0001473231 * Math.pow(distanceInInches, 2)) 
+									+ (0.0148431960 * distanceInInches) 
+									+ 0.0216283716;
+		
+		// Stage 1 = -0.0000754 inches3 + 0.0022174 inches2 - 4.7583458 inches - 2,633.7902098
+		int stg1CalculatedRPM = (int) (Math.round(-0.0000754 * Math.pow(distanceInInches, 3)) 
+												+ (0.0022174 * Math.pow(distanceInInches, 2)) 
+												+ (-4.7583458 * distanceInInches) 
+												- 2633.7902098);
+		
+		// Stage 2 = 0.0000757 inches3 - 0.0571191 inches2 + 2.7158189 inches - 2,633.6683317
+		int stg2CalculatedRPM = (int) (Math.round( 0.0000757 * Math.pow(distanceInInches, 3)) 
+												+ (-0.0571191 * Math.pow(distanceInInches, 2)) 
+												+ (2.7158189 * distanceInInches) 
+												- 2633.6683317);	
+		
+		ShooterTableEntry ste = new ShooterTableEntry(_indexCounter++, 
+														distanceInInches, 
+														"Vision", 
+														actuatorCalcValue, 
+														stg1CalculatedRPM, 
+														stg2CalculatedRPM, 
+														false);
 		
 		return ste;
 	}
@@ -115,8 +133,8 @@ public class ShooterTable {
 			selectedSte = currentSte;
 		} else {
 			// we have 2 options, need to decide which one is closer
-			int previousSteDeltaDistance = Math.abs(targetDistanceInInches - previousSte.DistanceInInches);
-			int thisSteDeltaDistance = Math.abs(currentSte.DistanceInInches - targetDistanceInInches);
+			double previousSteDeltaDistance = Math.abs(targetDistanceInInches - previousSte.DistanceInInches);
+			double thisSteDeltaDistance = Math.abs(currentSte.DistanceInInches - targetDistanceInInches);
 			
 			if(thisSteDeltaDistance <= previousSteDeltaDistance) {
 				selectedSte = currentSte;
