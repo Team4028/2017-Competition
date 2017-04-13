@@ -3,6 +3,9 @@ package org.usfirst.frc.team4028.robot.subsystems;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTableEntry;
+
+import java.util.Date;
+
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import com.ctre.CANTalon;
@@ -70,6 +73,7 @@ public class Shooter {
 	private long _shooterInfeedReentrantRunningMsec;
 	
 	private long _hopperCarouselReentrantRunningMsec;
+	private long _lastDebugWriteTimeMSec;
 	
 	//define class level PID constants
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.030; //*0.033; //0.0325; //0.034; //0.032; //0.0315; //0.031;
@@ -321,8 +325,13 @@ public class Shooter {
 	}
 	public void CalcAutomaticShooter (double distanceInInches)
 	{
-		_currentShooterTableEntry = _shooterTable.CalcShooterValues(distanceInInches);
+		// full calc from formulas
+		//_currentShooterTableEntry = _shooterTable.CalcShooterValues(distanceInInches);
+		
+		// linear interpolation between shooter table values
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(distanceInInches);
 	}
+	
 	public void BumpStg1MtrRPMDown() {
 		// only bump if not already at min
 		if(Math.abs(_stg1MtrTargetRPM) > Math.abs(MIN_SHOOTER_RPM)) {
@@ -657,7 +666,14 @@ public class Shooter {
 				_currentShooterTableEntry.Stg2MotorRPM,
 				_currentShooterTableEntry.Description);
 		
-		System.out.println(currentShooterTableValues);
+		
+	    	// limit spamming
+	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+	    		System.out.println(currentShooterTableValues);
+	    		// reset last time
+	    		_lastDebugWriteTimeMSec = new Date().getTime();
+	    	}
+
 		
 		SmartDashboard.putString("ShooterTable", currentShooterTableValues);
 		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);

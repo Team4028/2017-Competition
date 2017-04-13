@@ -7,6 +7,8 @@ import java.util.LinkedList;
 //Rev		By		 	D/T			Desc
 //===		========	===========	====================================
 //	1		TomB		29.Mar.2017	Implemented separate table for Auton 
+//  2		TomB		11.Apr.2017 Implemented nth order polynomials to calc shooter values
+//  3		TomB		13.Apr.2017	Implemented linear interpolation between shooter table entries
 //------------------------------------------------------
 
 public class ShooterTable {
@@ -39,6 +41,7 @@ public class ShooterTable {
 	//============================================================================================
 	// methods follow
 	//============================================================================================
+	// This method uses entirely dynamic values
 	public ShooterTableEntry CalcShooterValues (double distanceInInches)
 	{
 		// y = -0.0000000013inches4 + 0.0000007088inches3 - 0.0001473231inches2 + 0.0148431960inches + 0.0216283716
@@ -78,6 +81,78 @@ public class ShooterTable {
 														stg1CalculatedRPM, 
 														stg2CalculatedRPM, 
 														false);
+		
+		return ste;
+	}
+	
+	// This method uses linear interpolation between shooter table values
+	public ShooterTableEntry CalcShooterValues2 (double distanceInInches)
+	{
+		ShooterTableEntry steBelow = null;
+		ShooterTableEntry steAbove = null;
+		ShooterTableEntry steCurrent = null;
+		
+		// loop thru and find the entries above and below the target distance
+		Iterator<ShooterTableEntry> itr = _teleopTable.iterator();
+		while(itr.hasNext()) {
+			steCurrent = itr.next();
+			
+			// if target distance is longer, snapshot lower, continue looping
+			if (steCurrent.DistanceInInches < distanceInInches) {
+				steBelow = steCurrent;
+				continue;
+			}
+			// if exactly same, snapshot both. stop looping
+			else if (steCurrent.DistanceInInches == distanceInInches) {
+				steBelow = steCurrent;
+				steAbove = steCurrent;
+				break;
+			}
+			// if longer, snapshot Above, stop looping
+			else if (steCurrent.DistanceInInches > distanceInInches) {
+				steAbove = steCurrent;
+				break;
+			}
+		}
+			
+		ShooterTableEntry ste = null;
+		
+		// try to be robust about returning a value in all reasonable cases
+		if(steBelow != null && steAbove != null)
+		{
+			// find the scale factor which is how far we are between the below & above ste
+			double scaleFactor = (distanceInInches - steBelow.DistanceInInches) 
+									/ (steAbove.DistanceInInches - steBelow.DistanceInInches);
+			
+			// calc the actuator value
+			double actuatorCalcValue = steBelow.SliderPosition 
+										+ (scaleFactor * (steAbove.SliderPosition - steBelow.SliderPosition));
+			
+			// round to int
+			double stg1Adj = scaleFactor * (steAbove.Stg1MotorRPM - steBelow.Stg1MotorRPM);
+			int stg1CalculatedRPM = steBelow.Stg1MotorRPM 
+										+ (int)(Math.round(stg1Adj));
+			
+			// round to int
+			double stg2Adj = scaleFactor * (steAbove.Stg2MotorRPM - steBelow.Stg2MotorRPM);
+			int stg2CalculatedRPM = steBelow.Stg2MotorRPM 
+										+ (int)(Math.round(stg2Adj));
+			
+			// build the return object
+		    ste = new ShooterTableEntry(_indexCounter++, 
+					distanceInInches, 
+					"Table+Vision", 
+					actuatorCalcValue, 
+					stg1CalculatedRPM, 
+					stg2CalculatedRPM, 
+					false);
+		}
+		else if (steAbove != null) {
+			ste = steAbove;
+		}
+		else {
+			ste = steBelow;
+		}
 		
 		return ste;
 	}
@@ -203,7 +278,6 @@ public class ShooterTable {
 		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .69, -3733, -3433, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
-		
 		
 		return table;
 	}

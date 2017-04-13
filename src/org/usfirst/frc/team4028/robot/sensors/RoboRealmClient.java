@@ -263,8 +263,15 @@ public class RoboRealmClient {
 	public void UpdateLogData(LogData logData) {
 		synchronized (_targetDataMutex) {
 			logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
-			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
-			logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));
+			if(_newTargetRawData != null)
+			{
+				logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+			}
+			else {
+				logData.AddData("RR:HiMidY", "N/A");	
+			}
+				
 		}
 	}
 	
