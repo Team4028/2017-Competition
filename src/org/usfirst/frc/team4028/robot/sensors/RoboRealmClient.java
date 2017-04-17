@@ -263,8 +263,15 @@ public class RoboRealmClient {
 	public void UpdateLogData(LogData logData) {
 		synchronized (_targetDataMutex) {
 			logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
-			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));	
-			logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));
+			if(_newTargetRawData != null)
+			{
+				logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
+			}
+			else {
+				logData.AddData("RR:HiMidY", "N/A");	
+			}
+				
 		}
 	}
 	
@@ -314,18 +321,32 @@ public class RoboRealmClient {
 	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
-	 	    	//y = -2E-07x3 + 0.0002x2 - 0.0698x + 18.456
-	 	    	//y = -2E-07x3 + 0.0002x2 - 0.0698x + 18.456
-	 	    	//double estDistance = (-0.0000002 * Math.pow(_newTargetRawData.HighMiddleY, 3))
-	 	    	//						+ (0.0002 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-	 	    	//						- (0.0698 * _newTargetRawData.HighMiddleY)
-	 	    	//						+ 18.456;
 	 	    	
 	 	    	//=((-1.724236*10^-7) * A26^3) + ((1.6430741*10^-4) * A26^2) - (0.06984136 * A26) + 18.45576757
-	 	    	double estDistance =(Math.pow(-1.724236, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
-	 	    							+ (Math.pow(1.6430741, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
-	 	    							+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
-	 	    							+ 18.45576757;
+	 	    	//double estDistance =(-1.724236 * Math.pow(10, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+	 	    	//						+ (1.6430741 * Math.pow(10, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
+	 	    	//						+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
+	 	    	//						+ 18.45576757;
+	 	    	
+	 	    	// inches = -0.00005952 pixels^3 + 0.04060523pixels^2 - 10.34270244pixels + 963.84165834
+	 	    	//double estDistance = (-0.00005952 * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+	 	    	//						+ (0.04060523 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    	//						+ (-10.34270244 * _newTargetRawData.HighMiddleY) 
+	 	    	//						+ 963.84165834;
+	 	    	
+	 	    	// charlie's original numbers to front of can
+	 	    	// inches= -0.00000207pixels^3 + 0.00209429pixels^2 - 0.91180787pixels + 235.66718419
+	 	    	//double estDistance = (-0.00000207 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    	//						+ (0.00209429 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    	//						+ (-0.91180787 * _newTargetRawData.HighMiddleY)
+	 	    	//						+ 235.66718419;
+	 	    	
+	 	    	// charlie's numbers to center of can
+	 	    	// inches= -0.00005952pixels^3 + 0.04198913pixels^2 - 10.982809pixels + 1046.4642
+	 	    	double estDistance = (-0.000001 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+	 	    							+ (0.001388 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+	 	    							+ (-0.783982 * _newTargetRawData.HighMiddleY)
+	 	    							+ 239.332871;
 	 	    	
 	 	    	_newTargetRawData.EstimatedDistance = estDistance;
 	 	    	
@@ -359,7 +380,7 @@ public class RoboRealmClient {
 		    							+ " |Camera= " + _newTargetRawData.CameraType 
 		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
 		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
-		    							+ " |DistInFeet= " + _newTargetRawData.EstimatedDistance
+		    							+ " |DistInches= " + _newTargetRawData.EstimatedDistance
 		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
 		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
 		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
@@ -419,7 +440,12 @@ public class RoboRealmClient {
     }
     
     public double get_DistanceToBoilerInches() {
-    	return 0.0;
+    	if(get_isVisionDataValid()) {
+    		return _newTargetRawData.EstimatedDistance;
+    	}
+    	else {
+    		return 0.0;
+    	}
     }
     
     public boolean get_isInGearHangPosition() {
