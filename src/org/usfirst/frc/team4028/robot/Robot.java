@@ -68,11 +68,6 @@ public class Robot extends IterativeRobot {
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
 	
-	//private MjpegServer _server;
-	//private UsbCamera _cam0;
-	//private UsbCamera _cam1;
-	//private boolean _isCamera0;
-	
 	// Wrapper around data logging (will be null if logging is not enabled)
 	private DataLogger _dataLogger;
 	
@@ -172,11 +167,11 @@ public class Robot extends IterativeRobot {
 												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
-		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
+		//_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		//_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		//_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
+		//_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
@@ -666,9 +661,6 @@ public class Robot extends IterativeRobot {
     			else if (_driversStation.getIsEngineering_BumpStg2RPMDown_BtnJustPressed()) {
     				_shooter.BumpStg2MtrRPMDown();
 				}
-    			//else {
-    			//	_shooter.ControlHighSpeedLane();
-    			//}
     			    	
     			//=====================
     			// Toggle Shooter Motors
@@ -682,9 +674,6 @@ public class Robot extends IterativeRobot {
     			else if (_shooter.get_isShooterMotorsReentrantRunning()) {
     				_shooter.ShooterMotorsReentrant();
     			}
-    			//else {
-    			//	_shooter.ControlHighSpeedLane();
-    			//}
     			 			
     			//=====================
     			// Shooter Feeder (Magic Carpet & High Roller) Motors controlled as a unit

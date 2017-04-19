@@ -47,7 +47,7 @@ public class RoboRealmClient {
  	private static final int CAMERA_TYPE_IDX = 8;
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
- 	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
+ 	private static final int POLLING_CYCLE_IN_MSEC = 100; //50; //100;
 
  	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
@@ -60,6 +60,8 @@ public class RoboRealmClient {
  	// =============================================================
  	private static final double GEAR_CAMERA_CALIBRATION_FACTOR = 0.0;
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
+ 	
+ 	private static final double CAMERA_ANGLE_IN_DEGREES = 38.38;	// <====== SET ME BASED ON CALIB PROCEDURE ============
  	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
  	// =============================================================
@@ -321,32 +323,8 @@ public class RoboRealmClient {
 	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
-	 	    	
-	 	    	//=((-1.724236*10^-7) * A26^3) + ((1.6430741*10^-4) * A26^2) - (0.06984136 * A26) + 18.45576757
-	 	    	//double estDistance =(-1.724236 * Math.pow(10, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
-	 	    	//						+ (1.6430741 * Math.pow(10, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
-	 	    	//						+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
-	 	    	//						+ 18.45576757;
-	 	    	
-	 	    	// inches = -0.00005952 pixels^3 + 0.04060523pixels^2 - 10.34270244pixels + 963.84165834
-	 	    	//double estDistance = (-0.00005952 * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
-	 	    	//						+ (0.04060523 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-	 	    	//						+ (-10.34270244 * _newTargetRawData.HighMiddleY) 
-	 	    	//						+ 963.84165834;
-	 	    	
-	 	    	// charlie's original numbers to front of can
-	 	    	// inches= -0.00000207pixels^3 + 0.00209429pixels^2 - 0.91180787pixels + 235.66718419
-	 	    	//double estDistance = (-0.00000207 * Math.pow(_newTargetRawData.HighMiddleY, 3))
-	 	    	//						+ (0.00209429 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-	 	    	//						+ (-0.91180787 * _newTargetRawData.HighMiddleY)
-	 	    	//						+ 235.66718419;
-	 	    	
-	 	    	// charlie's numbers to center of can
-	 	    	// inches= -0.00005952pixels^3 + 0.04198913pixels^2 - 10.982809pixels + 1046.4642
-	 	    	double estDistance = (-0.000001 * Math.pow(_newTargetRawData.HighMiddleY, 3))
-	 	    							+ (0.001388 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-	 	    							+ (-0.783982 * _newTargetRawData.HighMiddleY)
-	 	    							+ 239.332871;
+	 	    	double estDistance = CalcDistanceUsingPolynomial(_newTargetRawData.HighMiddleY);
+	 	    	double estDistance2 = CalcDistanceUsingCameraAngle(_newTargetRawData.HighMiddleY);
 	 	    	
 	 	    	_newTargetRawData.EstimatedDistance = estDistance;
 	 	    	
@@ -381,6 +359,7 @@ public class RoboRealmClient {
 		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
 		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
 		    							+ " |DistInches= " + _newTargetRawData.EstimatedDistance
+		    							+ " |DistInchesCA= " + estDistance2
 		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
 		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
 		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
@@ -399,8 +378,77 @@ public class RoboRealmClient {
 	 	    	_badDataCounter += 1;
 	 	    }
  	    }
+ 	    
+
  	} 
  	
+ 	// this method used a n order polynomial to estimate the distance based on data collected using a specific, fixed camera angle approx 40 degrees
+ 	//	the polynomial coefficients will not be correct for other angles
+    private double CalcDistanceUsingPolynomial(double highMiddleYInPixels)
+    {
+    	//=((-1.724236*10^-7) * A26^3) + ((1.6430741*10^-4) * A26^2) - (0.06984136 * A26) + 18.45576757
+    	//double estDistance =(-1.724236 * Math.pow(10, -7) * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+    	//						+ (1.6430741 * Math.pow(10, -4) * Math.pow(_newTargetRawData.HighMiddleY, 2)) 
+    	//						+ (-0.06984136 * _newTargetRawData.HighMiddleY) 
+    	//						+ 18.45576757;
+    	
+    	// inches = -0.00005952 pixels^3 + 0.04060523pixels^2 - 10.34270244pixels + 963.84165834
+    	//double estDistance = (-0.00005952 * Math.pow(_newTargetRawData.HighMiddleY, 3)) 
+    	//						+ (0.04060523 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+    	//						+ (-10.34270244 * _newTargetRawData.HighMiddleY) 
+    	//						+ 963.84165834;
+    	
+    	// charlie's original numbers to front of can
+    	// inches= -0.00000207pixels^3 + 0.00209429pixels^2 - 0.91180787pixels + 235.66718419
+    	//double estDistance = (-0.00000207 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+    	//						+ (0.00209429 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+    	//						+ (-0.91180787 * _newTargetRawData.HighMiddleY)
+    	//						+ 235.66718419;
+    	
+    	// charlie's numbers to center of can
+    	// inches= -0.00005952pixels^3 + 0.04198913pixels^2 - 10.982809pixels + 1046.4642
+    	double estDistanceInInches = (-0.000001 * Math.pow(_newTargetRawData.HighMiddleY, 3))
+		    							+ (0.001388 * Math.pow(_newTargetRawData.HighMiddleY, 2))
+		    							+ (-0.783982 * _newTargetRawData.HighMiddleY)
+		    							+ 239.332871;
+    	
+    	return estDistanceInInches;
+    }
+ 	
+    // this method uses the actual camera angle to estimate the distance
+    private double CalcDistanceUsingCameraAngle(double highMiddleYInPixels)
+    {
+    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 20.596;
+    	final double TARGET_HEIGHT_IN_INCHES = 87.875;
+    	final double SENSOR_HEIGHT_IN_INCHES = 0.09877;
+    	final double SENSOR_HEIGHT_PIXELS = 476.35;
+    	final double FOCAL_LENGTH_IN_INCHES = 0.13973;
+    	final double OFFSET_0_IN_INCHES = 1.807;
+    	final double OFFSET_1_IN_INCHES = 0.0109;
+    	
+    	double cameraAngleInRadians = Math.toRadians(CAMERA_ANGLE_IN_DEGREES);
+    	
+    	double relativeTargetHeight = TARGET_HEIGHT_IN_INCHES 
+    									- 16.965
+    									+ (0.925 * Math.cos(Math.toRadians(19.75 + CAMERA_ANGLE_IN_DEGREES)));
+    	
+    	double x3 = (FOCAL_LENGTH_IN_INCHES * Math.tan(cameraAngleInRadians))
+    					- (SENSOR_HEIGHT_IN_INCHES / 2.0)
+    					+ ((highMiddleYInPixels * SENSOR_HEIGHT_IN_INCHES) / SENSOR_HEIGHT_PIXELS);
+    	
+    	double estDistanceInInches = (
+    								  ( (FOCAL_LENGTH_IN_INCHES / (x3 * Math.pow(Math.cos(cameraAngleInRadians), 2)) - (Math.tan(cameraAngleInRadians)) )
+    									* relativeTargetHeight
+    									* (1 - OFFSET_1_IN_INCHES)
+    									)
+    									- OFFSET_0_IN_INCHES
+    									+ (29.75 + (0.925 * Math.sin(Math.toRadians(19.75 + CAMERA_ANGLE_IN_DEGREES))))
+    								  );
+    	
+    	return estDistanceInInches;
+    }
+    
+    // this is the task run by the timer
     private class RoboRealmUpdater extends TimerTask { 
  		public void run() { 
  			while(true) { 

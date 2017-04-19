@@ -387,7 +387,7 @@ public class SwitchableCameraServer {
         		
         		// sleep each cycle to avoid Robot Code not updating often enough issues
         		try {
-					Thread.sleep(10);
+					Thread.sleep(20);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
