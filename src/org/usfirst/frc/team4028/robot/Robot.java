@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4028.robot;
 
+import java.util.Date;
+
 import org.usfirst.frc.team4028.robot.autonRoutines.CrossBaseLine;
 import org.usfirst.frc.team4028.robot.autonRoutines.DoNothing;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGear;
@@ -107,6 +109,7 @@ public class Robot extends IterativeRobot {
 	String _buildMsg = "?";
 	ShooterTable _shooterTable;
 	String _fmsDebugMsg = "?";
+ 	long _lastDashboardWriteTimeMSec;
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// Code executed 1x at robot startup																		ROBOT INIT
@@ -360,6 +363,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Configure Logging
     	// =====================================
     	_dataLogger = GeneralUtilities.setupLogging("auton");
+    	
+    	_lastDashboardWriteTimeMSec = new Date().getTime();
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -515,6 +520,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Configure Logging (if USB Memory Stick is present)
     	// =====================================    	
     	_dataLogger = GeneralUtilities.setupLogging("telop");
+    	
+    	_lastDashboardWriteTimeMSec = new Date().getTime();
 	}
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -906,30 +913,36 @@ public class Robot extends IterativeRobot {
 	
     // utility method that calls the outputToSmartDashboard method on all subsystems
     private void OutputAllToSmartDashboard() {
-    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
-    	
-    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
-    	
-    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
-    	
-    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
-    	
-    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
-    		
-    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
-    	
-    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
-    	
-    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
-    	
-    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
-    	
-    	//if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
-    	
-    	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
-    	
-    	SmartDashboard.putString("Robot Build", _buildMsg);
-    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
+    	// limit spamming
+    	if((new Date().getTime() - _lastDashboardWriteTimeMSec) > 100) {
+	    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
+	    	
+	    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
+	    	
+	    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
+	    	
+	    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
+	    	
+	    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
+	    		
+	    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
+	    	
+	    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
+	    	
+	    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
+	    	
+	    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
+	    	
+	    	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+	    	
+	    	//if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
+	    	
+	    	SmartDashboard.putString("Robot Build", _buildMsg);
+	    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
+	    	
+    		// reset last time
+    		_lastDashboardWriteTimeMSec = new Date().getTime();
+    	}
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
@@ -941,21 +954,21 @@ public class Robot extends IterativeRobot {
 	    	// ask each subsystem that exists to add its data	    	
 	    	if(_chassis != null) 			{ _chassis.UpdateLogData(logData); }
 	    	
-	    	if(_climber != null) 			{ _climber.UpdateLogData(logData); }
+	    	//if(_climber != null) 			{ _climber.UpdateLogData(logData); }
 	    		
-	    	if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
+	    	//if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
 	    	
-	    	if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
+	    	//if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
 	    	
-	    	if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
+	    	//if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
 	    	
-	    	if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
+	    	//if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
 	    	
-	    	if(_navX != null) 				{ _navX.UpdateLogData(logData); }
+	    	//if(_navX != null) 				{ _navX.UpdateLogData(logData); }
 	    	
 	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
 	    	
-	    	if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
+	    	//if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
     	
 	    	// now write to the log file
 	    	_dataLogger.WriteDataLine(logData);

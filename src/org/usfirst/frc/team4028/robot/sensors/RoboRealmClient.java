@@ -1,9 +1,12 @@
 package org.usfirst.frc.team4028.robot.sensors;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import org.opencv.core.Mat;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
@@ -12,6 +15,10 @@ import org.usfirst.frc.team4028.robot.vision.Utilities;
 import org.usfirst.frc.team4028.robot.vision.RawImageData;
 import org.usfirst.frc.team4028.robot.subsystems.DashboardInputs;
 
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalOutput;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -28,8 +35,8 @@ public class RoboRealmClient {
 	// Define local working variables
  	private RoboRealmAPI _rrAPI;
  	
-	private java.util.Timer _updaterTimer; 
- 	private RoboRealmUpdater _task; 
+	//private java.util.Timer _updaterTimer; 
+ 	//private RoboRealmUpdater _task; 
 
  	private boolean _isConnected;
  	private String _currentVisionCameraName;
@@ -47,7 +54,7 @@ public class RoboRealmClient {
  	private static final int CAMERA_TYPE_IDX = 8;
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
- 	private static final int POLLING_CYCLE_IN_MSEC = 100; //50; //100;
+ 	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
 
  	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
@@ -111,12 +118,16 @@ public class RoboRealmClient {
         }
         
 		// create instance of the task the timer interrupt will execute
-		_task = new RoboRealmUpdater();
+		//_task = new RoboRealmUpdater();
 		
 		// create a timer to fire events
 		_lastCallTimestamp = new Date().getTime();
-		_updaterTimer = new java.util.Timer();
-		_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
+		//_updaterTimer = new java.util.Timer();
+		//_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
+		
+		// start the camera thread
+		Thread visionThread = new Thread(RoboRealmUpdater);
+		visionThread.start();
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
@@ -128,8 +139,8 @@ public class RoboRealmClient {
 		//Set up LED PCM Rings
 		//_gearCamLED = new Solenoid(PCMCanAddr, gearCamLEDPCMPort);
 		//_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
-		_visionLedsRelay = new DigitalOutput(visioLEDsDIOPort);
-		TurnAllVisionLEDsOff();
+		//_visionLedsRelay = new DigitalOutput(visioLEDsDIOPort);
+		//TurnAllVisionLEDsOff();
     }
     
 	//============================================================================================
@@ -141,7 +152,7 @@ public class RoboRealmClient {
     
     public void TurnAllVisionLEDsOff()
     {
-    	_visionLedsRelay.set(false);
+    	//_visionLedsRelay.set(false);
 		//_gearCamLED.set(false);
 		//_shooterCamLED.set(false);
     }
@@ -156,7 +167,7 @@ public class RoboRealmClient {
 		//	e.printStackTrace();
 		//}
 		//_gearCamLED.set(true);
-    	_visionLedsRelay.set(true);
+    	//_visionLedsRelay.set(true);
     }
     
     public void TurnBoilerrVisionLEDsOn()
@@ -169,7 +180,7 @@ public class RoboRealmClient {
 		//	e.printStackTrace();
 		//}
 		//_shooterCamLED.set(true);
-    	_visionLedsRelay.set(true);
+    	//_visionLedsRelay.set(true);
     }
     
     // this method changes the active roborealm camera / program
@@ -182,7 +193,7 @@ public class RoboRealmClient {
 	        	_expectedBlobCount = EXPECTED_GEAR_BLOB_COUNT;
 	        	//_gearCamLED.set(true);
 	        	//_shooterCamLED.set(false);
-	        	_visionLedsRelay.set(true);
+	        	//_visionLedsRelay.set(true);
 	        	
 	    		break;
 	    		
@@ -191,7 +202,7 @@ public class RoboRealmClient {
 	        	_expectedBlobCount = EXPECTED_BOILER_BLOB_COUNT;
 	        	//_gearCamLED.set(false);
 	        	//_shooterCamLED.set(true);
-	        	_visionLedsRelay.set(true);
+	        	//_visionLedsRelay.set(true);
 	    		break;
     	}
     	
@@ -371,7 +382,12 @@ public class RoboRealmClient {
 	 	    	_badDataCounter = 0;
 	 	    	_lastCallTimestamp = new Date().getTime();
 	 	    } else {
-	 	    	System.out.println("Unexpected Array Size: " + _vector.size());
+	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+		 	    	System.out.println("Unexpected Array Size: " + _vector.size());
+		    		// reset last time
+		    		_lastDebugWriteTimeMSec = new Date().getTime();
+	 	    	}
+	 	    	
 	 	    	_newTargetRawData = null;
 	
 	 	    	//Increment bad data counter
@@ -418,13 +434,15 @@ public class RoboRealmClient {
     // this method uses the actual camera angle to estimate the distance
     private double CalcDistanceUsingCameraAngle(double highMiddleYInPixels)
     {
-    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 20.596;
-    	final double TARGET_HEIGHT_IN_INCHES = 87.875;
-    	final double SENSOR_HEIGHT_IN_INCHES = 0.09877;
-    	final double SENSOR_HEIGHT_PIXELS = 476.35;
-    	final double FOCAL_LENGTH_IN_INCHES = 0.13973;
-    	final double OFFSET_0_IN_INCHES = 1.807;
-    	final double OFFSET_1_IN_INCHES = 0.0109;
+    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 23.5645549; // 20.596
+    	final double TARGET_HEIGHT_IN_INCHES = 87.875; // 87.875
+//    	final double SENSOR_HEIGHT_IN_INCHES = 0.09877;	// 0.09877
+    	final double SENSOR_HEIGHT_PIXELS = 479.115486; // 476.35
+    	final double FOCAL_LENGTH_IN_INCHES = 0.14362022; // 0.13973
+    	final double OFFSET_0_IN_INCHES = 9.99997139; // 1.807
+    	final double OFFSET_1_IN_INCHES = 0.1409929; // 0.0109
+
+    	double sensorHeightInInches = Math.tan(Math.toRadians(HALF_FIELD_OF_VIEW_IN_DEGREES)) * FOCAL_LENGTH_IN_INCHES * 2.0;
     	
     	double cameraAngleInRadians = Math.toRadians(CAMERA_ANGLE_IN_DEGREES);
     	
@@ -433,8 +451,8 @@ public class RoboRealmClient {
     									+ (0.925 * Math.cos(Math.toRadians(19.75 + CAMERA_ANGLE_IN_DEGREES)));
     	
     	double x3 = (FOCAL_LENGTH_IN_INCHES * Math.tan(cameraAngleInRadians))
-    					- (SENSOR_HEIGHT_IN_INCHES / 2.0)
-    					+ ((highMiddleYInPixels * SENSOR_HEIGHT_IN_INCHES) / SENSOR_HEIGHT_PIXELS);
+    					- (sensorHeightInInches / 2.0)
+    					+ ((highMiddleYInPixels * sensorHeightInInches) / SENSOR_HEIGHT_PIXELS);
     	
     	double estDistanceInInches = (
     								  ( (FOCAL_LENGTH_IN_INCHES / (x3 * Math.pow(Math.cos(cameraAngleInRadians), 2)) - (Math.tan(cameraAngleInRadians)) )
@@ -449,7 +467,7 @@ public class RoboRealmClient {
     }
     
     // this is the task run by the timer
-    private class RoboRealmUpdater extends TimerTask { 
+    /*private class RoboRealmUpdater extends TimerTask { 
  		public void run() { 
  			while(true) { 
  				update(); 
@@ -462,7 +480,7 @@ public class RoboRealmClient {
 				} 
  			} 
  		} 
- 	}
+ 	}*/
     
     // =========================================================
     // Property Accessors
@@ -505,4 +523,27 @@ public class RoboRealmClient {
 			return false;
 		}
     }
+    
+    //================================================================================================
+	private Runnable RoboRealmUpdater = new Runnable() {
+		@Override
+		public void run() {   
+            
+            // =============================================================================
+            // start looping
+            // =============================================================================
+            while(!Thread.interrupted()) {            	
+            	update();
+            	        		
+        		// sleep each cycle to avoid Robot Code not updating often enough issues
+        		try {
+					Thread.sleep(POLLING_CYCLE_IN_MSEC);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+	            	
+		}
+	};
 }
