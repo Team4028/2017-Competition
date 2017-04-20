@@ -41,7 +41,7 @@ public class ShooterTable {
 	//============================================================================================
 	// methods follow
 	//============================================================================================
-	// This method uses entirely dynamic values
+	// This method uses entirely dynamic values with a n order polynomial
 	public ShooterTableEntry CalcShooterValues (double distanceInInches)
 	{
 		// y = -0.0000000013inches4 + 0.0000007088inches3 - 0.0001473231inches2 + 0.0148431960inches + 0.0216283716
