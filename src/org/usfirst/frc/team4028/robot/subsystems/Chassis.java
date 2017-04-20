@@ -260,7 +260,10 @@ public class Chassis {
 		}
 		
 		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
-		SmartDashboard.putNumber("Chassis Velocity", getLeftEncoderCurrentVelocity());
+		SmartDashboard.putNumber("Left Position", getLeftEncoderCurrentPosition());
+		SmartDashboard.putNumber("Right Position", getRightEncoderCurrentPosition());
+		SmartDashboard.putNumber("Left Velocity", getLeftEncoderCurrentVelocity());
+		SmartDashboard.putNumber("Right Velocity", getRightEncoderCurrentVelocity());
 	}
 	
 	public void UpdateLogData(LogData logData) {

@@ -38,15 +38,15 @@ public class HangGearController {
 	// define class level working variables
 	private long _seqStartedTimeStamp;
 	private boolean _isStillRunning;
-	private int _msecSecondChange = 750;
+	private boolean _isChassisControlEnabled;
 	
 	// define class level constants
 	private static final long MAX_TIME_BEFORE_ABORT_IN_MSEC = 2000; 
-	private static final double DRIVE_BACKWARDS_SPEED = -0.50;
+	private static final double DRIVE_BACKWARDS_SPEED = -0.60;
 	private static final double GEAR_OUTFEED_SPEED = -1.0;
 	private static final double GEAR_TILT_SPEED = 0.2;
 	private static final int MSEC_FIRST_CHANGE = 350;
-	//private static final int MSEC_SECOND_CHANGE = 750;
+	private static final int MSEC_SECOND_CHANGE = 750;
 	
 	//============================================================================================
 	// constructors follow
@@ -54,6 +54,7 @@ public class HangGearController {
 	public HangGearController(GearHandler gearHandler, Chassis chassis) {
 		_gearHandler = gearHandler;
 		_chassis = chassis;
+		_isChassisControlEnabled = true;
 	}
 	
 	//============================================================================================
@@ -76,24 +77,29 @@ public class HangGearController {
 	public boolean ExecuteRentrant() {	
 		// safety valve since in this mode we take away operator control temporarily
 		long elapsedTimeInMSec = System.currentTimeMillis() - _seqStartedTimeStamp;
-		
 
 		if(elapsedTimeInMSec < MSEC_FIRST_CHANGE) {  //Initial State of Gear
 			_gearHandler.MoveTiltAxisVBus(GEAR_TILT_SPEED);    //Sets gear tilt speed and outfeed speed, drives backwards
 			_gearHandler.SpinInfeedWheelsVBus(GEAR_OUTFEED_SPEED);
-			_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);			// 0 = no turn
+			if (_isChassisControlEnabled) {
+				_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);			// 0 = no turn
+			}
 			_isStillRunning = true;
 		}
-		else if(elapsedTimeInMSec > MSEC_FIRST_CHANGE && elapsedTimeInMSec <= _msecSecondChange) { // third state of gear Sequence
+		else if(elapsedTimeInMSec > MSEC_FIRST_CHANGE && elapsedTimeInMSec <= MSEC_SECOND_CHANGE) { // third state of gear Sequence
 			_gearHandler.MoveTiltAxisVBus(0);		//sets drive speed, starts zeroing of axis
 			_gearHandler.SpinInfeedWheelsVBus(0);
-			_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);
+			if (_isChassisControlEnabled) {
+				_chassis.ArcadeDrive(DRIVE_BACKWARDS_SPEED, 0);
+			}
 			_isStillRunning = true;
 		}
-		else if(elapsedTimeInMSec > _msecSecondChange && elapsedTimeInMSec < MAX_TIME_BEFORE_ABORT_IN_MSEC) { //final state of gear sequence
+		else if(elapsedTimeInMSec > MSEC_SECOND_CHANGE && elapsedTimeInMSec < MAX_TIME_BEFORE_ABORT_IN_MSEC) { //final state of gear sequence
 			_gearHandler.MoveGearToHomePosition();
 			_gearHandler.SpinInfeedWheelsVBus(0);
-			_chassis.ArcadeDrive(0, 0);
+			if (_isChassisControlEnabled) {
+				_chassis.ArcadeDrive(0, 0);
+			}
 			_isStillRunning = false;			//ends sequence
 
 		}
@@ -105,7 +111,7 @@ public class HangGearController {
 		return _isStillRunning;
 	}
 	
-	public void setMsecSecondChange(int msec) {
-		_msecSecondChange = msec;
+	public void setIsChassisControlEnabled(boolean isEnabled) {
+		_isChassisControlEnabled = isEnabled;
 	}
 }

@@ -39,8 +39,8 @@ public class HangCenterGearAndShoot {
 
 	private enum AUTON_STATE {
 		UNDEFINED, 
-		MOVE_TO_TARGET,
-		RUN_GEAR_SEQUENCE,
+		GOTTA_GO_FAST,
+		RUN_GEAR_SEQUENCE_AND_MOVE_BACK,
 		GYRO_TURN,
 		VISION_TURN,
 		SHOOT,
@@ -90,7 +90,7 @@ public class HangCenterGearAndShoot {
 	public void Initialize() {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
-		_autonState = AUTON_STATE.MOVE_TO_TARGET;
+		_autonState = AUTON_STATE.GOTTA_GO_FAST;
 		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
 		
 		_trajController.configureIsHighGear(false);
@@ -109,7 +109,7 @@ public class HangCenterGearAndShoot {
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() { 	
       	switch (_autonState) {
-      		case MOVE_TO_TARGET:
+      		case GOTTA_GO_FAST:
       			if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       	      		//			we must treat it as a Reentrant function
@@ -127,25 +127,27 @@ public class HangCenterGearAndShoot {
       			// if the motion profile is complete
       			else if (_trajController.onTarget()) {
       				_trajController.disable();
-      				_trajController.isVisionTrackingEnabled(false);
+      				_trajController.isVisionTrackingEnabled(false); 
+      				
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
+      				_trajController.enable();
       				
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				
       				// chg state
-      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE_AND_MOVE_BACK;
       				DriverStation.reportError("===> Chg state from MOVE_TO_TARGET to RUN_GEAR_SEQUENCE", false);
       			}
       			break;
       			
-      		case RUN_GEAR_SEQUENCE:
+      		case RUN_GEAR_SEQUENCE_AND_MOVE_BACK:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			
-      			if (!isStillRunning) {
+      			if (!isStillRunning && _trajController.onTarget()) {
+      				_trajController.disable();
       				// chg vision camera to Boiler
       				_autoShootController.EnableBoilerCam();
-      				
-      				_autoAim.loadNewTarget(_gyroTurnTargetAngle);
       				
       				// chg state
       				_autonState = AUTON_STATE.GYRO_TURN;
@@ -157,13 +159,12 @@ public class HangCenterGearAndShoot {
       			_autoShootController.RunShooterAtTargetSpeed();
       			
       			// call turn controller
-      			_autoAim.moveToTarget();
+      			_autoAim.motionMagicMoveToTarget(-55.0);
       			
       			// have we reached the target angle w/i the threshhold ?
-      			if (_autoAim.onTarget()) {
+      			if (_autoAim.currentHeading() < -45.0) {
       				
       				// chg state
-      				_autoShootController.InitializeVisionAiming();
       				_autonState = AUTON_STATE.VISION_TURN;
       				DriverStation.reportError("===> Chg state from GYRO_TURN to VISION_TURN", false);
       			}

@@ -46,6 +46,8 @@ public class ChassisAutoAimController {
 	}
 	
 	public void motionMagicMoveToTarget(double target) {
+		_chassis.EnableMotionMagicMode();
+		
 		double angleError = target - _navX.getYaw();
 		
 		double encoderError = BeefyMath.degreesToEncoderRotations(angleError);
@@ -66,5 +68,9 @@ public class ChassisAutoAimController {
 	
 	public void setMaxMinOutput(double max, double min) {
 		_autoAimPID.setOutputRange(min, max);
+	}
+	
+	public double currentHeading() {
+		return _navX.getYaw();
 	}
 }

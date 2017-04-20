@@ -1,9 +1,11 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
-import org.usfirst.frc.team4028.robot.util.HopperToBoilerTrajectory;
+import org.usfirst.frc.team4028.robot.util.JTurn;
 import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
-import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperBlue_X;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperRed_X;
+import org.usfirst.frc.team4028.robot.util.MoveToHopper_Y;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
 import org.usfirst.frc.team4028.robot.util.TwoGearLong;
@@ -65,12 +67,12 @@ public class TrajectoryDriveController {
 	
 	public void configureIsHighGear(boolean isHighGear) {
 		if(isHighGear) {
-			_leftFollower.configure(0.05, 0.0, 0.0, 0.15, 0.0); // High Gear Constants
-			_rightFollower.configure(0.05, 0.0, 0.0, 0.15, 0.0);
+			_leftFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0); // High Gear Constants
+			_rightFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0);
 			_kTurnGyro = -0.01;
 		} else {
-			_leftFollower.configure(0.135,  0.0,  0.0,  0.174,  0.032); // Low Gear Constants
-			_rightFollower.configure(0.135,  0.0,  0.0,  0.174,  0.032);
+			_leftFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
+			_rightFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025);
 			_kTurnGyro = -0.01;
 		}
 	}
@@ -123,14 +125,20 @@ public class TrajectoryDriveController {
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
-			case HOPPER_TO_SHOOTING_POSITION:
-				_leftMotionProfile = HopperToBoilerTrajectory.LeftPoints;
-				_rightMotionProfile = HopperToBoilerTrajectory.RightPoints;
+			case J_TURN:
+				if (isBlueAlliance) {
+					_leftMotionProfile = JTurn.RightPoints;
+					_rightMotionProfile = JTurn.LeftPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = JTurn.LeftPoints;
+					_rightMotionProfile = JTurn.RightPoints;
+					_heading = -1.0;
+				}
 				_direction = -1.0;
-				_heading = 1.0;
-				_trajectoryNumPoints = HopperToBoilerTrajectory.kNumPoints;
+				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case MOVE_TO_BOILER:
@@ -149,14 +157,38 @@ public class TrajectoryDriveController {
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
-			case MOVE_TO_HOPPER:
-				_leftMotionProfile = MoveToHopperTrajectory.LeftPoints;
-				_leftMotionProfile = MoveToHopperTrajectory.RightPoints;
+			case MOVE_TO_HOPPER_BLUE_X:
+				_leftMotionProfile = MoveToHopperBlue_X.LeftPoints;
+				_rightMotionProfile = MoveToHopperBlue_X.RightPoints;
+				_heading = 1.0;
+				_direction = 1.0;
+				_trajectoryNumPoints = MoveToHopperBlue_X.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				break;
+				
+			case MOVE_TO_HOPPER_RED_X:
+				_leftMotionProfile = MoveToHopperRed_X.RightPoints;
+				_rightMotionProfile = MoveToHopperRed_X.LeftPoints;
 				_heading = 1.0;
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToHopperTrajectory.kNumPoints;
+				_trajectoryNumPoints = MoveToHopperRed_X.kNumPoints;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				break;
+				
+			case MOVE_TO_HOPPER_Y:
+				_leftMotionProfile = MoveToHopper_Y.LeftPoints;
+				_rightMotionProfile = MoveToHopper_Y.RightPoints;
+				_heading = 1.0;
+				if (isBlueAlliance) {
+					_direction = -1.0;
+				} else {
+					_direction = 1.0;
+				}
+				_trajectoryNumPoints = MoveToHopper_Y.kNumPoints;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case RETRIEVAL_GEAR:
@@ -208,7 +240,7 @@ public class TrajectoryDriveController {
 			case TWO_GEAR_SUPER_SHORT:
 				_leftMotionProfile = TwoGearSuperShort.LeftPoints;
 				_rightMotionProfile = TwoGearSuperShort.RightPoints;
-				_direction = 1.0;
+				_direction = -1.0;
 				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
 				
@@ -290,6 +322,7 @@ public class TrajectoryDriveController {
 		_leftFollower.reset();
 		_rightFollower.reset();
 		_chassis.ZeroDriveEncoders();
+		_chassis.FullStop();
 		_navX.zeroYaw();
 		_currentSegment = 0;
 		_isEnabled = true;
@@ -318,6 +351,10 @@ public class TrajectoryDriveController {
 	
 	public double getCurrentHeading() {
 		return _navX.getYaw();
+	}
+	
+	public double getDirection() {
+		return _direction;
 	}
 	
 	public int getFollowerCurrentSegment() {

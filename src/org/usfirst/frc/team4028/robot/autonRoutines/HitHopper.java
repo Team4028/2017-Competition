@@ -3,7 +3,9 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
+import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class HitHopper {
 	// define class level variables for Robot subsystems
 	private AutoShootController _autoShootController;
+	private ChassisAutoAimController _autoAim;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
@@ -28,7 +31,9 @@ public class HitHopper {
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
-		MOVE_TO_BOILER_HELLA_FAST,
+		MOVE_TO_BOILER_HELLA_FAST_X,
+		TURN,
+		MOVE_TO_BOILER_HELLA_FAST_Y,
 		WAIT,
 		MOVE_TO_SHOOTING_POSITION,
 		SHOOT
@@ -42,13 +47,14 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 2500;
+	private static final int WAIT_TIME_MSEC = 2000;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(AutoShootController autoShoot, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
+	public HitHopper(AutoShootController autoShoot, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
 		// these are the subsystems that this auton routine needs to control
+		_autoAim = autoAim;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_trajController = trajController;
@@ -63,17 +69,17 @@ public class HitHopper {
 	public void Initialize() {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
-		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
-		_autoShootController.LoadTargetDistanceInInches(SHOOTING_DISTANCE_IN_INCHES);
+		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_X;
+		//_autoShootController.LoadTargetDistanceInInches(SHOOTING_DISTANCE_IN_INCHES);
 		
 		_trajController.configureIsHighGear(true);
 		switch(_allianceColor) {
 			case BLUE_ALLIANCE:
-				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, true);
+				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_BLUE_X, true);
 				break;
 				
 			case RED_ALLIANCE:
-				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, false);
+				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_RED_X, false);
 				break;
 		}
 		_trajController.enable();
@@ -86,7 +92,7 @@ public class HitHopper {
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
 		switch(_autonState) {
-			case MOVE_TO_BOILER_HELLA_FAST:
+			case MOVE_TO_BOILER_HELLA_FAST_X:
 				if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       	      		//			we must treat it as a Reentrant function
@@ -94,51 +100,63 @@ public class HitHopper {
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
       	    		DriverStation.reportError("Gear Tilt Zero completed!", false);
-      	    		_gearHandler.MoveGearToScorePosition();
+      	    		//_gearHandler.MoveGearToScorePosition();
       	    	}
 				
 				if(_trajController.onTarget()) {
 					_trajController.disable();
+					//_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_Y, true);
 					_waitStartedTimeStamp = System.currentTimeMillis();
 					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				
+			case TURN:
+				_autoAim.motionMagicMoveToTarget(-90);
+				if (_autoAim.currentHeading() < -89) {
+					_trajController.enable();
+					_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_Y;
+				}
+				break;
+				
+			case MOVE_TO_BOILER_HELLA_FAST_Y:
+				if (_trajController.onTarget()) {
+					_trajController.disable();
+					_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_REV, false);
+					_autonState = AUTON_STATE.WAIT;
+					_waitStartedTimeStamp = System.currentTimeMillis();
+				}
+				break;
+				
 			case WAIT:
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > WAIT_TIME_MSEC) {
-					switch(_allianceColor) {
-					case BLUE_ALLIANCE:
-						_trajController.loadProfile(MOTION_PROFILE.HOPPER_TO_SHOOTING_POSITION, true);
-						break;
-						
-					case RED_ALLIANCE:
-						_trajController.loadProfile(MOTION_PROFILE.HOPPER_TO_SHOOTING_POSITION, false);
-						break;
-				}
+					_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
 					_trajController.enable();
 					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
 				}
 				break;
 				
 			case MOVE_TO_SHOOTING_POSITION:
-				_autoShootController.RunShooterAtTargetSpeed();
+				//_autoShootController.RunShooterAtTargetSpeed();
 				if (_trajController.onTarget()) {
 					_trajController.disable();
-					_autoShootController.InitializeVisionAiming();
+					//_autoShootController.InitializeVisionAiming();
 					_autonState = AUTON_STATE.SHOOT;
 				}
 				break;
 				
 			case SHOOT:
-				_autoShootController.AimWithVision();
-      			
+				//_autoShootController.AimWithVision();
+      			_autoAim.motionMagicMoveToTarget(80);
+      			/*
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
-      				_shooter.ToggleRunShooterFeeder();
+      				//_shooter.ToggleRunShooterFeeder();
       				
       				// chg state
       				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
       			}
+      			*/
 				break;
 				
 			case UNDEFINED:

@@ -87,7 +87,6 @@ public class HangBoilerGear {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				_trajController.isVisionTrackingEnabled(false);
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}

@@ -14,7 +14,6 @@ package org.usfirst.frc.team4028.robot.util;
  */
 
 public class BeefyMath {
-	
 	private static final double ENCODER_ROTATIONS_PER_DEGREE = 77.371/3600; // Check if this needs to be in encoder rotations
 	public static double arctan(double heading) {
 		double degrees = Math.toDegrees(Math.atan(heading));

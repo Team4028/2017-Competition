@@ -273,7 +273,7 @@ public class Robot extends IterativeRobot {
     	_gearHandler.FullStop();
     	_gearHandler.ZeroGearTiltAxisInit();
     	
-    	_hangGearController.setMsecSecondChange(1000);
+    	_hangGearController.setIsChassisControlEnabled(false);
     	
     	// start the lidar polling
     	if(_lidar != null)	{
@@ -330,7 +330,8 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_autoShootController, _gearHandler, _shooter, _trajController, _allianceColor);
+				_hitHopper = new HitHopper(_autoShootController, _chassisAutoAimGyro, _gearHandler, _shooter, _trajController, _allianceColor);
+				_hitHopper.Initialize();
 				break;
 				
 			case TURN_AND_SHOOT:
@@ -477,6 +478,7 @@ public class Robot extends IterativeRobot {
     	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);    // Set shifter to HIGH gear
     	_chassis.setIsAccDecModeEnabled(true);				// Disable acc/dec mode
 		_chassis.setDriveSpeedScalingFactor(1.0);
+		_chassis.EnablePercentVBusMode();
     	
     	// #### Climber ####
     	_climber.FullStop();
@@ -487,7 +489,7 @@ public class Robot extends IterativeRobot {
     		_gearHandler.ZeroGearTiltAxisInit(); 
     	}
     	
-    	_hangGearController.setMsecSecondChange(750);
+    	_hangGearController.setIsChassisControlEnabled(true);
 
     	// #### Shooter ####
     	_shooter.FullStop();

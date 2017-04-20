@@ -39,14 +39,19 @@ public class AutoShootController {
 		_isShooterAtTargetSpeed = _shooter.ShooterMotorsReentrant(_shooterTableEntry);
 	}
 	
+	public void ToggleShooter() {
+		_shooter.ToggleShooterMotors();
+	}
+	
+	public void SetShooterVisionTargetSpeed() {
+		_shooter.CalcAutomaticShooter(_roboRealm.get_DistanceToBoilerInches());
+	}
+	
 	public void InitializeVisionAiming() {
-		_chassisAutoAim.zeroTotalError(); // Reset total error to reset i gain
-		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226);
 	}
 	
 	public void AimWithVision() {
-		_chassisAutoAim.loadNewVisionTarget(_roboRealm.get_Angle()/1.5226); // update target continuously
-		_chassisAutoAim.moveToTarget();
+		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/4.0));
 		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) { // On target if under vision aiming deadband
 			_isOnTarget = true;
 		} else {
@@ -61,7 +66,7 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 700) && _isOnTarget) { // Ready to shoot if within deadband for longer than target time
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 250) && _isOnTarget && _isShooterAtTargetSpeed) { // Ready to shoot if within deadband for longer than target time
 			return true;
 		} else {
 			return false;
