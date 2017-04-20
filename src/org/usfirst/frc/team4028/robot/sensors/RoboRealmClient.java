@@ -337,7 +337,7 @@ public class RoboRealmClient {
 	 	    	double estDistance = CalcDistanceUsingPolynomial(_newTargetRawData.HighMiddleY);
 	 	    	double estDistance2 = CalcDistanceUsingCameraAngle(_newTargetRawData.HighMiddleY);
 	 	    	
-	 	    	_newTargetRawData.EstimatedDistance = estDistance;
+	 	    	_newTargetRawData.EstimatedDistance = estDistance2;
 	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
 	 	
