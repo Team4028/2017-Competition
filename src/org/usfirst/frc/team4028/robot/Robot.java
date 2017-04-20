@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4028.robot;
 
+import java.util.Date;
+
 import org.usfirst.frc.team4028.robot.autonRoutines.CrossBaseLine;
 import org.usfirst.frc.team4028.robot.autonRoutines.DoNothing;
 import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGear;
@@ -68,11 +70,6 @@ public class Robot extends IterativeRobot {
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
 	
-	//private MjpegServer _server;
-	//private UsbCamera _cam0;
-	//private UsbCamera _cam1;
-	//private boolean _isCamera0;
-	
 	// Wrapper around data logging (will be null if logging is not enabled)
 	private DataLogger _dataLogger;
 	
@@ -112,6 +109,7 @@ public class Robot extends IterativeRobot {
 	String _buildMsg = "?";
 	ShooterTable _shooterTable;
 	String _fmsDebugMsg = "?";
+ 	long _lastDashboardWriteTimeMSec;
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// Code executed 1x at robot startup																		ROBOT INIT
@@ -172,11 +170,11 @@ public class Robot extends IterativeRobot {
 												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
-		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.18, 0.0, 0.1);
-		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
+		//_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		//_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		//_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
+		//_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
@@ -368,6 +366,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Configure Logging
     	// =====================================
     	_dataLogger = GeneralUtilities.setupLogging("auton");
+    	
+    	_lastDashboardWriteTimeMSec = new Date().getTime();
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -528,6 +528,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Configure Logging (if USB Memory Stick is present)
     	// =====================================    	
     	_dataLogger = GeneralUtilities.setupLogging("telop");
+    	
+    	_lastDashboardWriteTimeMSec = new Date().getTime();
 	}
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -680,9 +682,6 @@ public class Robot extends IterativeRobot {
     			else if (_driversStation.getIsEngineering_BumpStg2RPMDown_BtnJustPressed()) {
     				_shooter.BumpStg2MtrRPMDown();
 				}
-    			//else {
-    			//	_shooter.ControlHighSpeedLane();
-    			//}
     			    	
     			//=====================
     			// Toggle Shooter Motors
@@ -696,9 +695,6 @@ public class Robot extends IterativeRobot {
     			else if (_shooter.get_isShooterMotorsReentrantRunning()) {
     				_shooter.ShooterMotorsReentrant();
     			}
-    			//else {
-    			//	_shooter.ControlHighSpeedLane();
-    			//}
     			 			
     			//=====================
     			// Shooter Feeder (Magic Carpet & High Roller) Motors controlled as a unit
@@ -939,30 +935,36 @@ public class Robot extends IterativeRobot {
 	
     // utility method that calls the outputToSmartDashboard method on all subsystems
     private void OutputAllToSmartDashboard() {
-    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
-    	
-    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
-    	
-    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
-    	
-    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
-    	
-    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
-    		
-    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
-    	
-    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
-    	
-    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
-    	
-    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
-    	
-    	//if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
-    	
-    	if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
-    	
-    	SmartDashboard.putString("Robot Build", _buildMsg);
-    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
+    	// limit spamming
+    	if((new Date().getTime() - _lastDashboardWriteTimeMSec) > 100) {
+	    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
+	    	
+	    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
+	    	
+	    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
+	    	
+	    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
+	    	
+	    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
+	    		
+	    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
+	    	
+	    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
+	    	
+	    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
+	    	
+	    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
+	    	
+	    	if(_roboRealmClient != null) 		{ _roboRealmClient.OutputToSmartDashboard(); }
+	    	
+	    	//if(_trajController != null)			{ _trajController.OutputToSmartDashboard(); }
+	    	
+	    	SmartDashboard.putString("Robot Build", _buildMsg);
+	    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
+	    	
+    		// reset last time
+    		_lastDashboardWriteTimeMSec = new Date().getTime();
+    	}
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
@@ -974,21 +976,21 @@ public class Robot extends IterativeRobot {
 	    	// ask each subsystem that exists to add its data	    	
 	    	if(_chassis != null) 			{ _chassis.UpdateLogData(logData); }
 	    	
-	    	if(_climber != null) 			{ _climber.UpdateLogData(logData); }
+	    	//if(_climber != null) 			{ _climber.UpdateLogData(logData); }
 	    		
-	    	if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
+	    	//if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
 	    	
-	    	if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
+	    	//if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
 	    	
-	    	if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
+	    	//if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
 	    	
-	    	if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
+	    	//if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
 	    	
-	    	if(_navX != null) 				{ _navX.UpdateLogData(logData); }
+	    	//if(_navX != null) 				{ _navX.UpdateLogData(logData); }
 	    	
 	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
 	    	
-	    	if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
+	    	//if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
     	
 	    	// now write to the log file
 	    	_dataLogger.WriteDataLine(logData);

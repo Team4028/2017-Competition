@@ -360,7 +360,7 @@ public class SwitchableCameraServer {
 		            			if(cvSink2 != null) { cvSink2.setEnabled(false); }
 		            			
 				                cvSink3.setEnabled(true);
-			                	cam3.setFPS(60);
+			                	cam3.setFPS(20);
 			                	cam3.setResolution(320, 240);
 			                	cam3.setExposureAuto();
 			                	//cam3.setExposureManual(36);
@@ -387,7 +387,7 @@ public class SwitchableCameraServer {
         		
         		// sleep each cycle to avoid Robot Code not updating often enough issues
         		try {
-					Thread.sleep(10);
+					Thread.sleep(50); // was 20, 50mS = 20 frames / sec
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
