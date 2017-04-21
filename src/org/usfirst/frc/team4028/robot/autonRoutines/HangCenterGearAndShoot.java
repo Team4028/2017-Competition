@@ -79,7 +79,6 @@ public class HangCenterGearAndShoot {
 				_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
 				break;
 		}
-		
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -93,12 +92,14 @@ public class HangCenterGearAndShoot {
 		_autonState = AUTON_STATE.GOTTA_GO_FAST;
 		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
 		
+		_autoShootController.StopShooter();
+		
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		
 		// chg vision camera to Boiler
-		_autoShootController.EnableGearCam();
+		_autoShootController.EnableBoilerCam();
 		
 		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
@@ -122,12 +123,12 @@ public class HangCenterGearAndShoot {
       			
       			// if we are on the 1st step of the Motion Profile
       			if (_trajController.getCurrentSegment() == 1) {
-      				_trajController.isVisionTrackingEnabled(true);
+      				//_trajController.isVisionTrackingEnabled(true);
       			}
       			// if the motion profile is complete
       			else if (_trajController.onTarget()) {
       				_trajController.disable();
-      				_trajController.isVisionTrackingEnabled(false); 
+      				//_trajController.isVisionTrackingEnabled(false); 
       				
       				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       				_trajController.enable();
@@ -159,10 +160,10 @@ public class HangCenterGearAndShoot {
       			_autoShootController.RunShooterAtTargetSpeed();
       			
       			// call turn controller
-      			_autoAim.motionMagicMoveToTarget(-55.0);
+      			_autoAim.motionMagicMoveToTarget(-40.0);
       			
       			// have we reached the target angle w/i the threshhold ?
-      			if (_autoAim.currentHeading() < -45.0) {
+      			if (_autoAim.currentHeading() < -25.0) {
       				
       				// chg state
       				_autonState = AUTON_STATE.VISION_TURN;
@@ -171,6 +172,8 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case VISION_TURN:
+      			_autoShootController.RunShooterAtTargetSpeed();
+      			
       			_autoShootController.AimWithVision();
       			
       			if(_autoShootController.IsReadyToShoot()) {
@@ -185,6 +188,7 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case SHOOT:
+      			_autoShootController.RunShooterAtTargetSpeed();
       			// start shooter feeder motors reentrant function
       			_shooter.RunShooterFeederReentrant();
       			break;

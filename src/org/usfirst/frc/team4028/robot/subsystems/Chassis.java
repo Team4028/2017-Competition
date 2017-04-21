@@ -58,13 +58,12 @@ public class Chassis {
 	private static final double _turnSpeedScalingFactor = 0.7;
 	
 	// motion magic constants
-	private static final double P_GAIN = 2.9;
+	private static final double P_GAIN = 3.7;
 	private static final double I_GAIN = 0.0;
-	private static final double D_GAIN = 100.0;	
-	private static final double F_GAIN = 0.49;
-	private static final double MAX_ACCELERATION = 1000.0; // 200 RPM / S
+	private static final double D_GAIN = 95.0;	
+	private static final double F_GAIN = 0.5;
+	private static final double MAX_ACCELERATION = 1200.0; // 200 RPM / S
 	private static final double MAX_VELOCITY = 150.0; // 200 RPM 
-	
 	
 	// Gearbox Ratios: 1:3 encoder shaft, 34:50 output shaft
 	

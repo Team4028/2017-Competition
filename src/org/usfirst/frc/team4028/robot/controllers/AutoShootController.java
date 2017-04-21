@@ -39,6 +39,10 @@ public class AutoShootController {
 		_isShooterAtTargetSpeed = _shooter.ShooterMotorsReentrant(_shooterTableEntry);
 	}
 	
+	public void StopShooter() {
+		_shooter.FullShooterStop();
+	}
+	
 	public void ToggleShooter() {
 		_shooter.ToggleShooterMotors();
 	}
@@ -51,7 +55,7 @@ public class AutoShootController {
 	}
 	
 	public void AimWithVision() {
-		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/4.0));
+		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/3.5));
 		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) { // On target if under vision aiming deadband
 			_isOnTarget = true;
 		} else {

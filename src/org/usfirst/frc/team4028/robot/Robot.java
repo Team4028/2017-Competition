@@ -163,18 +163,18 @@ public class Robot extends IterativeRobot {
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
-												RobotMap.LED_RINGS_DIO_PORT);
+												RobotMap.LED_RINGS_DIO_PORT); 
 												
 												//RobotMap.PCM_CAN_BUS_ADDR,
 												//RobotMap.GEAR_LED_RING_PCM_PORT,
 												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
-		//_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		//_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
-		//_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
+		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
-		//_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
@@ -612,7 +612,7 @@ public class Robot extends IterativeRobot {
 		    		_autoShootController.AimWithVision();
 		    		*/
 		    		_chassis.EnableMotionMagicMode();
-		    		_chassisAutoAimGyro.motionMagicMoveToTarget(_navX.getYaw() - (_roboRealmClient.get_Angle()/3.7));
+		    		_chassisAutoAimGyro.motionMagicMoveToTarget(_navX.getYaw() - (_roboRealmClient.get_Angle()/3.5));
 		    	} else {
 		    		// full stop
 		    		//_chassis.EnablePercentVBusMode();
@@ -879,16 +879,6 @@ public class Robot extends IterativeRobot {
 		    	//	_climber.RunClimberReentrant();
 		    	//}
     			break;
-    		
-    		/*
-    		case AUTO_AIM:
-    			if(_driversStation.getIsDriver_Climb_ButtonPressed()) {
-    				_chassisAutoAim.updateVision(-1.0 * _roboRealmClient.get_Angle());
-    			} else {
-    				_teleopMode = TELEOP_MODE.STANDARD;
-    			}
-    			break;
-    		*/
     			
     	}	// end of switch statement
       	

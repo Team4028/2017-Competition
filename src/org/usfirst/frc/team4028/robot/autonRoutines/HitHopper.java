@@ -27,7 +27,9 @@ public class HitHopper {
 	private TrajectoryDriveController _trajController;
 	private ALLIANCE_COLOR _allianceColor;
 	
-	private static final int SHOOTING_DISTANCE_IN_INCHES = 100;
+	private int _targetShootingDistanceInInches;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 100;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 100;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
@@ -36,6 +38,7 @@ public class HitHopper {
 		MOVE_TO_BOILER_HELLA_FAST_Y,
 		WAIT,
 		MOVE_TO_SHOOTING_POSITION,
+		VISION_TURN,
 		SHOOT
 	}
 	
@@ -54,11 +57,22 @@ public class HitHopper {
 	//============================================================================================
 	public HitHopper(AutoShootController autoShoot, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
 		// these are the subsystems that this auton routine needs to control
+		_autoShootController = autoShoot;
 		_autoAim = autoAim;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_trajController = trajController;
 		_allianceColor = allianceColor;
+		
+		switch(_allianceColor) {
+		case BLUE_ALLIANCE:
+			_targetShootingDistanceInInches = BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+			break;
+			
+		case RED_ALLIANCE:
+			_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+			break;
+		}
 		DriverStation.reportError("Auton Initialized", false);
 	}
 	
@@ -70,7 +84,7 @@ public class HitHopper {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_X;
-		//_autoShootController.LoadTargetDistanceInInches(SHOOTING_DISTANCE_IN_INCHES);
+		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
 		
 		_trajController.configureIsHighGear(true);
 		switch(_allianceColor) {
@@ -83,6 +97,8 @@ public class HitHopper {
 				break;
 		}
 		_trajController.enable();
+		
+		_autoShootController.EnableBoilerCam();
 		
 		DriverStation.reportWarning("===== Entering Hit Hopper Auton =====", false);
 	}
@@ -100,7 +116,7 @@ public class HitHopper {
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
       	    		DriverStation.reportError("Gear Tilt Zero completed!", false);
-      	    		//_gearHandler.MoveGearToScorePosition();
+      	    		_gearHandler.MoveGearToScorePosition();
       	    	}
 				
 				if(_trajController.onTarget()) {
@@ -129,6 +145,10 @@ public class HitHopper {
 				break;
 				
 			case WAIT:
+				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 1500) {
+					_autoShootController.RunShooterAtTargetSpeed();
+				}
+				
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > WAIT_TIME_MSEC) {
 					_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
 					_trajController.enable();
@@ -137,27 +157,29 @@ public class HitHopper {
 				break;
 				
 			case MOVE_TO_SHOOTING_POSITION:
-				//_autoShootController.RunShooterAtTargetSpeed();
+				_autoShootController.RunShooterAtTargetSpeed();
 				if (_trajController.onTarget()) {
 					_trajController.disable();
-					//_autoShootController.InitializeVisionAiming();
-					_autonState = AUTON_STATE.SHOOT;
+					
+					_autonState = AUTON_STATE.VISION_TURN;
 				}
 				break;
 				
-			case SHOOT:
-				//_autoShootController.AimWithVision();
-      			_autoAim.motionMagicMoveToTarget(80);
-      			/*
+			case VISION_TURN:
+				_autoShootController.AimWithVision();
+      			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
-      				//_shooter.ToggleRunShooterFeeder();
+      				_shooter.ToggleRunShooterFeeder();
       				
       				// chg state
+      				_autonState = AUTON_STATE.SHOOT;
       				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
       			}
-      			*/
 				break;
+				
+			case SHOOT:
+				_shooter.RunShooterFeederReentrant();
 				
 			case UNDEFINED:
 				break;

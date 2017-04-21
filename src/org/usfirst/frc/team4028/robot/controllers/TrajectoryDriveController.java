@@ -371,6 +371,11 @@ public class TrajectoryDriveController {
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
 	}
 	
+	public void stopTrajectoryController() {
+		_isUpdaterTaskRunning = false;
+		//_updaterTimer.cancel();
+	}
+	
 	public void OutputToSmartDashboard() {
 		if(_roboRealm.get_isVisionDataValid()) {
 			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
