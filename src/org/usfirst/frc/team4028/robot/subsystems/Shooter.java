@@ -95,7 +95,7 @@ public class Shooter {
 	//define class level Shooter Motor Constants
 	private static final double MAX_SHOOTER_RPM = -4400;
 	private static final double MIN_SHOOTER_RPM = -2500;
-	private static final double SHOOTER_BUMP_RPM = 50;
+	private static final double SHOOTER_BUMP_RPM = 25;
 	private static final double FIRST_STAGE_MTR_DEFAULT_RPM = -3500;
 	private static final double SECOND_STAGE_MTR_DEFAULT_RPM = -3200;
 	

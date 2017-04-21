@@ -604,7 +604,8 @@ public class Robot extends IterativeRobot {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
-		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
+		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()
+		    				|| _driversStation.getIsEngineering_VisionAim_BtnPressed()) {
 		    		/*
 		    		if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
 		    			_autoShootController.InitializeVisionAiming();
@@ -636,8 +637,9 @@ public class Robot extends IterativeRobot {
     			//=====================
     			// Shooter Table
     			//=====================	
-    			if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnPressed()
-    				&& _driversStation.getIsOperator_IndexShooterSettingsUp_BtnPressed())
+    			//if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnPressed()
+    			//	&& _driversStation.getIsOperator_IndexShooterSettingsUp_BtnPressed())
+    			if (_driversStation.getIsOperator_AutoDistance_BtnPressed())
     			{
     				_shooter.CalcAutomaticShooter(_roboRealmClient.get_DistanceToBoilerInches());
     			}

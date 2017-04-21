@@ -55,9 +55,9 @@ abstract class BaseDriversStation {
 			DriverStation.reportError("EngineeringGamepad not present!", false);
 		}
 		
-		if(!getIsGamePadConnected(_engineeringGamepad)) {
-			_engineeringGamepad = null;
-		}
+		//if(!getIsGamePadConnected(_engineeringGamepad)) {
+		//	_engineeringGamepad = null;
+		//}
 	}
 
 	// Refreshes the locally cached copy of the Current (this scan) Driver's Station Input Values

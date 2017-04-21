@@ -245,6 +245,11 @@ public class DriversStation extends BaseDriversStation {
 	{
 		return super.getIsOperatorStartBtnPressed();
 	}
+
+	public boolean getIsOperator_AutoDistance_BtnPressed()
+	{
+		return super.getIsOperatorBackBtnPressed();
+	}
 	
 	// =====================================
 	// === operator Joysticks ==============
@@ -326,6 +331,12 @@ public class DriversStation extends BaseDriversStation {
 	public boolean getIsEngineering_SwapCamera_BtnJustPressed() {
 		return super.getIsEngineeringBlueBtnXJustPressed();
 	}
+
+	// Vision Auto Aim
+	public boolean getIsEngineering_VisionAim_BtnPressed() {
+		return super.getIsEngineeringLeftBumperBtnPressed();
+	}
+	
 	
 	// Joysticks
 	
