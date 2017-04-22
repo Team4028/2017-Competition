@@ -77,9 +77,9 @@ public class Shooter {
 	
 	//define class level PID constants					// new	// clev
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.030; //0.033; //
-	private static final double FIRST_STAGE_MTG_P_GAIN = 0.225; //0.325; //
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.275; //0.225; //0.325; //
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
-	private static final double FIRST_STAGE_MTG_D_GAIN = 7.5; //5.0; //
+	private static final double FIRST_STAGE_MTG_D_GAIN = 4.0; //7.5; //5.0; //
 
 	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.028; //0.03; //
 	private static final double SECOND_STAGE_MTG_P_GAIN = 0.175; //
