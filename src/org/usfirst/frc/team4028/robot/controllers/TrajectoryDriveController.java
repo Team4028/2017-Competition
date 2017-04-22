@@ -160,8 +160,8 @@ public class TrajectoryDriveController {
 			case MOVE_TO_HOPPER_BLUE_X:
 				_leftMotionProfile = MoveToHopperBlue_X.LeftPoints;
 				_rightMotionProfile = MoveToHopperBlue_X.RightPoints;
-				_heading = 1.0;
-				_direction = 1.0;
+				_heading = -1.0;
+				_direction = -1.0;
 				_trajectoryNumPoints = MoveToHopperBlue_X.kNumPoints;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
@@ -218,10 +218,16 @@ public class TrajectoryDriveController {
 				break;
 				
 			case TWO_GEAR_SHORT_FWD:
-				_leftMotionProfile = TwoGearShort.LeftPoints;
-				_rightMotionProfile = TwoGearShort.RightPoints;
+				if (isBlueAlliance) {
+					_leftMotionProfile = TwoGearShort.RightPoints;
+					_rightMotionProfile = TwoGearShort.LeftPoints;
+					_heading = -1.0;
+				} else {
+					_leftMotionProfile = TwoGearShort.LeftPoints;
+					_rightMotionProfile = TwoGearShort.RightPoints;
+					_heading = 1.0;
+				}
 				_direction = 1.0;
-				_heading = 1.0;
 				_trajectoryNumPoints = TwoGearShort.kNumPoints;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);

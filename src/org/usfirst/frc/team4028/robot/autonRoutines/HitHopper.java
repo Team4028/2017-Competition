@@ -28,14 +28,12 @@ public class HitHopper {
 	private ALLIANCE_COLOR _allianceColor;
 	
 	private int _targetShootingDistanceInInches;
-	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 100;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 114;
 	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 100;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
 		MOVE_TO_BOILER_HELLA_FAST_X,
-		TURN,
-		MOVE_TO_BOILER_HELLA_FAST_Y,
 		WAIT,
 		MOVE_TO_SHOOTING_POSITION,
 		VISION_TURN,
@@ -85,6 +83,7 @@ public class HitHopper {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_X;
 		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
+		_autoShootController.StopShooter();
 		
 		_trajController.configureIsHighGear(true);
 		switch(_allianceColor) {
@@ -121,26 +120,8 @@ public class HitHopper {
 				
 				if(_trajController.onTarget()) {
 					_trajController.disable();
-					//_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_Y, true);
 					_waitStartedTimeStamp = System.currentTimeMillis();
 					_autonState = AUTON_STATE.WAIT;
-				}
-				break;
-				
-			case TURN:
-				_autoAim.motionMagicMoveToTarget(-90);
-				if (_autoAim.currentHeading() < -89) {
-					_trajController.enable();
-					_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_Y;
-				}
-				break;
-				
-			case MOVE_TO_BOILER_HELLA_FAST_Y:
-				if (_trajController.onTarget()) {
-					_trajController.disable();
-					_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_REV, false);
-					_autonState = AUTON_STATE.WAIT;
-					_waitStartedTimeStamp = System.currentTimeMillis();
 				}
 				break;
 				
@@ -150,7 +131,15 @@ public class HitHopper {
 				}
 				
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > WAIT_TIME_MSEC) {
-					_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
+					switch(_allianceColor) {
+						case BLUE_ALLIANCE:
+							_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, true);
+							break;
+							
+						case RED_ALLIANCE:
+							_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
+							break;
+					}
 					_trajController.enable();
 					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
 				}

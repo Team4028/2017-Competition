@@ -30,8 +30,8 @@ public class HangCenterGearAndShoot {
 	private ALLIANCE_COLOR _allianceColor;
 	
 	private double _gyroTurnTargetAngle;
-	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -45.0;
-	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 50.0; // These angles are not the same since the shooter is on the side of the robot 
+	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -40.0;
+	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 40.0; 
 
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 175;
@@ -121,14 +121,8 @@ public class HangCenterGearAndShoot {
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
       			
-      			// if we are on the 1st step of the Motion Profile
-      			if (_trajController.getCurrentSegment() == 1) {
-      				//_trajController.isVisionTrackingEnabled(true);
-      			}
-      			// if the motion profile is complete
-      			else if (_trajController.onTarget()) {
+      			if (_trajController.onTarget()) {
       				_trajController.disable();
-      				//_trajController.isVisionTrackingEnabled(false); 
       				
       				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       				_trajController.enable();
@@ -160,10 +154,10 @@ public class HangCenterGearAndShoot {
       			_autoShootController.RunShooterAtTargetSpeed();
       			
       			// call turn controller
-      			_autoAim.motionMagicMoveToTarget(-40.0);
+      			_autoAim.motionMagicMoveToTarget(_gyroTurnTargetAngle);
       			
       			// have we reached the target angle w/i the threshhold ?
-      			if (_autoAim.currentHeading() < -25.0) {
+      			if (Math.abs(_autoAim.currentHeading()) > 25.0) {
       				
       				// chg state
       				_autonState = AUTON_STATE.VISION_TURN;
@@ -173,8 +167,7 @@ public class HangCenterGearAndShoot {
       			
       		case VISION_TURN:
       			_autoShootController.RunShooterAtTargetSpeed();
-      			
-      			_autoShootController.AimWithVision();
+      			_autoShootController.AimWithVision();			// Aim robot to the boiler
       			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
