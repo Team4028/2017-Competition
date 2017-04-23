@@ -30,8 +30,11 @@ public class LogData {
 	
 	// discard any data currently being held
 	public void ResetData() {
-		_names = new ArrayList<String>();
-		_values = new ArrayList<String>();	
+		_names.clear();
+		_values .clear();
+		
+		//_names = new ArrayList<String>();
+		//_values = new ArrayList<String>();	
 	}
 
 	// build a TSV (tab separated value) string for the header row
