@@ -298,7 +298,9 @@ public class ShooterTable {
 		//======================================================================================
 		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
 		//======================================================================================
-
+		
+		table.add(new ShooterTableEntry(indexCounter++, 114, "9' 6ft", .60, -3375, -3075, false));
+		table.add(new ShooterTableEntry(indexCounter++, 156, "13ft", .68, -3617, -3317, false));
 		table.add(new ShooterTableEntry(indexCounter++, 172, "14' 4ft", .69, -3771, -3471, false));
 		table.add(new ShooterTableEntry(indexCounter++, 175, "14' 7ft", .69, -3811, -3511, false));
 		

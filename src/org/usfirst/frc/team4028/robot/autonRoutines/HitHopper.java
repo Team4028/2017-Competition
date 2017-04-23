@@ -29,7 +29,7 @@ public class HitHopper {
 	
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 114;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 100;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 156;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
@@ -48,7 +48,7 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 2000;
+	private static final int WAIT_TIME_MSEC = 1300;
 	
 	//============================================================================================
 	// constructors follow
@@ -126,7 +126,7 @@ public class HitHopper {
 				break;
 				
 			case WAIT:
-				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 1500) {
+				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 800) {
 					_autoShootController.RunShooterAtTargetSpeed();
 				}
 				

@@ -422,7 +422,6 @@ public class Shooter {
 	}
 	
 	public void RunHopperCarousel() {
-		
 		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
 			_hopperCarousel.setPosition(0.0);
 		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
@@ -441,6 +440,7 @@ public class Shooter {
 			//RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			//RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			//RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
+			ToggleHopperCarousel();
 			
 			_isShooterInfeedReentrantRunning = true;
 			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
@@ -452,6 +452,7 @@ public class Shooter {
 	}
 	
 	public void RunShooterFeederReentrant() {
+		RunHopperCarousel();
 		if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 100)	{		// 800 ; 500
 			// 100 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);

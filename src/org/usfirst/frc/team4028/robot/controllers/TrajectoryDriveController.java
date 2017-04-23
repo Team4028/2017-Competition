@@ -73,7 +73,7 @@ public class TrajectoryDriveController {
 		} else {
 			_leftFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
 			_rightFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025);
-			_kTurnGyro = -0.01;
+			_kTurnGyro = -0.013;
 		}
 	}
 	

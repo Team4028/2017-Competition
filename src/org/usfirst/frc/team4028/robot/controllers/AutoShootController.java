@@ -70,7 +70,7 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 250) && _isOnTarget && _isShooterAtTargetSpeed && _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 100) && _isOnTarget && _isShooterAtTargetSpeed && _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
 			return true;
 		} else {
 			return false;

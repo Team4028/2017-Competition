@@ -82,6 +82,9 @@ public class HangCenterGear {
       		
       			if (_trajController.onTarget()) {
       				_trajController.disable();
+      				
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
+      				_trajController.enable();
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
@@ -90,7 +93,9 @@ public class HangCenterGear {
       			
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
-      			if (!isStillRunning) {
+      			if (!isStillRunning && _trajController.onTarget()) {
+      				_trajController.disable();
+      				
       				DriverStation.reportError("Done", false);
       			}
       			break;

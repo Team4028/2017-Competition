@@ -487,6 +487,8 @@ public class Robot extends IterativeRobot {
     	_gearHandler.FullStop();
     	if(!_gearHandler.hasTiltAxisBeenZeroed()) { 
     		_gearHandler.ZeroGearTiltAxisInit(); 
+    	} else {
+    		_gearHandler.MoveGearToScorePosition();
     	}
     	
     	_hangGearController.setIsChassisControlEnabled(true);
