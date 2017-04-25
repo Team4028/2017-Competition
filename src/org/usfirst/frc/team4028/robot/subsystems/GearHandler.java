@@ -35,6 +35,7 @@ public class GearHandler {
 	
 	// define class level private working variables
 	private double _targetPositionRotations;
+	private long _beaverTailWagReentrantRunningMsec;
 	
 	// --------------------------------------------------------
 	// define Tilt Motor PID constants
@@ -267,6 +268,25 @@ public class GearHandler {
 	public void FullStop() {
 		MoveTiltAxisVBus(0.0);
 		_gearInfeedMotor.set(0.0);
+	}
+	
+	public void WagBeaverTailReentrant()
+	{	
+		if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 2000)	{		// 800 ; 500
+			MoveGearToHomePosition();
+		}
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 4000) {	// 800 ; 500
+			// pause
+		}
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 6000) {	// 40; 20; 40
+			MoveGearToScorePosition();
+		} 
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 8000) {	// 800 ; 500
+			// pause
+		}
+		else {
+			_beaverTailWagReentrantRunningMsec = System.currentTimeMillis();
+		}
 	}
 	
 	// update the Dashboard with any Climber specific data values
