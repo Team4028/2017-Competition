@@ -416,6 +416,9 @@ public class Shooter {
 	//============================================================================================
 	// Run Magin Carpet / High Roller Motors / Hopper Carousel
 	//============================================================================================
+	public void ResetHopperCarousel() {
+		_hopperCarousel.setPosition(0.0);
+	}
 	
 	public void ToggleHopperCarousel() {
 		_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
@@ -423,9 +426,9 @@ public class Shooter {
 	
 	public void RunHopperCarousel() {
 		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
-			_hopperCarousel.setPosition(0.0);
-		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
 			_hopperCarousel.setPosition(1.0);
+		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
+			_hopperCarousel.setPosition(0.0);
 		} else {
 			_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
 		}

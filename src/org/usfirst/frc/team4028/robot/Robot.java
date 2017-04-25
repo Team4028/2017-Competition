@@ -505,6 +505,7 @@ public class Robot extends IterativeRobot {
     	// #### Shooter ####
     	_shooter.FullStop();
     	_shooter.MoveActuatorToDefaultPosition();
+    	_shooter.ResetHopperCarousel();
     	
     	// #### Ball Infeed ####
     	_ballInfeed.FullStop();

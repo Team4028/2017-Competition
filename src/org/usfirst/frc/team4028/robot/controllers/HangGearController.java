@@ -95,7 +95,7 @@ public class HangGearController {
 			_isStillRunning = true;
 		}
 		else if(elapsedTimeInMSec > MSEC_SECOND_CHANGE && elapsedTimeInMSec < MAX_TIME_BEFORE_ABORT_IN_MSEC) { //final state of gear sequence
-			_gearHandler.MoveGearToHomePosition();
+			_gearHandler.MoveGearToScorePosition();
 			_gearHandler.SpinInfeedWheelsVBus(0);
 			if (_isChassisControlEnabled) {
 				_chassis.ArcadeDrive(0, 0);

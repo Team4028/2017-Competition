@@ -123,10 +123,12 @@ public class HangCenterGearAndShoot {
       			
       			if (_trajController.onTarget()) {
       				_trajController.disable();
-      				
-      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
+      				if(_allianceColor == ALLIANCE_COLOR.BLUE_ALLIANCE) {
+      					_trajController.loadProfile(MOTION_PROFILE.J_TURN, true);
+      				} else {
+      					_trajController.loadProfile(MOTION_PROFILE.J_TURN, false);
+      				}
       				_trajController.enable();
-      				
       				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				
@@ -137,15 +139,19 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case RUN_GEAR_SEQUENCE_AND_MOVE_BACK:
+      			if (_trajController.getCurrentSegment() >= 50) {
+      				_autoShootController.RunShooterAtTargetSpeed();
+      			}
+
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			
-      			if (!isStillRunning && _trajController.onTarget()) {
+      			if (_trajController.onTarget()) {
       				_trajController.disable();
       				// chg vision camera to Boiler
       				_autoShootController.EnableBoilerCam();
       				
       				// chg state
-      				_autonState = AUTON_STATE.GYRO_TURN;
+      				_autonState = AUTON_STATE.VISION_TURN;
       				DriverStation.reportError("===> Chg state from RUN_GEAR_SEQUENCE to MOVE_BACK", false);
       			}
       			break;

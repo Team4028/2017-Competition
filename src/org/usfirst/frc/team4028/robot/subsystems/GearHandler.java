@@ -71,7 +71,7 @@ public class GearHandler {
 	private static final double GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS = 00.48;
 	private static final double TARGET_DEADBAND = 00.03;
 	
-	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.25;   //set
+	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.40;   //set
 	private static final long GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC = 5000;
 	private String _gearTiltState;
 	

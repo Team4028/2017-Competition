@@ -136,7 +136,7 @@ public class TrajectoryDriveController {
 					_heading = -1.0;
 				}
 				_direction = -1.0;
-				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = JTurn.kNumPoints;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
