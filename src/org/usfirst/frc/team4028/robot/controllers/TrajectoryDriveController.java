@@ -110,7 +110,7 @@ public class TrajectoryDriveController {
 					_heading = -1.0;
 				}
 				_direction = 1.0;
-				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = SideGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -120,7 +120,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = CenterGearTrajectory.LeftPoints;
 				_direction = 1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = CenterGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -136,7 +136,7 @@ public class TrajectoryDriveController {
 					_heading = -1.0;
 				}
 				_direction = -1.0;
-				_trajectoryNumPoints = JTurn.kNumPoints;
+				_trajectoryNumPoints = JTurn.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -152,7 +152,7 @@ public class TrajectoryDriveController {
 					_heading = 1.0;
 				}
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				_trajectoryNumPoints = MoveToBoilerTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -162,7 +162,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = MoveToHopperBlue_X.RightPoints;
 				_heading = -1.0;
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToHopperBlue_X.kNumPoints;
+				_trajectoryNumPoints = MoveToHopperBlue_X.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -172,7 +172,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = MoveToHopperRed_X.LeftPoints;
 				_heading = 1.0;
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToHopperRed_X.kNumPoints;
+				_trajectoryNumPoints = MoveToHopperRed_X.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -186,7 +186,7 @@ public class TrajectoryDriveController {
 				} else {
 					_direction = 1.0;
 				}
-				_trajectoryNumPoints = MoveToHopper_Y.kNumPoints;
+				_trajectoryNumPoints = MoveToHopper_Y.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -202,7 +202,7 @@ public class TrajectoryDriveController {
 					_heading = 1.0;
 				}
 				_direction = 1.0;
-				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = SideGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -212,7 +212,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = TwoGearLong.RightPoints;
 				_direction = 1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearLong.kNumPoints;
+				_trajectoryNumPoints = TwoGearLong.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -228,7 +228,7 @@ public class TrajectoryDriveController {
 					_heading = 1.0;
 				}
 				_direction = 1.0;
-				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -238,7 +238,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = TwoGearShort.RightPoints;
 				_direction = -1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -248,7 +248,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = TwoGearSuperShort.RightPoints;
 				_direction = -1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearSuperShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;

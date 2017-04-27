@@ -40,11 +40,6 @@ public class TrajectoryFollower {
 	      } else {
 	    	  _positionOutput = _kp * error + _kd * ((error - _lastError) / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]);
 	      }
-	      if (motionProfile[currentSegment][2] > 0.0) {
-	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
-	      } else {
-	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
-	      }
 	      
 	      if (motionProfile[currentSegment][0] > 0.0) {
 	    	  if (motionProfile[currentSegment][2] > 0.0) {
@@ -52,6 +47,8 @@ public class TrajectoryFollower {
 		      } else {
 		    	  _velocityOutput = _kv * motionProfile[currentSegment][1];
 		      }
+	      } else {
+	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
 	      }
 	      
 	      double output = _positionOutput + _velocityOutput;

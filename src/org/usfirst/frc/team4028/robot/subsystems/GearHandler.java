@@ -99,7 +99,6 @@ public class GearHandler {
 		_gearTiltMotor.setPID(TILT_PID_P_CONSTANT, TILT_PID_I_CONSTANT, TILT_PID_D_CONSTANT);
 		_gearTiltMotor.configNominalOutputVoltage(0.0f, -0.0f);
 		_gearTiltMotor.configPeakOutputVoltage(TILT_MAX_V_DOWN_TILT, TILT_MAX_V_UP_TILT);
-    	//_gearTiltMotor.reverseOutput(true);
 		
 		// Infeed Motor
 		_gearInfeedMotor = new CANTalon(talonInfeedCanBusAddr);

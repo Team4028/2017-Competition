@@ -34,8 +34,8 @@ public class HangCenterGearAndShoot {
 	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 40.0; 
 
 	private int _targetShootingDistanceInInches;
-	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 175;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 172;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 150;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 147;
 
 	private enum AUTON_STATE {
 		UNDEFINED, 

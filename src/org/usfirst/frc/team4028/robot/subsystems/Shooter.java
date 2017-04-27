@@ -78,14 +78,14 @@ public class Shooter {
 	//==============================================================================================
 	//define class level PID constants					// new	// clev
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.027; //0.033; //
-	private static final double FIRST_STAGE_MTG_P_GAIN = 0.25;// 0.30; // 0.3125; // 0.275; //0.225; //0.325; //
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.25;// 0.325;         // 0.3125; // 0.275; //0.225; //0.325; //
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
-	private static final double FIRST_STAGE_MTG_D_GAIN = 1.5; //4.0; //2.0; //4.0; //7.5; //5.0; //
+	private static final double FIRST_STAGE_MTG_D_GAIN = 1.5; //5.0; 	//2.0; //4.0; //7.5; //5.0; //
 
 	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.028; //0.03; //
-	private static final double SECOND_STAGE_MTG_P_GAIN = 0.5; // 0.35; //0.3; // .250; //0.175; //
+	private static final double SECOND_STAGE_MTG_P_GAIN = 0.5; // 0.175; 	//0.3; // .250; //0.175; //
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
-	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //0.0; //3.0; //6.0; // 
+	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //6.0; 	//3.0; //6.0; // 
 
 	//==============================================================================================
 	
@@ -417,7 +417,7 @@ public class Shooter {
 	// Run Magin Carpet / High Roller Motors / Hopper Carousel
 	//============================================================================================
 	public void ResetHopperCarousel() {
-		_hopperCarousel.setPosition(0.0);
+		_hopperCarousel.setPosition(1.0);
 	}
 	
 	public void ToggleHopperCarousel() {
@@ -426,9 +426,9 @@ public class Shooter {
 	
 	public void RunHopperCarousel() {
 		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
-			_hopperCarousel.setPosition(1.0);
-		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
 			_hopperCarousel.setPosition(0.0);
+		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
+			_hopperCarousel.setPosition(1.0);
 		} else {
 			_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
 		}

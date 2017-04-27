@@ -2,7 +2,6 @@ package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import com.ctre.CANTalon;
 import com.ctre.CANTalon.TalonControlMode;
@@ -23,10 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Chassis {
 	// =====================================================================
 	// 4 DC Motors
-	//		1 Talon w/ Encoder		Left Master
-	//		1 Talon w/o Encoder		Left Slave
-	//		1 Talon w/ Encoder		Right Master
-	//		1 Talon w/o Encoder		Right Slave
+	//		2 Talon w/ Encoder		Left + Right Master
+	//		2 Talon w/o Encoder		Left + Right Slave
 	//
 	// 1 Solenoid
 	// 		1 Dual Action 			Shifter
@@ -44,10 +41,8 @@ public class Chassis {
 	
 	// acc/dec variables
 	private boolean _isAccelDecelEnabled;
-	private double _currentThrottleCmdScaled;
-	private double _currentThrottleCmdAccDec;
-	private double _previousThrottleCmdScaled;
-	private double _previousThrottleCmdAccDec;
+	private double _currentThrottleCmdScaled, _previousThrottleCmdScaled;
+	private double _currentThrottleCmdAccDec, _previousThrottleCmdAccDec;
 	
 	private double _arcadeDriveThrottleCmdAdj;
 	private double _arcadeDriveTurnCmdAdj;
@@ -126,8 +121,7 @@ public class Chassis {
     	//====================
     	// Arcade Drive
     	//====================
-    	// Arcade Drive configured to drive in "2 motor per side setup, 
-    	//	other motors follow master as slaves 
+    	// Arcade Drive configured to drive in "2 motor per side setup, other motors follow master as slaves 
     	_robotDrive = new RobotDrive(_leftDriveMaster, _rightDriveMaster);
     	
     	EnableBrakeMode(false); // Disable motors on drive talons

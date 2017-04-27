@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class HitHopper {
 	// define class level variables for Robot subsystems
 	private AutoShootController _autoShootController;
+	private Chassis _chassis;
 	private ChassisAutoAimController _autoAim;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
@@ -28,8 +29,8 @@ public class HitHopper {
 	private ALLIANCE_COLOR _allianceColor;
 	
 	private int _targetShootingDistanceInInches;
-	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 114;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 156;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 124;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 160;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
@@ -53,10 +54,11 @@ public class HitHopper {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(AutoShootController autoShoot, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
+	public HitHopper(AutoShootController autoShoot, Chassis chassis, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
 		// these are the subsystems that this auton routine needs to control
 		_autoShootController = autoShoot;
 		_autoAim = autoAim;
+		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_trajController = trajController;
@@ -121,11 +123,14 @@ public class HitHopper {
 				if(_trajController.onTarget()) {
 					_trajController.disable();
 					_waitStartedTimeStamp = System.currentTimeMillis();
+					DriverStation.reportWarning("Starting to Wait", false);
 					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				
 			case WAIT:
+				_chassis.ArcadeDrive(-0.35, 0.0);
+				
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 800) {
 					_autoShootController.RunShooterAtTargetSpeed();
 				}
@@ -142,6 +147,7 @@ public class HitHopper {
 					}
 					_trajController.enable();
 					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
+					DriverStation.reportWarning("Moving to Shoot", false);
 				}
 				break;
 				
@@ -149,7 +155,7 @@ public class HitHopper {
 				_autoShootController.RunShooterAtTargetSpeed();
 				if (_trajController.onTarget()) {
 					_trajController.disable();
-					
+					DriverStation.reportWarning("Moved To Shooting Position", false);
 					_autonState = AUTON_STATE.VISION_TURN;
 				}
 				break;
@@ -163,11 +169,12 @@ public class HitHopper {
       				
       				// chg state
       				_autonState = AUTON_STATE.SHOOT;
-      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				DriverStation.reportWarning("PEW PEW PEW PEW PEW", false);
       			}
 				break;
 				
 			case SHOOT:
+				_autoShootController.AimWithVision();
 				_shooter.RunShooterFeederReentrant();
 				
 			case UNDEFINED:
@@ -176,7 +183,7 @@ public class HitHopper {
 		
 		// cleanup
 		if(!_isStillRunning) {
-			DriverStation.reportWarning("===== Completed CrossBaseLine Auton =====", false);
+			DriverStation.reportWarning("===== Complete Hit Hopper Auton =====", false);
 		}
 		
 		return _isStillRunning; 

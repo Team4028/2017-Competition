@@ -89,6 +89,7 @@ public class RoboRealmClient {
  	//private Solenoid _gearCamLED;
  	//private Solenoid _shooterCamLED;
  	DigitalOutput _visionLedsRelay;
+ 	private double _estDistance2;
  	
 	//============================================================================================
 	// constructors follow
@@ -100,20 +101,26 @@ public class RoboRealmClient {
     	_rrAPI = new RoboRealmAPI();
     	
     	//Utilities.SimplePingTest(kangarooIPv4Addr);
-    	Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
-    	
-    	// try to connect
-        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo)) {
-        	DriverStation.reportError("Could not connect to RoboRealm!", false);
-        	System.out.println("====> Could not connect to RoboRealm!");
-        	
-        	_isConnected = false;
-        } else {
-        	DriverStation.reportWarning("Connected to RoboRealm!", false);
-        	System.out.println("====> Connected to RoboRealm!");
-        	
-        	_isConnected = true;
-        }
+    	try {
+	    	Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
+	    	// try to connect
+	        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo)) {
+	        	DriverStation.reportError("Could not connect to RoboRealm!", false);
+	        	System.out.println("====> Could not connect to RoboRealm!");
+	        	
+	        	_isConnected = false;
+	        } else {
+	        	DriverStation.reportWarning("Connected to RoboRealm!", false);
+	        	System.out.println("====> Connected to RoboRealm!");
+	        	
+	        	_isConnected = true;
+	        }
+    	}
+    	catch(Exception ex)
+    	{
+    		_isConnected = false;
+    	}
+
         
 		// create instance of the task the timer interrupt will execute
 		//_task = new RoboRealmUpdater();
@@ -124,8 +131,11 @@ public class RoboRealmClient {
 		//_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
 		
 		// start the camera thread
-		Thread visionThread = new Thread(RoboRealmUpdater);
-		visionThread.start();
+		if(_isConnected)
+		{
+			Thread visionThread = new Thread(RoboRealmUpdater);
+			visionThread.start();
+		}
 		
 		//Initialize counter to indicate bad data until proved good
 		_badDataCounter = 10;
@@ -203,51 +213,58 @@ public class RoboRealmClient {
 	        	//_visionLedsRelay.set(true);
 	    		break;
     	}
-    	
-    	if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
-    		System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
-    	}
-    	else {
-    		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
+    	if (_isConnected) {
+			if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
+				System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
+			}
+			else {
+				System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
+			}
+    	} else {
+    		System.out.println("RoboRealm not connected");
     	}
     }
 
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName) {
- 		Boolean isPauseOk = _rrAPI.pause();
- 		
- 		System.out.println("====> Prepare to Switch Program");
- 		
- 		if(isPauseOk) {
-        	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
-        	System.out.println("====> RoboRealm Program Paused succesfully!");
-        } else {
-        	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
-        	System.out.println("====>Error..Could not pause RoboRealm program!");
-        }
- 		
- 		System.out.println("====> Chg Program To: " + pipeLineProgramFullPathName);
- 		
- 		Boolean isSwitchOk = _rrAPI.loadProgram(pipeLineProgramFullPathName);
- 		
- 		if(isSwitchOk) {
-        	//DriverStation.reportError("RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName, false);
-        	System.out.println("====> RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName);
-        } else {
-        	//DriverStation.reportError("Error..Could not switch RoboRealm program!", false);
-        	System.out.println("====> Error..Could not switch RoboRealm program!");
-        }	
- 		
- 		Boolean isResumeOk = _rrAPI.resume();
- 		
- 		if(isResumeOk) {
-        	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
-        	System.out.println("====> RoboRealm Program Resumed succesfully!");
-        } else {
-        	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
-        	System.out.println("====> Error..Could not resume RoboRealm program!");
-        }
+ 		if (_isConnected) {
+			Boolean isPauseOk = _rrAPI.pause();
+			
+			System.out.println("====> Prepare to Switch Program");
+			
+			if(isPauseOk) {
+		    	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
+		    	System.out.println("====> RoboRealm Program Paused succesfully!");
+		    } else {
+		    	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
+		    	System.out.println("====>Error..Could not pause RoboRealm program!");
+		    }
+			
+			System.out.println("====> Chg Program To: " + pipeLineProgramFullPathName);
+			
+			Boolean isSwitchOk = _rrAPI.loadProgram(pipeLineProgramFullPathName);
+			
+			if(isSwitchOk) {
+		    	//DriverStation.reportError("RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName, false);
+		    	System.out.println("====> RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName);
+		    } else {
+		    	//DriverStation.reportError("Error..Could not switch RoboRealm program!", false);
+		    	System.out.println("====> Error..Could not switch RoboRealm program!");
+		    }	
+			
+			Boolean isResumeOk = _rrAPI.resume();
+			
+			if(isResumeOk) {
+		    	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
+		    	System.out.println("====> RoboRealm Program Resumed succesfully!");
+		    } else {
+		    	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
+		    	System.out.println("====> Error..Could not resume RoboRealm program!");
+		    }
+ 		} else {
+ 			System.out.println("RoboRealm not connected");
+ 		}
  	}
  	
 	// update the Dashboard with any Vision specific data values
@@ -269,6 +286,8 @@ public class RoboRealmClient {
 		}
 		
 		SmartDashboard.putString("VIsion", dashboardMsg);
+		String distanceString = String.format("%.2f", _estDistance2);
+		SmartDashboard.putString("VIsion Distance", distanceString);
 	} 	
 	
 	public void UpdateLogData(LogData logData) {
@@ -300,8 +319,8 @@ public class RoboRealmClient {
 	 	    // get multiple variables
 	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
 	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
-	 		_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
-	 	    _callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
+ 	    	_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+ 	    	_callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
 	 	    _newTargetRawData = null;
 	 	    
 	 	    if (_vector==null) {
@@ -333,9 +352,9 @@ public class RoboRealmClient {
 	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
 	 	    	
 	 	    	double estDistance = CalcDistanceUsingPolynomial(_newTargetRawData.HighMiddleY);
-	 	    	double estDistance2 = CalcDistanceUsingCameraAngle(_newTargetRawData.HighMiddleY);
+	 	    	_estDistance2 = CalcDistanceUsingCameraAngle(_newTargetRawData.HighMiddleY);
 	 	    	
-	 	    	_newTargetRawData.EstimatedDistance = estDistance2;
+	 	    	_newTargetRawData.EstimatedDistance = _estDistance2;
 	 	    	
 	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
 	 	
@@ -368,7 +387,7 @@ public class RoboRealmClient {
 		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
 		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
 		    							+ " |DistInches= " + _newTargetRawData.EstimatedDistance
-		    							+ " |DistInchesCA= " + estDistance2
+		    							+ " |DistInchesCA= " + _estDistance2
 		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
 		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
 		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));

@@ -32,7 +32,7 @@ public class AutoShootController {
 	public void EnableGearCam()   { _roboRealm.ChangeToCamera(VISION_CAMERAS.GEAR); } // Change to Gear Camera
 	
 	public void LoadTargetDistanceInInches(int inches) {
-		_shooterTableEntry = _shooterTable.getAutonEntryForDistance(inches);
+		_shooterTableEntry = _shooterTable.getTelopEntryForDistance(inches);
 	}
 	
 	public void RunShooterAtTargetSpeed() {
