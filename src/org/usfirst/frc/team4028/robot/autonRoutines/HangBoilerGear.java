@@ -43,7 +43,7 @@ public class HangBoilerGear {
 		_gearHandler = gearHandler;
 		_hangGearController = hangGear;
 		_trajController = trajController;
-		DriverStation.reportError("Auton Initialized", false);
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -58,7 +58,7 @@ public class HangBoilerGear {
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.BOILER_GEAR, false);
 		_trajController.enable();
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+		DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
 	}
 	
@@ -75,7 +75,7 @@ public class HangBoilerGear {
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
     	} else {
-    		DriverStation.reportError("Zeroed", false);
+    		DriverStation.reportWarning("Zeroed", false);
     		_gearHandler.MoveGearToScorePosition();
     	}
       	
@@ -95,7 +95,7 @@ public class HangBoilerGear {
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			if (!isStillRunning) {
-      				DriverStation.reportError("Done", false);
+      				DriverStation.reportWarning("Done", false);
       			}
       			break;
       			

@@ -30,7 +30,7 @@ public class CrossBaseLine {
 		// these are the subsystems that this auton routine needs to control
 		_gearHandler = gearHandler;
 		_trajController = trajController;
-		DriverStation.reportError("Auton Initialized", false);
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -63,7 +63,7 @@ public class CrossBaseLine {
     		_gearHandler.ZeroGearTiltAxisReentrant();
       	} */
 		if (_trajController.getCurrentSegment() == 1) {
-			DriverStation.reportError(Long.toString(System.currentTimeMillis() - _autonStartedTimeStamp), false);
+			DriverStation.reportWarning(Long.toString(System.currentTimeMillis() - _autonStartedTimeStamp), false);
 		}
       	
 		if (_trajController.onTarget()) {

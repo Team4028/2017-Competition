@@ -66,7 +66,7 @@ public class HangBoilerGearAndShoot {
 			_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
 			break;
 		}
-		DriverStation.reportError("Auton Initialized", false);
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -89,7 +89,7 @@ public class HangBoilerGearAndShoot {
 			break;
 		}
 		_trajController.enable();
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+		DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangBoilerSideGear Auton =====", false);
 	}
 	
@@ -105,7 +105,7 @@ public class HangBoilerGearAndShoot {
       	      		//			and automatically recall it until complete
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
-      	    		DriverStation.reportError("Zeroed", false);
+      	    		DriverStation.reportWarning("Zeroed", false);
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
       			if (_trajController.getCurrentSegment() == 140) {
@@ -114,7 +114,7 @@ public class HangBoilerGearAndShoot {
       			if (_trajController.onTarget()) {
       				_trajController.disable();
       				_trajController.isVisionTrackingEnabled(false);
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+      				DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
@@ -124,9 +124,8 @@ public class HangBoilerGearAndShoot {
       			_autoShootController.RunShooterAtTargetSpeed();
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
       			if (!isStillRunning) {
-      				_autoShootController.InitializeVisionAiming();
       				_autonState = AUTON_STATE.VISION_TURN;
-      				DriverStation.reportError("===> Chg state from RUN_GEAR_SEQUENCE to VISION", false);
+      				DriverStation.reportWarning("===> Chg state from RUN_GEAR_SEQUENCE to VISION", false);
       			}
       			break;
       			
@@ -139,7 +138,7 @@ public class HangBoilerGearAndShoot {
       				
       				// chg state
       				_autonState = AUTON_STATE.SHOOT;
-      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				DriverStation.reportWarning("PEW PEW PEW PEW PEW", false);
       			}
       			break;
       			

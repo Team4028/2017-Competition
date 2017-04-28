@@ -73,7 +73,7 @@ public class HitHopper {
 			_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
 			break;
 		}
-		DriverStation.reportError("Auton Initialized", false);
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -116,7 +116,7 @@ public class HitHopper {
       	      		//			and automatically recall it until complete
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
-      	    		DriverStation.reportError("Gear Tilt Zero completed!", false);
+      	    		DriverStation.reportWarning("Gear Tilt Zero completed!", false);
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
 				

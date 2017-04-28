@@ -56,7 +56,7 @@ public class HangCenterGear {
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+		//DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
 	}
 	
@@ -76,7 +76,7 @@ public class HangCenterGear {
       	      		//			and automatically recall it until complete
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
-      	    		DriverStation.reportError("Zeroed", false);
+      	    		DriverStation.reportWarning("Zeroed", false);
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
       		
@@ -85,7 +85,7 @@ public class HangCenterGear {
       				
       				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       				_trajController.enable();
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+      				DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
@@ -96,7 +96,7 @@ public class HangCenterGear {
       			if (!isStillRunning && _trajController.onTarget()) {
       				_trajController.disable();
       				
-      				DriverStation.reportError("Done", false);
+      				DriverStation.reportWarning("Done", false);
       			}
       			break;
       			

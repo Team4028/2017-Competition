@@ -28,7 +28,7 @@ public class Utilities
 			// try to ping the remote server
 			if(inet.isReachable(PING_TIMEOUT_MSEC))
 	        {
-				DriverStation.reportError("CAN Ping Kangaroo [" + hostNameOrIPv4Addr + "]", false);
+				DriverStation.reportWarning("CAN Ping Kangaroo [" + hostNameOrIPv4Addr + "]", false);
 				isPingable = true;
 	        }
 	        else

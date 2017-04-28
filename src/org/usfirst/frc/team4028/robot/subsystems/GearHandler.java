@@ -171,11 +171,11 @@ public class GearHandler {
     			break;
     			
     		case TIMEOUT:
-    			DriverStation.reportError("Gear Tilt Zero Timed Out", false);
+    			DriverStation.reportWarning("Gear Tilt Zero Timed Out", false);
     			break;
     			
     		case UNDEFINED:
-    			DriverStation.reportError("Gear Tilt Zero State Undefined", false);
+    			DriverStation.reportWarning("Gear Tilt Zero State Undefined", false);
     			break;
     	}
     }

@@ -73,4 +73,8 @@ public class ChassisAutoAimController {
 	public double currentHeading() {
 		return _navX.getYaw();
 	}
+	
+	public void ChassisFullStop() {
+		_chassis.FullStop();
+	}
 }

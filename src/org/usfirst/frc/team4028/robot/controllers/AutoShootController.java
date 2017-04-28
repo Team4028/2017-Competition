@@ -51,7 +51,8 @@ public class AutoShootController {
 		_shooter.CalcAutomaticShooter(_roboRealm.get_DistanceToBoilerInches());
 	}
 	
-	public void InitializeVisionAiming() {
+	public void ChassisFullStop() {
+		_chassisAutoAim.ChassisFullStop();
 	}
 	
 	public void AimWithVision() {

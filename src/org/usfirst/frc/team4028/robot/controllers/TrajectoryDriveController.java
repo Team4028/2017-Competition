@@ -262,12 +262,12 @@ public class TrajectoryDriveController {
 	
 	public void update(int currentSegment) {
 		if (!_isEnabled) {
-			DriverStation.reportError("Not Enabled", false);
+			DriverStation.reportWarning("Not Enabled", false);
 			_chassis.TankDrive(0, 0);
 		}
 		
 		if (onTarget()) {
-			DriverStation.reportError("At Target", false);
+			DriverStation.reportWarning("At Target", false);
 			_chassis.TankDrive(0, 0);
 		} else {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
@@ -384,7 +384,7 @@ public class TrajectoryDriveController {
 	
 	public void OutputToSmartDashboard() {
 		if(_roboRealm.get_isVisionDataValid()) {
-			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
+			SmartDashboard.putNumber("Vision ", _roboRealm.get_Angle());
 		}
 		
 		SmartDashboard.putNumber("Motor Output", _leftOutput);

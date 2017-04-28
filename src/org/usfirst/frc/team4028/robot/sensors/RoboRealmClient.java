@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -451,12 +452,12 @@ public class RoboRealmClient {
     // this method uses the actual camera angle to estimate the distance
     private double CalcDistanceUsingCameraAngle(double highMiddleYInPixels)
     {
-    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 23.5672121;			// 23.5645549; 
+    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 24.1648884;	//23.5672121;			// 23.5645549; 
     	final double TARGET_HEIGHT_IN_INCHES = 87.875;					// 87.875; 	
-    	final double SENSOR_HEIGHT_PIXELS = 477.511871;					// 479.115486; 
-    	final double FOCAL_LENGTH_IN_INCHES = 0.13916669;					// 0.14362022; 
-    	final double OFFSET_0_IN_INCHES = 9.43578495;						// 9.99997139; 	
-    	final double OFFSET_1_IN_INCHES = 0.13906082;						// 0.1409929;
+    	final double SENSOR_HEIGHT_PIXELS = 469.009;	//477.511871;					// 479.115486; 
+    	final double FOCAL_LENGTH_IN_INCHES = 0.15015719;	//0.13916669;			// 0.14362022; 
+    	final double OFFSET_0_IN_INCHES = 6.5981588; //9.43578495;						// 9.99997139; 	
+    	final double OFFSET_1_IN_INCHES = 0.19451439;	//0.13906082;						// 0.1409929;
     	
      	final double CAMERA_ANGLE_IN_DEGREES = 38.76;	// <====== SET ME BASED ON CALIB PROCEDURE ============
 
@@ -554,13 +555,16 @@ public class RoboRealmClient {
             while(!Thread.interrupted()) {            	
             	update();
             	        		
+
+				Timer.delay(POLLING_CYCLE_IN_MSEC*0.001);
+				
         		// sleep each cycle to avoid Robot Code not updating often enough issues
-        		try {
-					Thread.sleep(POLLING_CYCLE_IN_MSEC);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+        		//try {
+				//	Thread.sleep(POLLING_CYCLE_IN_MSEC);
+				//} catch (InterruptedException e) {
+				//	// TODO Auto-generated catch block
+				//	e.printStackTrace();
+				//}
             }
 	            	
 		}

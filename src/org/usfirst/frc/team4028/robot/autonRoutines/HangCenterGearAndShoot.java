@@ -34,8 +34,8 @@ public class HangCenterGearAndShoot {
 	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 40.0; 
 
 	private int _targetShootingDistanceInInches;
-	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 150;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 147;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 147;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 144;
 
 	private enum AUTON_STATE {
 		UNDEFINED, 
@@ -79,7 +79,7 @@ public class HangCenterGearAndShoot {
 				_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
 				break;
 		}
-		DriverStation.reportError("Auton Initialized", false);
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -101,7 +101,7 @@ public class HangCenterGearAndShoot {
 		// chg vision camera to Boiler
 		_autoShootController.EnableBoilerCam();
 		
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+		DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
 	}
 	
@@ -117,7 +117,7 @@ public class HangCenterGearAndShoot {
       	      		//			and automatically recall it until complete
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
-      	    		DriverStation.reportError("Gear Tilt Zero completed!", false);
+      	    		DriverStation.reportWarning("Gear Tilt Zero completed!", false);
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
       			
@@ -129,12 +129,12 @@ public class HangCenterGearAndShoot {
       					_trajController.loadProfile(MOTION_PROFILE.J_TURN, false);
       				}
       				_trajController.enable();
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+      				DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				
       				// chg state
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE_AND_MOVE_BACK;
-      				DriverStation.reportError("===> Chg state from MOVE_TO_TARGET to RUN_GEAR_SEQUENCE", false);
+      				DriverStation.reportWarning("===> Chg state from MOVE_TO_TARGET to RUN_GEAR_SEQUENCE", false);
       			}
       			break;
       			
@@ -152,7 +152,7 @@ public class HangCenterGearAndShoot {
       				
       				// chg state
       				_autonState = AUTON_STATE.VISION_TURN;
-      				DriverStation.reportError("===> Chg state from RUN_GEAR_SEQUENCE to MOVE_BACK", false);
+      				DriverStation.reportWarning("===> Chg state from RUN_GEAR_SEQUENCE to MOVE_BACK", false);
       			}
       			break;
       			
@@ -167,7 +167,7 @@ public class HangCenterGearAndShoot {
       				
       				// chg state
       				_autonState = AUTON_STATE.VISION_TURN;
-      				DriverStation.reportError("===> Chg state from GYRO_TURN to VISION_TURN", false);
+      				DriverStation.reportWarning("===> Chg state from GYRO_TURN to VISION_TURN", false);
       			}
       			break;
       			
@@ -181,13 +181,14 @@ public class HangCenterGearAndShoot {
       				
       				// chg state
       				_autonState = AUTON_STATE.SHOOT;
-      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				DriverStation.reportWarning("PEW PEW PEW PEW PEW", false);
       			}
       			
       			break;
       			
       		case SHOOT:
       			_autoShootController.RunShooterAtTargetSpeed();
+      			_autoShootController.ChassisFullStop();
       			// start shooter feeder motors reentrant function
       			_shooter.RunShooterFeederReentrant();
       			break;

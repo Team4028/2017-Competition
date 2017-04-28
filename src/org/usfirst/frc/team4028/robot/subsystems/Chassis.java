@@ -123,6 +123,7 @@ public class Chassis {
     	//====================
     	// Arcade Drive configured to drive in "2 motor per side setup, other motors follow master as slaves 
     	_robotDrive = new RobotDrive(_leftDriveMaster, _rightDriveMaster);
+    	_robotDrive.setSafetyEnabled(false);
     	
     	EnableBrakeMode(false); // Disable motors on drive talons
     	EnablePercentVBusMode(); // Open loop throttle

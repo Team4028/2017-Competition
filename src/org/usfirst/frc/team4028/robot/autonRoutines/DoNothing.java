@@ -20,12 +20,12 @@ public class DoNothing {
 	//============================================================================================
 	// execute any logic to initialize this object before ExecuteRentrant is called
 	public void Initialize() {
-		DriverStation.reportError("===== Entering DoNothing Auton =====", false);
+		DriverStation.reportWarning("===== Entering DoNothing Auton =====", false);
 	}
 	
 	public boolean ExecuteRentrant() {
 		// cleanup
-		DriverStation.reportError("===== Completed DoNothing Auton =====", false);
+		DriverStation.reportWarning("===== Completed DoNothing Auton =====", false);
 		
 		return false; 
 	}
