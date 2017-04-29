@@ -32,7 +32,12 @@ public class AutoShootController {
 	public void EnableGearCam()   { _roboRealm.ChangeToCamera(VISION_CAMERAS.GEAR); } // Change to Gear Camera
 	
 	public void LoadTargetDistanceInInches(int inches) {
-		_shooterTableEntry = _shooterTable.getTelopEntryForDistance(inches);
+		//_shooterTableEntry = _shooterTable.getTelopEntryForDistance(inches);
+		_shooter.CalcAutomaticShooter(inches);
+	}
+	
+	public void LoadTargetDistanceUsingVision() {
+		_shooter.CalcAutomaticShooter(_roboRealm.get_DistanceToBoilerInches());
 	}
 	
 	public void RunShooterAtTargetSpeed() {
@@ -55,9 +60,9 @@ public class AutoShootController {
 		_chassisAutoAim.ChassisFullStop();
 	}
 	
-	public void AimWithVision() {
-		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/3.5));
-		if (Math.abs(_roboRealm.get_Angle()/1.5226) < _visionAimingDeadband) { // On target if under vision aiming deadband
+	public void AimWithVision(double bias) {
+		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/3.5) + bias);
+		if (Math.abs(_roboRealm.get_Angle()/1.5226 + bias) < _visionAimingDeadband) { // On target if under vision aiming deadband
 			_isOnTarget = true;
 		} else {
 			_isOnTarget = false;
@@ -71,7 +76,7 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 100) && _isOnTarget && _isShooterAtTargetSpeed && _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 600) && _isOnTarget && _isShooterAtTargetSpeed && _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
 			return true;
 		} else {
 			return false;

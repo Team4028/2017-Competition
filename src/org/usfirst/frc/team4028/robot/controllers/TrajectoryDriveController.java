@@ -61,8 +61,7 @@ public class TrajectoryDriveController {
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
 		_roboRealm = roboRealm;
-		startTrajectoryController();
-		setIsFeedbackDisabled(true);
+		setIsFeedbackDisabled(false);
 	}
 	
 	public void configureIsHighGear(boolean isHighGear) {
@@ -71,8 +70,8 @@ public class TrajectoryDriveController {
 			_rightFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0);
 			_kTurnGyro = -0.01;
 		} else {
-			_leftFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
-			_rightFollower.configure(0.2,  0.0,  0.001,  0.174,  0.025);
+			_leftFollower.configure(0.2,  0.0,  0.0,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
+			_rightFollower.configure(0.2,  0.0,  0.0,  0.174,  0.025);
 			_kTurnGyro = -0.013;
 		}
 	}

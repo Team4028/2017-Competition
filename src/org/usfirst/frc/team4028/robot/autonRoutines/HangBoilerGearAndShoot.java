@@ -130,7 +130,7 @@ public class HangBoilerGearAndShoot {
       			break;
       			
       		case VISION_TURN:
-      			_autoShootController.AimWithVision();
+      			_autoShootController.AimWithVision(0);
       			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors

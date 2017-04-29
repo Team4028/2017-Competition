@@ -264,20 +264,21 @@ public class ShooterTable {
 		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
 		//======================================================================================
 		// Worlds
+		/*
 		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .53, -3125, -2825, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .60, -3250, -2950, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .62, -3400, -3100, true));
 		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .65, -3600, -3300, true));
 		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .68, -3750, -3450, false));
+		*/
 		
 		// Cleveland
-		/*
 		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3400, -3100, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
-		*/
+		
 		
 		
 		// Reference

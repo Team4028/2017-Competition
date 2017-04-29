@@ -30,7 +30,7 @@ public class HitHopper {
 	
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 124;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 160;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 163;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
@@ -161,7 +161,7 @@ public class HitHopper {
 				break;
 				
 			case VISION_TURN:
-				_autoShootController.AimWithVision();
+				_autoShootController.AimWithVision(0);
       			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
@@ -174,7 +174,7 @@ public class HitHopper {
 				break;
 				
 			case SHOOT:
-				_autoShootController.AimWithVision();
+				_autoShootController.AimWithVision(0);
 				_shooter.RunShooterFeederReentrant();
 				
 			case UNDEFINED:
@@ -191,6 +191,7 @@ public class HitHopper {
 	
 	public void Disabled() {
 		_trajController.disable();
+		_trajController.stopTrajectoryController();
 	}
 	
 	//============================================================================================

@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.opencv.core.Mat;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
@@ -23,7 +26,6 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -56,6 +58,7 @@ public class RoboRealmClient {
  	
  	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
  	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
+ 	private static final int MAX_LOCK_WAIT_TIME_MSEC = 5;
 
  	private static final int EXPECTED_ARRAY_SIZE = 9;
  	private static final int EXPECTED_GEAR_BLOB_COUNT = 2;
@@ -74,23 +77,23 @@ public class RoboRealmClient {
  	
  	
  	// working variables raised to class level to reduce GC pressure inside update task
- 	private Dimension _fovDimensions;
- 	private Vector _vector;
+ 	private Lock lock;
+ 	//private boolean _isVisionDataValid;
+ 	
  	private long _callElapsedTimeMSec;
  	private long _lastCallTimestamp;
- 	private RawImageData _newTargetRawData;
- 	private double _fovXCenterPoint;
- 	private double _targetXCenterPoint;
- 	private double _fovCenterToTargetXAngleRawDegrees;
- 	private int _badDataCounter;
+ 	private RawImageData _pollingThreadPublicTargetRawData;
+ 	private RawImageData _pollingThreadPrivateTargetRawData;
+ 	//private double _fovXCenterPoint;
+ 	//private double _targetXCenterPoint;
+ 	//private int _badDataCounter;
  	private long _lastDebugWriteTimeMSec;
- 	private final Object _targetDataMutex;
+ 	//private final Object _targetDataMutex;
  	private int _expectedBlobCount;
- 	private double _degreesFromCenter;
+ 	//private double _degreesFromCenter;
  	//private Solenoid _gearCamLED;
  	//private Solenoid _shooterCamLED;
  	DigitalOutput _visionLedsRelay;
- 	private double _estDistance2;
  	
 	//============================================================================================
 	// constructors follow
@@ -98,30 +101,28 @@ public class RoboRealmClient {
     public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int visioLEDsDIOPort)
     		//int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
     {        	
+    	
     	// create an instance of the RoboRealm API client
     	_rrAPI = new RoboRealmAPI();
     	
     	//Utilities.SimplePingTest(kangarooIPv4Addr);
-    	try {
-	    	Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
-	    	// try to connect
-	        if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo)) {
-	        	DriverStation.reportError("Could not connect to RoboRealm!", false);
-	        	System.out.println("====> Could not connect to RoboRealm!");
-	        	
-	        	_isConnected = false;
-	        } else {
-	        	DriverStation.reportWarning("Connected to RoboRealm!", false);
-	        	System.out.println("====> Connected to RoboRealm!");
-	        	
-	        	_isConnected = true;
-	        }
+    	boolean isPingable = Utilities.RobustPortTest(kangarooIPv4Addr, rrPortNo);
+    	
+    	_isConnected = false;
+    	// try to connect if pingable
+    	if (isPingable) {
+		    if (!_rrAPI.connect(kangarooIPv4Addr, rrPortNo)) {
+		    	DriverStation.reportError("Could not connect to RoboRealm!", false);
+		    	System.out.println("====> Could not connect to RoboRealm!");
+		    	
+		    	_isConnected = false;
+		    } else {
+		    	DriverStation.reportWarning("Connected to RoboRealm!", false);
+		    	System.out.println("====> Connected to RoboRealm!");
+		    	
+		    	_isConnected = true;
+		    }
     	}
-    	catch(Exception ex)
-    	{
-    		_isConnected = false;
-    	}
-
         
 		// create instance of the task the timer interrupt will execute
 		//_task = new RoboRealmUpdater();
@@ -131,17 +132,14 @@ public class RoboRealmClient {
 		//_updaterTimer = new java.util.Timer();
 		//_updaterTimer.scheduleAtFixedRate(_task, 0, POLLING_CYCLE_IN_MSEC);
 		
-		// start the camera thread
-		if(_isConnected)
-		{
+		if(_isConnected) {
+			// start the camera thread
 			Thread visionThread = new Thread(RoboRealmUpdater);
 			visionThread.start();
 		}
 		
 		//Initialize counter to indicate bad data until proved good
-		_badDataCounter = 10;
-		
-		_targetDataMutex = new Object();
+		//_badDataCounter = 10;
 		
 		// relay: https://wpilib.screenstepslive.com/s/4485/m/13809/l/599706-on-off-control-of-motors-and-other-mechanisms-relays
 		//TODO: create the relay object
@@ -150,6 +148,14 @@ public class RoboRealmClient {
 		//_shooterCamLED = new Solenoid(PCMCanAddr, shooterCamLEDPCMPort);
 		//_visionLedsRelay = new DigitalOutput(visioLEDsDIOPort);
 		//TurnAllVisionLEDsOff();
+		
+		if (_pollingThreadPrivateTargetRawData == null) {
+ 	 		_pollingThreadPrivateTargetRawData = new RawImageData();
+ 	 		_pollingThreadPrivateTargetRawData.FOVDimensions = new Dimension();
+ 	 	}
+		
+		// create lock object
+		this.lock = new ReentrantLock();
     }
     
 	//============================================================================================
@@ -214,57 +220,61 @@ public class RoboRealmClient {
 	        	//_visionLedsRelay.set(true);
 	    		break;
     	}
-    	if (_isConnected) {
-			if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
-				System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
-			}
-			else {
-				System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
-			}
-    	} else {
-    		System.out.println("RoboRealm not connected");
+    	
+    	if(_isConnected)
+    	{
+	    	if (_rrAPI.setVariable("CamType", _currentVisionCameraName)) {
+	    		System.out.println("====> RoboRealm Camera switched to " + _currentVisionCameraName);
+	    	}
+	    	else {
+	    		System.out.println("====> FAILED changing RoboRealm Camera to " + _currentVisionCameraName);
+	    	}
     	}
+ 		else {
+ 			System.out.println("====> Warning..RoboRealm not connected!");
+ 		}
     }
 
     
  	// this method switches the currently running pipeline program
  	public void SwitchProgram(String pipeLineProgramFullPathName) {
- 		if (_isConnected) {
-			Boolean isPauseOk = _rrAPI.pause();
-			
-			System.out.println("====> Prepare to Switch Program");
-			
-			if(isPauseOk) {
-		    	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
-		    	System.out.println("====> RoboRealm Program Paused succesfully!");
-		    } else {
-		    	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
-		    	System.out.println("====>Error..Could not pause RoboRealm program!");
-		    }
-			
-			System.out.println("====> Chg Program To: " + pipeLineProgramFullPathName);
-			
-			Boolean isSwitchOk = _rrAPI.loadProgram(pipeLineProgramFullPathName);
-			
-			if(isSwitchOk) {
-		    	//DriverStation.reportError("RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName, false);
-		    	System.out.println("====> RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName);
-		    } else {
-		    	//DriverStation.reportError("Error..Could not switch RoboRealm program!", false);
-		    	System.out.println("====> Error..Could not switch RoboRealm program!");
-		    }	
-			
-			Boolean isResumeOk = _rrAPI.resume();
-			
-			if(isResumeOk) {
-		    	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
-		    	System.out.println("====> RoboRealm Program Resumed succesfully!");
-		    } else {
-		    	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
-		    	System.out.println("====> Error..Could not resume RoboRealm program!");
-		    }
- 		} else {
- 			System.out.println("RoboRealm not connected");
+ 		if(_isConnected){
+	 		Boolean isPauseOk = _rrAPI.pause();
+	 		
+	 		System.out.println("====> Prepare to Switch Program");
+	 		
+	 		if(isPauseOk) {
+	        	//DriverStation.reportError("RoboRealm Program Paused successfully!", false);
+	        	System.out.println("====> RoboRealm Program Paused succesfully!");
+	        } else {
+	        	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
+	        	System.out.println("====>Error..Could not pause RoboRealm program!");
+	        }
+	 		
+	 		System.out.println("====> Chg Program To: " + pipeLineProgramFullPathName);
+	 		
+	 		Boolean isSwitchOk = _rrAPI.loadProgram(pipeLineProgramFullPathName);
+	 		
+	 		if(isSwitchOk) {
+	        	//DriverStation.reportError("RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName, false);
+	        	System.out.println("====> RoboRealm Program Switched succesfully to: " + pipeLineProgramFullPathName);
+	        } else {
+	        	//DriverStation.reportError("Error..Could not switch RoboRealm program!", false);
+	        	System.out.println("====> Error..Could not switch RoboRealm program!");
+	        }	
+	 		
+	 		Boolean isResumeOk = _rrAPI.resume();
+	 		
+	 		if(isResumeOk) {
+	        	//DriverStation.reportError("RoboRealm Program Paused succesfully!", false);
+	        	System.out.println("====> RoboRealm Program Resumed succesfully!");
+	        } else {
+	        	//DriverStation.reportError("Error..Could not pause RoboRealm program!", false);
+	        	System.out.println("====> Error..Could not resume RoboRealm program!");
+	        }
+ 		}
+ 		else {
+ 			System.out.println("====> Warning..RoboRealm not connected!");
  		}
  	}
  	
@@ -272,37 +282,37 @@ public class RoboRealmClient {
 	public void OutputToSmartDashboard() {
 		String dashboardMsg = "";
 		
-		if( get_isVisionDataValid()){
-			synchronized (_targetDataMutex) {
-				dashboardMsg = "Camera= " + _newTargetRawData.CameraType
-								+ " Angle= " + _fovCenterToTargetXAngleRawDegrees 
-								+ " MidHiY= " +  _newTargetRawData.HighMiddleY
-								+ " mSec=" + _newTargetRawData.ResponseTimeMSec
-								+ " Blob Count= " + _newTargetRawData.BlobCount 
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+		
+		if( publicTargetRawData.IsVisionDataValid){
+				dashboardMsg = "Camera= " + publicTargetRawData.CameraType
+								+ " Angle= " + publicTargetRawData.FovCenterToTargetXAngleRawDegrees
+								+ " MidHiY= " +  publicTargetRawData.HighMiddleY
+								+ " mSec=" + publicTargetRawData.ResponseTimeMSec
+								+ " Blob Count= " + publicTargetRawData.BlobCount 
 								+ " Is on Gear Target= " + Boolean.toString(get_isInGearHangPosition());
 				
-			}
 		} else {
 			dashboardMsg = "Vision DATA NOT VALID";
 		}
 		
 		SmartDashboard.putString("VIsion", dashboardMsg);
-		String distanceString = String.format("%.2f", _estDistance2);
+		String distanceString = String.format("%.2f", publicTargetRawData.EstimatedDistance);
 		SmartDashboard.putString("VIsion Distance", distanceString);
 	} 	
 	
 	public void UpdateLogData(LogData logData) {
-		synchronized (_targetDataMutex) {
+		RawImageData publicTargetRawData = get_newTargetRawData();
+		
+		if( publicTargetRawData.IsVisionDataValid){ 
 			logData.AddData("RR:Camera", String.format("%s", _currentVisionCameraName.toString()));
-			logData.AddData("RR:Angle", String.format("%.2f", _fovCenterToTargetXAngleRawDegrees));
-			if(_newTargetRawData != null)
-			{
-				logData.AddData("RR:HiMidY", String.format("%.2f", _newTargetRawData.HighMiddleY));	
-			}
-			else {
-				logData.AddData("RR:HiMidY", "N/A");	
-			}
-				
+			logData.AddData("RR:Angle", String.format("%.2f", publicTargetRawData.FovCenterToTargetXAngleRawDegrees));
+			logData.AddData("RR:HiMidY", String.format("%.2f", publicTargetRawData.HighMiddleY));	
+		}
+		else {
+			logData.AddData("RR:Camera",  "N/A");
+			logData.AddData("RR:Angle",  "N/A");
+			logData.AddData("RR:HiMidY", "N/A");	
 		}
 	}
 	
@@ -312,108 +322,151 @@ public class RoboRealmClient {
  	
 	// poll RoboRealm to read current values
  	public void update() { 
- 	    synchronized (_targetDataMutex) {
-	 		
-	 		// get the Field Of View Dimensions
-	 		//_fovDimensions = _rrAPI.getDimension();
-	 		
-	 	    // get multiple variables
-	 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
-	 	    //_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT");
- 	    	_vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
- 	    	_callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
-	 	    _newTargetRawData = null;
-	 	    
-	 	    if (_vector==null) {
-	 	    	// write 1st 10 errors then every 50
-	 	    	if(_badDataCounter <= 10 || _badDataCounter % 50 == 0) {
-	 	    		System.out.println("Error in GetVariables, did not return any results [" + _badDataCounter + "]");
-	 	    	}
-	 	    	
-	 	    	//Increment bad data counter
-	 	    	_badDataCounter += 1;
-	 	    }
-	 	    else if(_vector.size() == EXPECTED_ARRAY_SIZE) {
-	 	    	_newTargetRawData = new RawImageData();
-	 	    	
-	 	    	// parse the results and build the image data
-	 	    	_newTargetRawData.Timestamp = new Date().getTime();
-	 	    	_newTargetRawData.CameraType = (String)_vector.elementAt(CAMERA_TYPE_IDX);	    	
-	 	    	_newTargetRawData.SouthWestX = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_X_IDX));
-	 	    	_newTargetRawData.SouthWestY = Double.parseDouble((String)_vector.elementAt(SOUTHWEST_Y_IDX));
-	 	    	_newTargetRawData.SouthEastX = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_X_IDX));
-	 	    	_newTargetRawData.SouthEastY = Double.parseDouble((String)_vector.elementAt(SOUTHEAST_Y_IDX));
-	 	    	_newTargetRawData.HighMiddleY = Double.parseDouble((String)_vector.elementAt(HIGH_MIDDLE_Y_IDX));
-	 	    	
-	 	    	_newTargetRawData.BlobCount = Integer.parseInt((String)_vector.elementAt(BLOB_COUNT_IDX));
-	 	    	
-	 	    	_fovDimensions = new Dimension();
-	 	    	_fovDimensions.width = Double.parseDouble((String)_vector.elementAt(RAW_WIDTH_IDX));
-	 	    	_fovDimensions.height = Double.parseDouble((String)_vector.elementAt(RAW_HEIGHT_IDX));
-	 	    	_newTargetRawData.FOVDimensions = _fovDimensions;
-	 	    	
-	 	    	double estDistance = CalcDistanceUsingPolynomial(_newTargetRawData.HighMiddleY);
-	 	    	_estDistance2 = CalcDistanceUsingCameraAngle(_newTargetRawData.HighMiddleY);
-	 	    	
-	 	    	_newTargetRawData.EstimatedDistance = _estDistance2;
-	 	    	
-	 	    	_newTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
-	 	
-	 	    	// debug
-	 	    	/*
-	 	    	System.out.println("FOVh: " + _fovDimensions.height 
-									+ " FOVw: " + _fovDimensions.width 
-									+ " SWx: " + _newTargetRawData.SouthWestX 
-	 	    						+ " SWy: " + _newTargetRawData.SouthWestY 
-	 	    						+ " SEx: " + _newTargetRawData.SouthEastX 
-	 	    						+ " SEy: " + _newTargetRawData.SouthEastY
-	 	    						+ " mSec: " + _newTargetRawData.ResponseTimeMSec);    	
-	 	    	*/
-	 	    	
-	 	    	// calc the horiz center of the image
-	 	    	_fovXCenterPoint = _fovDimensions.width / 2.0;
-	 	    	
-	 	    	// calc the target center point
-	 	    	_targetXCenterPoint = Math.round(((_newTargetRawData.SouthEastX + _newTargetRawData.SouthWestX) / 2.0) + _cameraCalibrationFactor);
-	 	    	
-	 	    	_fovCenterToTargetXAngleRawDegrees = ((_fovXCenterPoint - _targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / _fovDimensions.width;
-	 	    	
-	 	    	// round to 2 decimal places
-	 	    	_fovCenterToTargetXAngleRawDegrees = Math.round(_fovCenterToTargetXAngleRawDegrees * 100) / 100.0;	
-	 	    	
-	 	    	// limit spamming
-	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
-		    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
-		    							+ " |Camera= " + _newTargetRawData.CameraType 
-		    							+ " |Angle= " + _fovCenterToTargetXAngleRawDegrees 
-		    							+ " |HiMidY= " + _newTargetRawData.HighMiddleY
-		    							+ " |DistInches= " + _newTargetRawData.EstimatedDistance
-		    							+ " |DistInchesCA= " + _estDistance2
-		    							+ " |mSec=" + _newTargetRawData.ResponseTimeMSec
-		    							+ " |BlobCnt= " + _newTargetRawData.BlobCount 
-		    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
-		    		// reset last time
-		    		_lastDebugWriteTimeMSec = new Date().getTime();
-	 	    	}
-	 	    	
-	 	    	//Reset the counter 
-	 	    	_badDataCounter = 0;
-	 	    	_lastCallTimestamp = new Date().getTime();
-	 	    } else {
-	 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
-		 	    	System.out.println("Unexpected Array Size: " + _vector.size());
-		    		// reset last time
-		    		_lastDebugWriteTimeMSec = new Date().getTime();
-	 	    	}
-	 	    	
-	 	    	_newTargetRawData = null;
-	
-	 	    	//Increment bad data counter
-	 	    	_badDataCounter += 1;
-	 	    }
+ 		// get the Field Of View Dimensions
+ 		//_fovDimensions = _rrAPI.getDimension();
+ 	 	Vector vector;
+ 	 	RawImageData pollingThreadWorkingTargetRawData;
+ 	 	
+ 	    // get data from RoboRealm
+ 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
+ 	    try {
+ 	    	vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
+ 	    }
+ 	    catch(Exception ex) {
+ 	    	vector = null;
  	    }
  	    
-
+ 	    _callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
+ 
+ 	    if (vector==null) {
+ 	    	//Increment bad data counter 	    	
+ 			try {
+ 				if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
+ 					_pollingThreadPrivateTargetRawData.BadDataCounter += 1; 
+ 				}
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}finally{
+ 				//release lock
+ 				lock.unlock();
+ 			}
+ 	    	
+ 	    	// write 1st 10 errors then every 50
+ 	    	if(_pollingThreadPrivateTargetRawData.BadDataCounter <= 10 
+ 	    			|| _pollingThreadPrivateTargetRawData.BadDataCounter % 50 == 0) {
+ 	    		System.out.println("Error in GetVariables, did not return any results [" 
+ 	    							+ _pollingThreadPrivateTargetRawData.BadDataCounter + "]");
+ 	    	}
+ 	    }
+ 	    else if(vector.size() == EXPECTED_ARRAY_SIZE) {
+ 	    	pollingThreadWorkingTargetRawData = new RawImageData();
+ 	    	
+ 	    	// parse the results and build the image data
+ 	    	pollingThreadWorkingTargetRawData.Timestamp = new Date().getTime();
+ 	    	pollingThreadWorkingTargetRawData.CameraType = (String)vector.elementAt(CAMERA_TYPE_IDX);	    	
+ 	    	pollingThreadWorkingTargetRawData.SouthWestX = Double.parseDouble((String)vector.elementAt(SOUTHWEST_X_IDX));
+ 	    	pollingThreadWorkingTargetRawData.SouthWestY = Double.parseDouble((String)vector.elementAt(SOUTHWEST_Y_IDX));
+ 	    	pollingThreadWorkingTargetRawData.SouthEastX = Double.parseDouble((String)vector.elementAt(SOUTHEAST_X_IDX));
+ 	    	pollingThreadWorkingTargetRawData.SouthEastY = Double.parseDouble((String)vector.elementAt(SOUTHEAST_Y_IDX));
+ 	    	pollingThreadWorkingTargetRawData.HighMiddleY = Double.parseDouble((String)vector.elementAt(HIGH_MIDDLE_Y_IDX));
+ 	    	
+ 	    	pollingThreadWorkingTargetRawData.BlobCount = Integer.parseInt((String)vector.elementAt(BLOB_COUNT_IDX));
+ 	    	
+ 	    	Dimension fovDimensions = new Dimension();
+ 	    	fovDimensions.width = Double.parseDouble((String)vector.elementAt(RAW_WIDTH_IDX));
+ 	    	fovDimensions.height = Double.parseDouble((String)vector.elementAt(RAW_HEIGHT_IDX));
+ 	    	pollingThreadWorkingTargetRawData.FOVDimensions = fovDimensions;
+ 	    	
+ 	    	double estDistance = CalcDistanceUsingPolynomial(pollingThreadWorkingTargetRawData.HighMiddleY);
+ 	    	double estDistance2 = CalcDistanceUsingCameraAngle(pollingThreadWorkingTargetRawData.HighMiddleY);
+ 	    	
+ 	    	pollingThreadWorkingTargetRawData.EstimatedDistance = estDistance2;
+ 	    	
+ 	    	pollingThreadWorkingTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
+ 	
+ 	    	// calc the horiz center of the image
+ 	    	double fovXCenterPoint = fovDimensions.width / 2.0;
+ 	    	
+ 	    	// calc the target center point
+ 	    	double targetXCenterPoint = Math.round(((pollingThreadWorkingTargetRawData.SouthEastX 
+ 	    			+ pollingThreadWorkingTargetRawData.SouthWestX) / 2.0) + _cameraCalibrationFactor);
+ 	    	
+ 	    	double fovCenterToTargetXAngleRawDegrees = ((fovXCenterPoint - targetXCenterPoint) * CAMERA_FOV_HORIZONTAL_DEGREES) / fovDimensions.width;
+ 	    	
+ 	    	// round to 2 decimal places
+ 	    	fovCenterToTargetXAngleRawDegrees = Math.round(fovCenterToTargetXAngleRawDegrees * 100) / 100.0;	
+ 	    
+ 	    	pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees = fovCenterToTargetXAngleRawDegrees;
+ 	    	
+ 	    	pollingThreadWorkingTargetRawData.IsVisionDataValid = true;
+ 	    	
+ 	    	// limit spamming
+ 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+	    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
+	    							+ " |Camera= " + pollingThreadWorkingTargetRawData.CameraType 
+	    							+ " |Angle= " + fovCenterToTargetXAngleRawDegrees 
+	    							+ " |HiMidY= " + pollingThreadWorkingTargetRawData.HighMiddleY
+	    							+ " |DistInches= " + pollingThreadWorkingTargetRawData.EstimatedDistance
+	    							+ " |DistInchesCA= " + estDistance2
+	    							+ " |mSec=" + pollingThreadWorkingTargetRawData.ResponseTimeMSec
+	    							+ " |BlobCnt= " + pollingThreadWorkingTargetRawData.BlobCount 
+	    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
+	    		// reset last time
+	    		_lastDebugWriteTimeMSec = new Date().getTime();
+ 	    	}
+ 	    	
+ 	    	//Reset the counter 
+ 	    	pollingThreadWorkingTargetRawData.BadDataCounter = 0;
+ 	    	
+ 	    	// ================================================================================
+ 	    	// thread safe copy thread local to public holding lock as short a time as possible
+ 	    	// ================================================================================
+ 			try {
+ 				if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
+ 					// get current values from polling thread
+ 					_pollingThreadPrivateTargetRawData = new RawImageData();
+ 					_pollingThreadPrivateTargetRawData.BlobCount = pollingThreadWorkingTargetRawData.BlobCount;
+ 					_pollingThreadPrivateTargetRawData.CameraType = pollingThreadWorkingTargetRawData.CameraType;
+ 					_pollingThreadPrivateTargetRawData.EstimatedDistance = pollingThreadWorkingTargetRawData.EstimatedDistance;
+ 					_pollingThreadPrivateTargetRawData.FOVDimensions = pollingThreadWorkingTargetRawData.FOVDimensions;
+ 					_pollingThreadPrivateTargetRawData.HighMiddleY = pollingThreadWorkingTargetRawData.HighMiddleY;
+ 					_pollingThreadPrivateTargetRawData.ResponseTimeMSec = pollingThreadWorkingTargetRawData.ResponseTimeMSec;
+ 					_pollingThreadPrivateTargetRawData.SouthEastX = pollingThreadWorkingTargetRawData.SouthEastX;
+ 					_pollingThreadPrivateTargetRawData.SouthEastY = pollingThreadWorkingTargetRawData.SouthEastY;
+ 					_pollingThreadPrivateTargetRawData.SouthWestX = pollingThreadWorkingTargetRawData.SouthWestX;
+ 					_pollingThreadPrivateTargetRawData.SouthWestY = pollingThreadWorkingTargetRawData.SouthWestY;
+ 					_pollingThreadPrivateTargetRawData.Timestamp = pollingThreadWorkingTargetRawData.Timestamp;
+ 					_pollingThreadPrivateTargetRawData.FovCenterToTargetXAngleRawDegrees = pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees;
+ 					_pollingThreadPrivateTargetRawData.IsVisionDataValid = pollingThreadWorkingTargetRawData.IsVisionDataValid;
+ 				}
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}finally{
+ 				//release lock
+ 				lock.unlock();
+ 			}
+ 			
+ 	    	_lastCallTimestamp = new Date().getTime();
+ 	    } else {
+ 	    	//Increment bad data counter 	    	
+ 			try {
+ 				if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
+ 					_pollingThreadPrivateTargetRawData.BadDataCounter += 1; 
+ 				}
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}finally{
+ 				//release lock
+ 				lock.unlock();
+ 			}
+ 			
+ 			//limitspamming
+ 	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+	 	    	System.out.println("Vision Data Recieved But Unexpected Array Size: " + vector.size());
+	    		// reset last time
+	    		_lastDebugWriteTimeMSec = new Date().getTime();
+ 	    	}
+ 	    }
  	} 
  	
  	// this method used a n order polynomial to estimate the distance based on data collected using a specific, fixed camera angle approx 40 degrees
@@ -441,9 +494,12 @@ public class RoboRealmClient {
     	
     	// charlie's numbers to center of can
     	// inches= -0.00005952pixels^3 + 0.04198913pixels^2 - 10.982809pixels + 1046.4642
-    	double estDistanceInInches = (-0.000001 * Math.pow(_newTargetRawData.HighMiddleY, 3))
-		    							+ (0.001388 * Math.pow(_newTargetRawData.HighMiddleY, 2))
-		    							+ (-0.783982 * _newTargetRawData.HighMiddleY)
+    	
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+    	
+    	double estDistanceInInches = (-0.000001 * Math.pow(publicTargetRawData.HighMiddleY, 3))
+		    							+ (0.001388 * Math.pow(publicTargetRawData.HighMiddleY, 2))
+		    							+ (-0.783982 * publicTargetRawData.HighMiddleY)
 		    							+ 239.332871;
     	
     	return estDistanceInInches;
@@ -452,14 +508,14 @@ public class RoboRealmClient {
     // this method uses the actual camera angle to estimate the distance
     private double CalcDistanceUsingCameraAngle(double highMiddleYInPixels)
     {
-    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 24.1648884;	//23.5672121;			// 23.5645549; 
+    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 23.4425175; //23.5672121;			// 23.5645549; 
     	final double TARGET_HEIGHT_IN_INCHES = 87.875;					// 87.875; 	
-    	final double SENSOR_HEIGHT_PIXELS = 469.009;	//477.511871;					// 479.115486; 
-    	final double FOCAL_LENGTH_IN_INCHES = 0.15015719;	//0.13916669;			// 0.14362022; 
-    	final double OFFSET_0_IN_INCHES = 6.5981588; //9.43578495;						// 9.99997139; 	
-    	final double OFFSET_1_IN_INCHES = 0.19451439;	//0.13906082;						// 0.1409929;
+    	final double SENSOR_HEIGHT_PIXELS = 472.273487; //477.511871;					// 479.115486; 
+    	final double FOCAL_LENGTH_IN_INCHES = 0.14407609; //0.13916669;					// 0.14362022; 
+    	final double OFFSET_0_IN_INCHES = 9.04908729;	//9.43578495;						// 9.99997139; 	
+    	final double OFFSET_1_IN_INCHES = 0.17265693;	//0.13906082;						// 0.1409929;
     	
-     	final double CAMERA_ANGLE_IN_DEGREES = 38.76;	// <====== SET ME BASED ON CALIB PROCEDURE ============
+     	final double CAMERA_ANGLE_IN_DEGREES = 38.5;	//38.76;	// <====== SET ME BASED ON CALIB PROCEDURE ============
 
 
     	double sensorHeightInInches = Math.tan(Math.toRadians(HALF_FIELD_OF_VIEW_IN_DEGREES)) * FOCAL_LENGTH_IN_INCHES * 2.0;
@@ -506,42 +562,79 @@ public class RoboRealmClient {
     // Property Accessors
     // =========================================================
  	public double get_Angle() { 
- 		return _fovCenterToTargetXAngleRawDegrees; 
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+ 		return publicTargetRawData.FovCenterToTargetXAngleRawDegrees; 
  	}
     
     public double get_fovCenterToTargetXAngleRawDegrees() {
-    	return _fovCenterToTargetXAngleRawDegrees;
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+ 		return publicTargetRawData.FovCenterToTargetXAngleRawDegrees; 
     }
     
     public boolean get_isVisionDataValid() {
-    	synchronized (_targetDataMutex) {
-	    	if((_badDataCounter < BAD_DATA_COUNTER_THRESHOLD) 
-	    			&& (_newTargetRawData != null)
-	    			&& (_newTargetRawData.BlobCount == _expectedBlobCount)) {	
-	    		return true;
-	    	} else {
-	    		return false;
-	    	}
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+    	
+    	if(publicTargetRawData != null) {
+    		return publicTargetRawData.IsVisionDataValid;
     	}
+    	else {
+    		return false;
+    	}
+    		
     }
     
     public double get_DistanceToBoilerInches() {
-    	if(get_isVisionDataValid()) {
-    		return _newTargetRawData.EstimatedDistance;
+    	RawImageData publicTargetRawData = get_newTargetRawData();
+    	
+		if (get_isVisionDataValid()) {
+    		return publicTargetRawData.EstimatedDistance;
     	}
     	else {
-    		return 0.0;
+    		return 10.0;
     	}
     }
     
+    // returns true if the robot is close enough to the gear peg using vision
     public boolean get_isInGearHangPosition() {
+    	RawImageData publicTargetRawData = get_newTargetRawData() ;
+    	
 		if (get_isVisionDataValid()
-				&& (_newTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) 
-				&& (_newTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE)) {
+				&& (publicTargetRawData.SouthEastY > TARGET_MINIMUM_Y_VALUE) 
+				&& (publicTargetRawData.SouthWestY > TARGET_MINIMUM_Y_VALUE)) {
 			return true;
 		} else {
 			return false;
 		}
+    }
+    
+    // uses a lock to safely get a copy of the 
+    public RawImageData get_newTargetRawData() {
+		try {
+			if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
+				// get current values from polling thread
+				_pollingThreadPublicTargetRawData = new RawImageData();
+				_pollingThreadPublicTargetRawData.BlobCount = _pollingThreadPrivateTargetRawData.BlobCount;
+				_pollingThreadPublicTargetRawData.CameraType = _pollingThreadPrivateTargetRawData.CameraType;
+				_pollingThreadPublicTargetRawData.EstimatedDistance = _pollingThreadPrivateTargetRawData.EstimatedDistance;
+				_pollingThreadPublicTargetRawData.FOVDimensions = _pollingThreadPrivateTargetRawData.FOVDimensions;
+				_pollingThreadPublicTargetRawData.HighMiddleY = _pollingThreadPrivateTargetRawData.HighMiddleY;
+				_pollingThreadPublicTargetRawData.ResponseTimeMSec = _pollingThreadPrivateTargetRawData.ResponseTimeMSec;
+				_pollingThreadPublicTargetRawData.SouthEastX = _pollingThreadPrivateTargetRawData.SouthEastX;
+				_pollingThreadPublicTargetRawData.SouthEastY = _pollingThreadPrivateTargetRawData.SouthEastY;
+				_pollingThreadPublicTargetRawData.SouthWestX = _pollingThreadPrivateTargetRawData.SouthWestX;
+				_pollingThreadPublicTargetRawData.SouthWestY = _pollingThreadPrivateTargetRawData.SouthWestY;
+				_pollingThreadPublicTargetRawData.Timestamp = _pollingThreadPrivateTargetRawData.Timestamp;
+				_pollingThreadPublicTargetRawData.FovCenterToTargetXAngleRawDegrees = _pollingThreadPrivateTargetRawData.FovCenterToTargetXAngleRawDegrees;
+				_pollingThreadPublicTargetRawData.IsVisionDataValid = _pollingThreadPrivateTargetRawData.IsVisionDataValid;
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally{
+			//release lock
+			lock.unlock();
+		}
+		    	
+		return _pollingThreadPublicTargetRawData;
     }
     
     //================================================================================================
@@ -555,16 +648,13 @@ public class RoboRealmClient {
             while(!Thread.interrupted()) {            	
             	update();
             	        		
-
-				Timer.delay(POLLING_CYCLE_IN_MSEC*0.001);
-				
         		// sleep each cycle to avoid Robot Code not updating often enough issues
-        		//try {
-				//	Thread.sleep(POLLING_CYCLE_IN_MSEC);
-				//} catch (InterruptedException e) {
-				//	// TODO Auto-generated catch block
-				//	e.printStackTrace();
-				//}
+        		try {
+					Thread.sleep(POLLING_CYCLE_IN_MSEC);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
 	            	
 		}

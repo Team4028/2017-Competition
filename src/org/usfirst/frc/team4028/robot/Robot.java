@@ -282,6 +282,8 @@ public class Robot extends IterativeRobot {
     	
     	_hangGearController.setIsChassisControlEnabled(false);
     	
+    	_trajController.startTrajectoryController();
+    	
     	// start the lidar polling
     	if(_lidar != null)	{
     		_lidar.start(); 
@@ -509,6 +511,8 @@ public class Robot extends IterativeRobot {
     	
     	// #### Ball Infeed ####
     	_ballInfeed.FullStop();
+    	
+    	_navX.zeroYaw();
     	
     	// #### Cameras ####
     	// set to default camera

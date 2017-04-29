@@ -113,6 +113,7 @@ public class HangCenterGear {
 	
 	public void Disabled() {
 		_trajController.disable();
+		_trajController.stopTrajectoryController();
 	}
 	
 	//============================================================================================

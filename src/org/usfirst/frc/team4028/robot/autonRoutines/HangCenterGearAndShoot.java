@@ -31,11 +31,11 @@ public class HangCenterGearAndShoot {
 	
 	private double _gyroTurnTargetAngle;
 	private static final double RED_ALLIANCE_GYRO_TARGET_TURN_ANGLE = -40.0;
-	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 40.0; 
+	private static final double BLUE_ALLIANCE_GYRO_TARGET_TURN_ANGLE = 40.0;
 
 	private int _targetShootingDistanceInInches;
-	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 147;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 144;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 140;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 141;
 
 	private enum AUTON_STATE {
 		UNDEFINED, 
@@ -172,8 +172,9 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case VISION_TURN:
+      			//_autoShootController.LoadTargetDistanceUsingVision();
       			_autoShootController.RunShooterAtTargetSpeed();
-      			_autoShootController.AimWithVision();			// Aim robot to the boiler
+      			_autoShootController.AimWithVision(0.0);			// Aim robot to the boiler
       			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
@@ -187,7 +188,9 @@ public class HangCenterGearAndShoot {
       			break;
       			
       		case SHOOT:
+      			//_autoShootController.LoadTargetDistanceUsingVision();
       			_autoShootController.RunShooterAtTargetSpeed();
+      			//_autoShootController.AimWithVision();
       			_autoShootController.ChassisFullStop();
       			// start shooter feeder motors reentrant function
       			_shooter.RunShooterFeederReentrant();
@@ -210,6 +213,7 @@ public class HangCenterGearAndShoot {
 	
 	public void Disabled() {
 		_trajController.disable();
+		_trajController.stopTrajectoryController();
 	}
 	
 	//============================================================================================

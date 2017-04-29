@@ -91,8 +91,7 @@ public class Shooter {
 	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //6.0; 	//3.0; //6.0; // 
 	*/
 	
-	// Cleveland
-	
+	// Cleveland	
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //
 	private static final double FIRST_STAGE_MTG_P_GAIN = 0.325;         // 0.3125; // 0.275; //0.225; //0.325; //
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
@@ -246,8 +245,8 @@ public class Shooter {
 	// This method is provided for auton mode shooting
 	// keep calling this method until it returns false, that indicates motors are upto speed
 	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry) {
-		_currentShooterTableEntry = shooterTableEntry;
-		_lastShooterTableEntry = shooterTableEntry;
+		//_currentShooterTableEntry = shooterTableEntry;
+		//_lastShooterTableEntry = shooterTableEntry;
 		
 		ShooterMotorsReentrant();
 		// we use a 2% error threshhold
