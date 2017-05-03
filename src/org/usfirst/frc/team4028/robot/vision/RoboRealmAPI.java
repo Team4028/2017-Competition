@@ -13,7 +13,7 @@ import java.net.URL;
  */
 public class RoboRealmAPI {
   // default read and write socket timeout
-  public final static int DEFAULT_TIMEOUT = 60000;
+  public final static int DEFAULT_TIMEOUT = 50;
 
   // the port number to listen on ... needs to match that used in RR interface
   public final static int SERVER_PORTNUM = 6060;

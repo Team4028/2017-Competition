@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class Utilities 
 {
 	// define class level constants
-	private static final int PING_TIMEOUT_MSEC = 5000;
+	private static final int PING_TIMEOUT_MSEC = 200;
 	
 	// simple test is to check if we can get a ping response from the server
 	// 	this will tell us if the remote server is accessible (but not necessarily if RoboRealm is up)
@@ -28,7 +28,7 @@ public class Utilities
 			// try to ping the remote server
 			if(inet.isReachable(PING_TIMEOUT_MSEC))
 	        {
-				DriverStation.reportError("CAN Ping Kangaroo [" + hostNameOrIPv4Addr + "]", false);
+				DriverStation.reportWarning("CAN Ping Kangaroo [" + hostNameOrIPv4Addr + "]", false);
 				isPingable = true;
 	        }
 	        else

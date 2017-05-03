@@ -25,7 +25,7 @@ public class BallInfeed {
 	Solenoid _fuelInfeedSolenoid;
 	
 	//============================================================================================
-	// constructors follow
+	// constructor follows
 	//============================================================================================
 	public BallInfeed(int fuelInfeedMtrCanBusAddr, int PCMCanAddr, int fuelInfeedSolenoidPort) {
 		_fuelInfeedMtr = new CANTalon(fuelInfeedMtrCanBusAddr);
@@ -75,10 +75,5 @@ public class BallInfeed {
 		SmartDashboard.putString( "Fuel Infeed", ballInfeedMtrData);
 	}
 	
-	public void UpdateLogData(LogData logData) {
-	}
-	
-	//============================================================================================
-	// Property Accessors follow
-	//============================================================================================
+	public void UpdateLogData(LogData logData) {}
 }

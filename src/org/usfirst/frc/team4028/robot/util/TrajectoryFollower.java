@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4028.robot.util;
 
+import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+
 public class TrajectoryFollower {
 	private boolean _isFeedbackDisabled;
 	private double _kp;
@@ -14,8 +16,7 @@ public class TrajectoryFollower {
 	private int _currentSegment;
 	private int _trajectoryNumPoints;	
 	
-	public TrajectoryFollower() {
-	}
+	public TrajectoryFollower() {}
 	
 	public void configure(double kp, double ki, double kd, double kv, double ka) {
 		_kp = kp;
@@ -39,7 +40,16 @@ public class TrajectoryFollower {
 	      } else {
 	    	  _positionOutput = _kp * error + _kd * ((error - _lastError) / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]);
 	      }
-	      _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      
+	      if (motionProfile[currentSegment][0] > 0.0) {
+	    	  if (motionProfile[currentSegment][2] > 0.0) {
+		    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+		      } else {
+		    	  _velocityOutput = _kv * motionProfile[currentSegment][1];
+		      }
+	      } else {
+	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      }
 	      
 	      double output = _positionOutput + _velocityOutput;
 	

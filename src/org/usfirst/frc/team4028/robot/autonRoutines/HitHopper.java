@@ -3,7 +3,9 @@ package org.usfirst.frc.team4028.robot.autonRoutines;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
+import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
@@ -19,18 +21,23 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class HitHopper {
 	// define class level variables for Robot subsystems
 	private AutoShootController _autoShootController;
+	private Chassis _chassis;
+	private ChassisAutoAimController _autoAim;
 	private GearHandler _gearHandler;
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private ALLIANCE_COLOR _allianceColor;
 	
-	private static final int SHOOTING_DISTANCE_IN_INCHES = 100;
+	private int _targetShootingDistanceInInches;
+	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 124;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 163;
 	
 	private enum AUTON_STATE {
 		UNDEFINED,
-		MOVE_TO_BOILER_HELLA_FAST,
+		MOVE_TO_BOILER_HELLA_FAST_X,
 		WAIT,
 		MOVE_TO_SHOOTING_POSITION,
+		VISION_TURN,
 		SHOOT
 	}
 	
@@ -42,18 +49,31 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 2500;
+	private static final int WAIT_TIME_MSEC = 1300;
 	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(AutoShootController autoShoot, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
+	public HitHopper(AutoShootController autoShoot, Chassis chassis, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
 		// these are the subsystems that this auton routine needs to control
+		_autoShootController = autoShoot;
+		_autoAim = autoAim;
+		_chassis = chassis;
 		_gearHandler = gearHandler;
 		_shooter = shooter;
 		_trajController = trajController;
 		_allianceColor = allianceColor;
-		DriverStation.reportError("Auton Initialized", false);
+		
+		switch(_allianceColor) {
+		case BLUE_ALLIANCE:
+			_targetShootingDistanceInInches = BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+			break;
+			
+		case RED_ALLIANCE:
+			_targetShootingDistanceInInches = RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES;
+			break;
+		}
+		DriverStation.reportWarning("Auton Initialized", false);
 	}
 	
 	//============================================================================================
@@ -63,20 +83,23 @@ public class HitHopper {
 	public void Initialize() {
 		_autonStartedTimeStamp = System.currentTimeMillis();
 		_isStillRunning = true;
-		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST;
-		_autoShootController.LoadTargetDistanceInInches(SHOOTING_DISTANCE_IN_INCHES);
+		_autonState = AUTON_STATE.MOVE_TO_BOILER_HELLA_FAST_X;
+		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
+		_autoShootController.StopShooter();
 		
 		_trajController.configureIsHighGear(true);
 		switch(_allianceColor) {
 			case BLUE_ALLIANCE:
-				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, true);
+				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_BLUE_X, true);
 				break;
 				
 			case RED_ALLIANCE:
-				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER, false);
+				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_RED_X, false);
 				break;
 		}
 		_trajController.enable();
+		
+		_autoShootController.EnableBoilerCam();
 		
 		DriverStation.reportWarning("===== Entering Hit Hopper Auton =====", false);
 	}
@@ -86,37 +109,45 @@ public class HitHopper {
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
 		switch(_autonState) {
-			case MOVE_TO_BOILER_HELLA_FAST:
+			case MOVE_TO_BOILER_HELLA_FAST_X:
 				if(!_gearHandler.hasTiltAxisBeenZeroed()) {
       	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
       	      		//			we must treat it as a Reentrant function
       	      		//			and automatically recall it until complete
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
-      	    		DriverStation.reportError("Gear Tilt Zero completed!", false);
+      	    		DriverStation.reportWarning("Gear Tilt Zero completed!", false);
       	    		_gearHandler.MoveGearToScorePosition();
       	    	}
 				
 				if(_trajController.onTarget()) {
 					_trajController.disable();
 					_waitStartedTimeStamp = System.currentTimeMillis();
+					DriverStation.reportWarning("Starting to Wait", false);
 					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
 				
 			case WAIT:
+				_chassis.ArcadeDrive(-0.35, 0.0);
+				
+				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 800) {
+					_autoShootController.RunShooterAtTargetSpeed();
+				}
+				
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > WAIT_TIME_MSEC) {
 					switch(_allianceColor) {
-					case BLUE_ALLIANCE:
-						_trajController.loadProfile(MOTION_PROFILE.HOPPER_TO_SHOOTING_POSITION, true);
-						break;
-						
-					case RED_ALLIANCE:
-						_trajController.loadProfile(MOTION_PROFILE.HOPPER_TO_SHOOTING_POSITION, false);
-						break;
-				}
+						case BLUE_ALLIANCE:
+							_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, true);
+							break;
+							
+						case RED_ALLIANCE:
+							_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
+							break;
+					}
 					_trajController.enable();
 					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
+					DriverStation.reportWarning("Moving to Shoot", false);
 				}
 				break;
 				
@@ -124,22 +155,27 @@ public class HitHopper {
 				_autoShootController.RunShooterAtTargetSpeed();
 				if (_trajController.onTarget()) {
 					_trajController.disable();
-					_autoShootController.InitializeVisionAiming();
-					_autonState = AUTON_STATE.SHOOT;
+					DriverStation.reportWarning("Moved To Shooting Position", false);
+					_autonState = AUTON_STATE.VISION_TURN;
 				}
 				break;
 				
-			case SHOOT:
-				_autoShootController.AimWithVision();
+			case VISION_TURN:
+				_autoShootController.AimWithVision(0);
       			
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
       				_shooter.ToggleRunShooterFeeder();
       				
       				// chg state
-      				DriverStation.reportError("PEW PEW PEW PEW PEW", false);
+      				_autonState = AUTON_STATE.SHOOT;
+      				DriverStation.reportWarning("PEW PEW PEW PEW PEW", false);
       			}
 				break;
+				
+			case SHOOT:
+				_autoShootController.AimWithVision(0);
+				_shooter.RunShooterFeederReentrant();
 				
 			case UNDEFINED:
 				break;
@@ -147,7 +183,7 @@ public class HitHopper {
 		
 		// cleanup
 		if(!_isStillRunning) {
-			DriverStation.reportWarning("===== Completed CrossBaseLine Auton =====", false);
+			DriverStation.reportWarning("===== Complete Hit Hopper Auton =====", false);
 		}
 		
 		return _isStillRunning; 
@@ -155,6 +191,7 @@ public class HitHopper {
 	
 	public void Disabled() {
 		_trajController.disable();
+		_trajController.stopTrajectoryController();
 	}
 	
 	//============================================================================================

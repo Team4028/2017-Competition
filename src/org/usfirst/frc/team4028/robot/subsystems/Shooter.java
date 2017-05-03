@@ -45,7 +45,7 @@ public class Shooter {
 	
 	// define class level variables for Robot objects`
 	private CANTalon _firstStgMtr;
-	private CANTalon _secondStgMtr;
+	private CANTalon _secondStgMtr; 
 	private CANTalon _magicCarpetMtr;
 	private CANTalon _highSpeedInfeedLaneMtr;
 	private CANTalon _highRollerMtr;
@@ -75,17 +75,36 @@ public class Shooter {
 	private long _hopperCarouselReentrantRunningMsec;
 	private long _lastDebugWriteTimeMSec;
 	
+	//==============================================================================================
 	//define class level PID constants					// new	// clev
-	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.030; //0.033; //
-	private static final double FIRST_STAGE_MTG_P_GAIN = 0.225; //0.325; //
+	
+	// Worlds
+	/*
+	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.027; //0.033; //
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.25;// 0.325;         // 0.3125; // 0.275; //0.225; //0.325; //
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
-	private static final double FIRST_STAGE_MTG_D_GAIN = 7.5; //5.0; //
+	private static final double FIRST_STAGE_MTG_D_GAIN = 1.5; //5.0; 	//2.0; //4.0; //7.5; //5.0; //
 
 	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.028; //0.03; //
-	private static final double SECOND_STAGE_MTG_P_GAIN = 0.175; //
+	private static final double SECOND_STAGE_MTG_P_GAIN = 0.5; // 0.175; 	//0.3; // .250; //0.175; //
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
-	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //6.0; // 
+	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //6.0; 	//3.0; //6.0; // 
+	*/
+	
+	// Cleveland	
+	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //
+	private static final double FIRST_STAGE_MTG_P_GAIN = 0.325;         // 0.3125; // 0.275; //0.225; //0.325; //
+	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
+	private static final double FIRST_STAGE_MTG_D_GAIN = 5.0; 	//2.0; //4.0; //7.5; //5.0; //
 
+	private static final double SECOND_STAGE_MTG_FF_GAIN = 0.03; //
+	private static final double SECOND_STAGE_MTG_P_GAIN =  0.175; 	//0.3; // .250; //0.175; //
+	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
+	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; 	//3.0; //6.0; // 
+	
+
+	//==============================================================================================
+	
 	//define class level Actuator Constants
 	private static final double MAX_THRESHOLD_ACTUATOR = 0.80; //0.7; 
 	private static final double MIN_THRESHOLD_ACTUATOR = 0.35; //0.4;
@@ -95,7 +114,7 @@ public class Shooter {
 	//define class level Shooter Motor Constants
 	private static final double MAX_SHOOTER_RPM = -4400;
 	private static final double MIN_SHOOTER_RPM = -2500;
-	private static final double SHOOTER_BUMP_RPM = 50;
+	private static final double SHOOTER_BUMP_RPM = 25;
 	private static final double FIRST_STAGE_MTR_DEFAULT_RPM = -3500;
 	private static final double SECOND_STAGE_MTR_DEFAULT_RPM = -3200;
 	
@@ -226,16 +245,16 @@ public class Shooter {
 	// This method is provided for auton mode shooting
 	// keep calling this method until it returns false, that indicates motors are upto speed
 	public boolean ShooterMotorsReentrant(ShooterTableEntry shooterTableEntry) {
-		_currentShooterTableEntry = shooterTableEntry;
-		_lastShooterTableEntry = shooterTableEntry;
+		//_currentShooterTableEntry = shooterTableEntry;
+		//_lastShooterTableEntry = shooterTableEntry;
 		
 		ShooterMotorsReentrant();
 		// we use a 2% error threshhold
 		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
 				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {
-			return false;
-		} else {
 			return true;
+		} else {
+			return false;
 		}
 	}
 	
@@ -413,13 +432,15 @@ public class Shooter {
 	//============================================================================================
 	// Run Magin Carpet / High Roller Motors / Hopper Carousel
 	//============================================================================================
+	public void ResetHopperCarousel() {
+		_hopperCarousel.setPosition(1.0);
+	}
 	
 	public void ToggleHopperCarousel() {
 		_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
 	}
 	
 	public void RunHopperCarousel() {
-		
 		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
 			_hopperCarousel.setPosition(0.0);
 		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
@@ -438,6 +459,7 @@ public class Shooter {
 			//RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			//RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			//RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
+			ToggleHopperCarousel();
 			
 			_isShooterInfeedReentrantRunning = true;
 			_shooterInfeedReentrantRunningMsec = System.currentTimeMillis();
@@ -449,12 +471,13 @@ public class Shooter {
 	}
 	
 	public void RunShooterFeederReentrant() {
+		RunHopperCarousel();
 		if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 100)	{		// 800 ; 500
 			// 100 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 		}
 		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1800) {	// 800 ; 500
-			// 800 mSec fwd
+			// 1800 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
 			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);

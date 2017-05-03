@@ -111,7 +111,7 @@ public class TwoGear {
       			break;
       			
       		case TURN_RIGHT_1:
-      			_autoAim.update();
+      			_autoAim.moveToTarget();
       			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();
@@ -127,7 +127,7 @@ public class TwoGear {
       			break;
       			
       		case TURN_RIGHT_2:
-      			_autoAim.update();
+      			_autoAim.moveToTarget();
       			_gearHandler.MoveGearToFloorPositionReentrant();
       			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
       			if(_autoAim.onTarget()) {
@@ -156,7 +156,7 @@ public class TwoGear {
       			
       		case TURN_RIGHT_3:
       			_gearHandler.SpinInfeedWheelsVBus(0.0);
-      			_autoAim.update();
+      			_autoAim.moveToTarget();
       			_gearHandler.MoveGearToScorePosition();
       			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_LONG, false);
       			if(_autoAim.onTarget()) {
@@ -173,7 +173,7 @@ public class TwoGear {
       			break;
       			
       		case TURN_RIGHT_4:
-      			_autoAim.update();
+      			_autoAim.moveToTarget();
       			_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       			if(_autoAim.onTarget()) {
       				_trajController.enable();

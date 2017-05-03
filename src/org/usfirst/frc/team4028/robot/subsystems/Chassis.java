@@ -2,9 +2,9 @@ package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.constants.RobotMap;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import com.ctre.CANTalon;
+import com.ctre.CANTalon.TalonControlMode;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,10 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Chassis {
 	// =====================================================================
 	// 4 DC Motors
-	//		1 Talon w/ Encoder		Left Master
-	//		1 Talon w/o Encoder		Left Slave
-	//		1 Talon w/ Encoder		Right Master
-	//		1 Talon w/o Encoder		Right Slave
+	//		2 Talon w/ Encoder		Left + Right Master
+	//		2 Talon w/o Encoder		Left + Right Slave
 	//
 	// 1 Solenoid
 	// 		1 Dual Action 			Shifter
@@ -41,12 +39,10 @@ public class Chassis {
 	private long _lastCmdChgTimeStamp;
 	private double _driveSpeedScalingFactorClamped;
 	
-	//acc/dec variables
+	// acc/dec variables
 	private boolean _isAccelDecelEnabled;
-	private double _currentThrottleCmdScaled;
-	private double _currentThrottleCmdAccDec;
-	private double _previousThrottleCmdScaled;
-	private double _previousThrottleCmdAccDec;
+	private double _currentThrottleCmdScaled, _previousThrottleCmdScaled;
+	private double _currentThrottleCmdAccDec, _previousThrottleCmdAccDec;
 	
 	private double _arcadeDriveThrottleCmdAdj;
 	private double _arcadeDriveTurnCmdAdj;
@@ -55,6 +51,14 @@ public class Chassis {
 	private static final double ACC_DEC_TOTAL_TIME_SECS = 0.8;
 	
 	private static final double _turnSpeedScalingFactor = 0.7;
+	
+	// motion magic constants
+	private static final double P_GAIN = 4.0;
+	private static final double I_GAIN = 0.0;
+	private static final double D_GAIN = 95.0;	
+	private static final double F_GAIN = 0.52;
+	private static final double MAX_ACCELERATION = 1200.0; // 200 RPM / S
+	private static final double MAX_VELOCITY = 150.0; // 200 RPM 
 	
 	// Gearbox Ratios: 1:3 encoder shaft, 34:50 output shaft
 	
@@ -76,11 +80,14 @@ public class Chassis {
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
     	_leftDriveMaster = new CANTalon(talonLeftMasterCanBusAddr);
-    	_leftDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
     	_leftDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
-    	_leftDriveMaster.configEncoderCodesPerRev(1850);
+    	_leftDriveMaster.configEncoderCodesPerRev(1097);
     	_leftDriveMaster.reverseSensor(false);  							// do not invert encoder feedback
     	_leftDriveMaster.enableLimitSwitch(false, false);
+    	_leftDriveMaster.setMotionMagicAcceleration(MAX_ACCELERATION);
+    	_leftDriveMaster.setMotionMagicCruiseVelocity(MAX_VELOCITY);
+    	_leftDriveMaster.setPID(P_GAIN, I_GAIN, D_GAIN);
+    	_leftDriveMaster.setF(F_GAIN);
 
 		_leftDriveSlave = new CANTalon(talonLeftSlave1CanBusAddr);
 	   	_leftDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
@@ -91,11 +98,15 @@ public class Chassis {
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
 		_rightDriveMaster = new CANTalon(talonRightMasterCanBusAddr);
-		_rightDriveMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
     	_rightDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
-    	_rightDriveMaster.configEncoderCodesPerRev(1850);
+    	_rightDriveMaster.configEncoderCodesPerRev(1097);
     	_rightDriveMaster.reverseSensor(true);  							// do not invert encoder feedback
+    	_rightDriveMaster.reverseOutput(true);
 		_rightDriveMaster.enableLimitSwitch(false, false);
+		_rightDriveMaster.setMotionMagicAcceleration(MAX_ACCELERATION);
+    	_rightDriveMaster.setMotionMagicCruiseVelocity(MAX_VELOCITY);
+    	_rightDriveMaster.setPID(P_GAIN, I_GAIN, D_GAIN);
+    	_rightDriveMaster.setF(F_GAIN);
 
 		_rightDriveSlave = new CANTalon(talonRightSlave1CanBusAddr);
 		_rightDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
@@ -110,11 +121,12 @@ public class Chassis {
     	//====================
     	// Arcade Drive
     	//====================
-    	// Arcade Drive configured to drive in "2 motor per side setup, 
-    	//	other motors follow master as slaves 
+    	// Arcade Drive configured to drive in "2 motor per side setup, other motors follow master as slaves 
     	_robotDrive = new RobotDrive(_leftDriveMaster, _rightDriveMaster);
+    	_robotDrive.setSafetyEnabled(false);
     	
     	EnableBrakeMode(false); // Disable motors on drive talons
+    	EnablePercentVBusMode(); // Open loop throttle
     
     	//set default scaling factor
     	_driveSpeedScalingFactorClamped = 1.0;
@@ -126,6 +138,7 @@ public class Chassis {
 	
 	// This is the (arcade) main drive method
 	public void ArcadeDrive(double newThrottleCmdRaw, double newTurnCmdRaw) {
+		EnablePercentVBusMode();
 		// calc scaled throttle cmds
 		double newThrottleCmdScaled = newThrottleCmdRaw * _driveSpeedScalingFactorClamped;
 		double newTurnCmdScaled = newTurnCmdRaw * _turnSpeedScalingFactor;
@@ -161,7 +174,14 @@ public class Chassis {
 	}
 	
 	public void TankDrive(double leftCmd, double rightCmd) {
+		EnablePercentVBusMode();
 		_robotDrive.tankDrive(leftCmd, rightCmd);
+	}
+	
+	public void SetMotionMagicTargetPosition(double leftPosition, double rightPosition) {
+		EnableMotionMagicMode();
+		_leftDriveMaster.set(leftPosition);
+		_rightDriveMaster.set(rightPosition);
 	}
 	
 	// stop the motors
@@ -172,6 +192,20 @@ public class Chassis {
 		_leftDriveSlave.enableBrakeMode(isEnabled);
 		_rightDriveMaster.enableBrakeMode(isEnabled);
 		_rightDriveSlave.enableBrakeMode(isEnabled);
+	}
+	
+	public void EnablePercentVBusMode() {
+		if (_leftDriveMaster.getControlMode() != TalonControlMode.PercentVbus) {
+			_leftDriveMaster.changeControlMode(TalonControlMode.PercentVbus);
+			_rightDriveMaster.changeControlMode(TalonControlMode.PercentVbus);
+		}
+	}
+	
+	public void EnableMotionMagicMode() {
+		if (_leftDriveMaster.getControlMode() != TalonControlMode.MotionMagic) {
+			_leftDriveMaster.changeControlMode(TalonControlMode.MotionMagic);
+			_rightDriveMaster.changeControlMode(TalonControlMode.MotionMagic);
+		}
 	}
 	
 	// shifts between high & low gear
@@ -203,8 +237,8 @@ public class Chassis {
 	}
 	
 	public void ZeroDriveEncoders() {
-		_leftDriveMaster.setPosition(0);
-		_rightDriveMaster.setPosition(0);
+		_leftDriveMaster.setPosition(0.0);
+		_rightDriveMaster.setPosition(0.0);
 	}
 	
 	// update the Dashboard with any Chassis specific data values
@@ -220,6 +254,10 @@ public class Chassis {
 		}
 		
 		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
+		SmartDashboard.putNumber("Left Position", getLeftEncoderCurrentPosition());
+		SmartDashboard.putNumber("Right Position", getRightEncoderCurrentPosition());
+		SmartDashboard.putNumber("Left Velocity", getLeftEncoderCurrentVelocity());
+		SmartDashboard.putNumber("Right Velocity", getRightEncoderCurrentVelocity());
 	}
 	
 	public void UpdateLogData(LogData logData) {

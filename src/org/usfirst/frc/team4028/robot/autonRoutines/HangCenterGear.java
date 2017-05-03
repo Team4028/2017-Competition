@@ -56,7 +56,7 @@ public class HangCenterGear {
 		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
-		DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+		//DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
 		DriverStation.reportWarning("===== Entering HangCenterGear Auton =====", false);
 	}
 	
@@ -66,26 +66,26 @@ public class HangCenterGear {
 	public boolean ExecuteRentrant() {
 		// =======================================
 		// if not complete, this must run concurrently with all auton routines
-		// =======================================
-      	if(!_gearHandler.hasTiltAxisBeenZeroed()) {
-      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
-      		//			we must treat it as a Reentrant function
-      		//			and automatically recall it until complete
-    		_gearHandler.ZeroGearTiltAxisReentrant();
-    	} else {
-    		DriverStation.reportError("Zeroed", false);
-    		_gearHandler.MoveGearToScorePosition();
-    	}
+		// =======================================/*
       	
       	switch (_autonState) {
       		case MOVE_TO_TARGET:
-      			if (_trajController.getCurrentSegment() == 1) {
-      				//_trajController.isVisionTrackingEnabled(true);
-      			}
+      			if(!_gearHandler.hasTiltAxisBeenZeroed()) {
+      	      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
+      	      		//			we must treat it as a Reentrant function
+      	      		//			and automatically recall it until complete
+      	    		_gearHandler.ZeroGearTiltAxisReentrant();
+      	    	} else {
+      	    		DriverStation.reportWarning("Zeroed", false);
+      	    		_gearHandler.MoveGearToScorePosition();
+      	    	}
+      		
       			if (_trajController.onTarget()) {
       				_trajController.disable();
-      				//_trajController.isVisionTrackingEnabled(false);
-      				DriverStation.reportError(Double.toString(_trajController.getCurrentHeading()), false);
+      				
+      				_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
+      				_trajController.enable();
+      				DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
       				_hangGearController.Initialize();
       				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
@@ -93,8 +93,10 @@ public class HangCenterGear {
       			
       		case RUN_GEAR_SEQUENCE:
       			boolean isStillRunning = _hangGearController.ExecuteRentrant();
-      			if (!isStillRunning) {
-      				DriverStation.reportError("Done", false);
+      			if (!isStillRunning && _trajController.onTarget()) {
+      				_trajController.disable();
+      				
+      				DriverStation.reportWarning("Done", false);
       			}
       			break;
       			
@@ -111,6 +113,7 @@ public class HangCenterGear {
 	
 	public void Disabled() {
 		_trajController.disable();
+		_trajController.stopTrajectoryController();
 	}
 	
 	//============================================================================================

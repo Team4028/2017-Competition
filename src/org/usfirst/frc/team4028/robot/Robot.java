@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4028.robot;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import org.usfirst.frc.team4028.robot.autonRoutines.CrossBaseLine;
@@ -29,6 +31,7 @@ import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.utilities.DataLogger;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
+import org.usfirst.frc.team4028.robot.utilities.MovingAverage;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 import org.usfirst.frc.team4028.robot.subsystems.Climber;
@@ -110,6 +113,8 @@ public class Robot extends IterativeRobot {
 	ShooterTable _shooterTable;
 	String _fmsDebugMsg = "?";
  	long _lastDashboardWriteTimeMSec;
+ 	long _lastScanEndTimeInMSec;
+ 	MovingAverage _scanTimeSamples;
 	
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	// Code executed 1x at robot startup																		ROBOT INIT
@@ -163,24 +168,28 @@ public class Robot extends IterativeRobot {
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
 												RobotMap.RR_API_PORT,
-												RobotMap.LED_RINGS_DIO_PORT);
+												RobotMap.LED_RINGS_DIO_PORT); 
 												
 												//RobotMap.PCM_CAN_BUS_ADDR,
 												//RobotMap.GEAR_LED_RING_PCM_PORT,
 												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
-		//_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		//_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
-		//_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
+		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
+		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
-		//_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
+		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
 		ALLIANCE_COLOR allianceColor = _dashboardInputs.get_allianceColor();
 		_fmsDebugMsg = "Is FMS Attached: [" + isFMSAttached + "] Alliance: [" + allianceColor + "]";
 		DriverStation.reportWarning(">>>>> " + _fmsDebugMsg + " <<<<<<", false);
+		
+		// create class to hold Scan Times moving Average samples
+		_scanTimeSamples = new MovingAverage(100);  // 2 sec * 1000mSec/Sec / 20mSec/Scan
+		SmartDashboard.putString("Scan Time (2 sec roll avg)", "0.0 mSec");
 		
 		//Update Dashboard Fields (push all fields to dashboard)
 		OutputAllToSmartDashboard();
@@ -271,6 +280,10 @@ public class Robot extends IterativeRobot {
     	_gearHandler.FullStop();
     	_gearHandler.ZeroGearTiltAxisInit();
     	
+    	_hangGearController.setIsChassisControlEnabled(false);
+    	
+    	_trajController.startTrajectoryController();
+    	
     	// start the lidar polling
     	if(_lidar != null)	{
     		_lidar.start(); 
@@ -326,7 +339,8 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_autoShootController, _gearHandler, _shooter, _trajController, _allianceColor);
+				_hitHopper = new HitHopper(_autoShootController, _chassis, _chassisAutoAimGyro, _gearHandler, _shooter, _trajController, _allianceColor);
+				_hitHopper.Initialize();
 				break;
 				
 			case TURN_AND_SHOOT:
@@ -456,6 +470,8 @@ public class Robot extends IterativeRobot {
     	// Step 3: Optionally Log Data
     	// =====================================
 		WriteLogData();
+		
+		OutputAllToSmartDashboard();
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------------------
@@ -473,6 +489,7 @@ public class Robot extends IterativeRobot {
     	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);    // Set shifter to HIGH gear
     	_chassis.setIsAccDecModeEnabled(true);				// Disable acc/dec mode
 		_chassis.setDriveSpeedScalingFactor(1.0);
+		_chassis.EnablePercentVBusMode();
     	
     	// #### Climber ####
     	_climber.FullStop();
@@ -481,14 +498,21 @@ public class Robot extends IterativeRobot {
     	_gearHandler.FullStop();
     	if(!_gearHandler.hasTiltAxisBeenZeroed()) { 
     		_gearHandler.ZeroGearTiltAxisInit(); 
+    	} else {
+    		_gearHandler.MoveGearToScorePosition();
     	}
+    	
+    	_hangGearController.setIsChassisControlEnabled(true);
 
     	// #### Shooter ####
     	_shooter.FullStop();
     	_shooter.MoveActuatorToDefaultPosition();
+    	_shooter.ResetHopperCarousel();
     	
     	// #### Ball Infeed ####
     	_ballInfeed.FullStop();
+    	
+    	_navX.zeroYaw();
     	
     	// #### Cameras ####
     	// set to default camera
@@ -544,16 +568,6 @@ public class Robot extends IterativeRobot {
     			//Switchable Cameras
     			//=======================================================================			
     			if(_driversStation.getIsOperator_SwapCamera_BtnJustPressed()) {
-    				/*if(_isCamera0)
-    				{
-    					_server.setSource(_cam1);
-    					_isCamera0 = false;
-    				}
-    				else
-    				{
-    					_server.setSource(_cam0);
-    					_isCamera0 = true;
-    				}*/
     				_switchableCameraServer.ChgToNextCamera();
     			}
     			else if (_driversStation.getIsEngineering_SwapCamera_BtnJustPressed()) {
@@ -571,8 +585,9 @@ public class Robot extends IterativeRobot {
 				//=====================
 		    	if ((Math.abs(_driversStation.getDriver_ChassisThrottle_JoystickCmd()) > 0.0) 
 		    			|| (Math.abs(_driversStation.getDriver_ChassisTurn_JoystickCmd()) > 0.0)) {
+		    		_chassis.EnablePercentVBusMode();
 		    		// std drive
-			    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1), 	// added -1 gear is front
+			    	_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1.0), 	// added -1 gear is front
 											_driversStation.getDriver_ChassisTurn_JoystickCmd());
 		    	} 
 		    	else if ((Math.abs(_driversStation.getDriver_SpinChassisLeft_JoystickCmd()) > 0.0)
@@ -595,24 +610,18 @@ public class Robot extends IterativeRobot {
 		    		// spin right
 		    		_chassis.ArcadeDrive(0.0, _driversStation.getEngineering_SpinChassisRight_JoystickCmd() * 0.75);
 		    	} 
-		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
-		    		if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
-		    			_autoShootController.InitializeVisionAiming();
-		    		}
-		    		_autoShootController.AimWithVision();
+		    	else if (_driversStation.getIsOperator_VisionAim_BtnPressed()
+		    				|| _driversStation.getIsEngineering_VisionAim_BtnPressed()) {
+		    		// Turn on auto aiming with vision (for boiler)
+		    		_chassis.EnableMotionMagicMode();
+		    		_chassisAutoAimGyro.motionMagicMoveToTarget(_navX.getYaw() - (_roboRealmClient.get_Angle()/3.5));
 		    	} else {
 		    		// full stop
+		    		// 23.Apr.2017 TomB removed comments
+		    		// this avoids ERROR  1  Robot Drive... Output not updated often enough.  java.lang.Thread.run(Thread.java:745) error message
+		    		_chassis.EnablePercentVBusMode();
 			    	_chassis.ArcadeDrive(0.0, 0.0);
 		    	}
-		    	
-		    	// Turn on auto aiming with vision (for boiler)
-		    	/*
-		    	if (_driversStation.getIsOperator_VisionAim_BtnJustPressed()) {
-		    		_autoShootController.InitializeVisionAiming(); // Reset total error
-		    	}
-		    	if (_driversStation.getIsOperator_VisionAim_BtnPressed()) {
-		    		_autoShootController.AimWithVision();
-		    	} */
 		    	
     			//============================================================================
     			// Fuel Infeed Cmd
@@ -622,8 +631,9 @@ public class Robot extends IterativeRobot {
     			//=====================
     			// Shooter Table
     			//=====================	
-    			if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnPressed()
-    				&& _driversStation.getIsOperator_IndexShooterSettingsUp_BtnPressed())
+    			//if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnPressed()
+    			//	&& _driversStation.getIsOperator_IndexShooterSettingsUp_BtnPressed())
+    			if (_driversStation.getIsOperator_AutoDistance_BtnPressed())
     			{
     				_shooter.CalcAutomaticShooter(_roboRealmClient.get_DistanceToBoilerInches());
     			}
@@ -651,7 +661,7 @@ public class Robot extends IterativeRobot {
     			}
     			
     			//=====================
-    			// Run Shooter Motors (FYI: High Speed Lane is controlled by these)
+    			// Run Shooter Motors
     			//=====================
 				// Stg 1 Bump Up / Down
     			if(_driversStation.getIsEngineering_BumpStg1RPMUp_BtnJustPressed()) {
@@ -752,13 +762,13 @@ public class Robot extends IterativeRobot {
 		      	else if (_driversStation.getIsDriver_SendGearTiltToHome_BtnJustPressed()) {
 		      		// 4th priority is Goto Home
 		      		_gearHandler.MoveGearToHomePosition();
-		      		DriverStation.reportError("NavX: " + Double.toString(_navX.getYaw()), false);
-		      		DriverStation.reportError("Vision: " + Double.toString(_roboRealmClient.get_Angle()), false);
+		      		//DriverStation.reportError("NavX: " + Double.toString(_navX.getYaw()), false);
+		      		//DriverStation.reportError("Vision: " + Double.toString(_roboRealmClient.get_Angle()), false);
 		      	}
 		      	else if (_driversStation.getIsDriver_SendGearTiltToScore_BtnJustPressed()) {
 		      		// 5th priority is Goto Score
 		      		_gearHandler.MoveGearToScorePosition();
-		      	}
+		      	} 
 		      	else if (_driversStation.getIsDriver_SendGearTiltToFloor_BtnJustPressed()
 		      				|| !_gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
 		      		// 6th priority is Goto Floor
@@ -766,7 +776,15 @@ public class Robot extends IterativeRobot {
 		      		//			we must treat it as a Reentrant function
 		      		//			and automatically recall it until complete
 		      		_gearHandler.MoveGearToFloorPositionReentrant();
-		      	}  
+		      	} 
+		      	//else if(_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
+	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
+	      		//	_gearHandler.MoveTiltAxisVBus(0.1);
+	      		//} 
+		      	//else if (!_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
+	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()){
+	      		//	_gearHandler.MoveTiltAxisVBus(0.0);
+	      		//}
 		      	
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
@@ -857,19 +875,9 @@ public class Robot extends IterativeRobot {
 		    	//	_climber.RunClimberReentrant();
 		    	//}
     			break;
-    		
-    		/*
-    		case AUTO_AIM:
-    			if(_driversStation.getIsDriver_Climb_ButtonPressed()) {
-    				_chassisAutoAim.updateVision(-1.0 * _roboRealmClient.get_Angle());
-    			} else {
-    				_teleopMode = TELEOP_MODE.STANDARD;
-    			}
-    			break;
-    		*/
     			
     	}	// end of switch statement
-      	
+
     	// =====================================
     	// Step N: Finish up 
     	// =====================================
@@ -877,9 +885,7 @@ public class Robot extends IterativeRobot {
     	// Refresh Dashboard
     	OutputAllToSmartDashboard();
     	
-    	// =====================================
-    	// Step N: Optionally Log Data
-    	// =====================================
+    	// Optionally Log Data
     	WriteLogData();
 	}
 		
@@ -914,6 +920,10 @@ public class Robot extends IterativeRobot {
     // utility method that calls the outputToSmartDashboard method on all subsystems
     private void OutputAllToSmartDashboard() {
     	// limit spamming
+    	
+    	long scanCycleDeltaInMSecs = new Date().getTime() - _lastScanEndTimeInMSec;
+    	_scanTimeSamples.add(new BigDecimal(scanCycleDeltaInMSecs));
+    	
     	if((new Date().getTime() - _lastDashboardWriteTimeMSec) > 100) {
 	    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
 	    	
@@ -940,9 +950,16 @@ public class Robot extends IterativeRobot {
 	    	SmartDashboard.putString("Robot Build", _buildMsg);
 	    	SmartDashboard.putString("FMS Debug Msg", _fmsDebugMsg);
 	    	
-    		// reset last time
+	    	BigDecimal movingAvg = _scanTimeSamples.getAverage();
+	    	DecimalFormat df = new DecimalFormat("####");
+	    	SmartDashboard.putString("Scan Time (2 sec roll avg)", df.format(movingAvg) + " mSec");
+	    	
+    		// snapshot last time
     		_lastDashboardWriteTimeMSec = new Date().getTime();
     	}
+    	
+    	// snapshot when this scan ended
+    	_lastScanEndTimeInMSec = new Date().getTime();
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
@@ -951,7 +968,8 @@ public class Robot extends IterativeRobot {
 	    	// create a new, empty logging class
         	LogData logData = new LogData();
 	    	
-	    	// ask each subsystem that exists to add its data	    	
+	    	// ask each subsystem that exists to add its data
+        	// 23.Apr.2017 TomB Commented most out to improve logging perf
 	    	if(_chassis != null) 			{ _chassis.UpdateLogData(logData); }
 	    	
 	    	//if(_climber != null) 			{ _climber.UpdateLogData(logData); }
@@ -969,7 +987,7 @@ public class Robot extends IterativeRobot {
 	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
 	    	
 	    	//if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
-    	
+	    	
 	    	// now write to the log file
 	    	_dataLogger.WriteDataLine(logData);
     	}

@@ -87,13 +87,12 @@ public class TurnAndShoot {
       			
       			if(_trajController.onTarget()) {
       				_trajController.disable();
-      				_autoShoot.InitializeVisionAiming();
       				_autonState = AUTON_STATE.AIM_WITH_VISION;
       			}
       			break;
       			
       		case AIM_WITH_VISION:
-      			_autoShoot.AimWithVision();
+      			_autoShoot.AimWithVision(0);
       			
       			if (_autoShoot.IsReadyToShoot()) {
       				_shooter.ToggleRunShooterFeeder();

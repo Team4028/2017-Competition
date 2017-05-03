@@ -18,4 +18,9 @@ public class RawImageData {
     public double EstimatedDistance;
 
     public Dimension FOVDimensions;
+    
+    public boolean IsVisionDataValid;
+    public int BadDataCounter;
+    
+    public double FovCenterToTargetXAngleRawDegrees;
 }

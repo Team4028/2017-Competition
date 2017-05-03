@@ -61,18 +61,17 @@ public class ShooterTable {
 			actuatorCalcValue = ((distanceInInches - 144) * 0.00083333) + 0.67;
 		}
 		
-		
-		// Stage 1 = -0.0000754 inches3 + 0.0022174 inches2 - 4.7583458 inches - 2,633.7902098
+		// Stage 1 = -0.0000754 inches^3 + 0.0022174 inches^2 - 4.7583458 inches - 2,633.7902098
 		int stg1CalculatedRPM = (int) (Math.round(-0.0000754 * Math.pow(distanceInInches, 3)) 
 												+ (0.0022174 * Math.pow(distanceInInches, 2)) 
 												+ (-4.7583458 * distanceInInches) 
 												- 2633.7902098);
 		
-		// Stage 2 = 0.0000757 inches3 - 0.0571191 inches2 + 2.7158189 inches - 2,633.6683317
+		// Stage 2 = 0.0000757 inches^3 - 0.0571191 inches^2 + 2.7158189 inches - 2,633.6683317
 		int stg2CalculatedRPM = (int) (Math.round( 0.0000757 * Math.pow(distanceInInches, 3)) 
 												+ (-0.0571191 * Math.pow(distanceInInches, 2)) 
 												+ (2.7158189 * distanceInInches) 
-												- 2633.6683317);	
+												- 2633.6683317);
 		
 		ShooterTableEntry ste = new ShooterTableEntry(_indexCounter++, 
 														distanceInInches, 
@@ -264,20 +263,39 @@ public class ShooterTable {
 		//======================================================================================
 		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
 		//======================================================================================
+		// Worlds
+		/*
+		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .53, -3125, -2825, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .60, -3250, -2950, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .62, -3400, -3100, true));
+		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .65, -3600, -3300, true));
+		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .68, -3750, -3450, false));
+		*/
 		
-		table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 48, " 4ft", .46, -2867, -2633, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 60, " 5ft", .51, -2933, -2667, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 72, " 6ft", .57, -3000, -2700, false));
+		// Cleveland
 		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 96, " 8ft", .60, -3133, -2833, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .62, -3200, -2900, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 120, "10ft", .64, -3300, -3000, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3400, -3100, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 144, "12ft", .67, -3500, -3200, true));
 		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .69, -3733, -3433, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
+		
+		
+		
+		// Reference
+		//table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 48, " 4ft", .46, -2867, -2633, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 60, " 5ft", .51, -2933, -2667, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 72, " 6ft", .57, -3000, -2700, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 96, " 8ft", .60, -3133, -2833, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3400, -3100, false));
+		// old table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .62, -3200, -2900, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 120, "10ft", .64, -3300, -3000, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 144, "12ft", .67, -3500, -3200, true));
+		//table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .69, -3733, -3433, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
 		return table;
 	}
@@ -290,7 +308,11 @@ public class ShooterTable {
 		//======================================================================================
 		//									Position	Inches Desc	Slider	Stg1  Stg2  Is Default?
 		//======================================================================================
-
+		
+		table.add(new ShooterTableEntry(indexCounter++, 114, "9' 6ft", .60, -3375, -3075, false));
+		table.add(new ShooterTableEntry(indexCounter++, 156, "13ft", .68, -3617, -3317, false));
+		table.add(new ShooterTableEntry(indexCounter++, 147, "12' 3ft", .63, -3479, -3185, false));
+		table.add(new ShooterTableEntry(indexCounter++, 150, "12' 6ft", .643, -3550, 3250, false));
 		table.add(new ShooterTableEntry(indexCounter++, 172, "14' 4ft", .69, -3771, -3471, false));
 		table.add(new ShooterTableEntry(indexCounter++, 175, "14' 7ft", .69, -3811, -3511, false));
 		

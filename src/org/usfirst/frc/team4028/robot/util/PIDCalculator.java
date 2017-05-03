@@ -1,7 +1,5 @@
 package org.usfirst.frc.team4028.robot.util;
 
-import edu.wpi.first.wpilibj.util.BoundaryException;
-
 public class PIDCalculator {
 	private double _p; // "proportional" term
 	private double _i; // "integral" term
@@ -26,19 +24,17 @@ public class PIDCalculator {
 		_error = _setpoint - input;		
 		if (Math.abs(_error) < 6.0) {
 			if (Math.abs(_totalError + _error) < _totalErrorCeiling) {
-				_totalError += _error;
-			} else {
+				_totalError += _error; // Accumulate error when it is under 6 degrees 
 			}
 		} else {
 			_totalError = 0.0;
 		}
 		
-		double proportionalError = Math.abs(_error) < _deadband ? 0 : _error;
+		double proportionalError = Math.abs(_error) < _deadband ? 0 : _error; // output is zero when error is below deadband
 		
 		_result = (_p * proportionalError + _i * _totalError + _d * (_error - _prevError));
-		//DriverStation.reportError(Double.toString(_result), false);
 		
-		if (_result > _maximumOutput) {
+		if (_result > _maximumOutput) { // Ensure result is between min and max output
             _result = _maximumOutput;
         } else if (_result < _minimumOutput) {
             _result = _minimumOutput;
@@ -51,10 +47,6 @@ public class PIDCalculator {
 	}
 	
 	public void setOutputRange(double minimumOutput, double maximumOutput) {
-		if (minimumOutput > maximumOutput) {
-			throw new BoundaryException("Lower bound is greater than upper bound");
-		}
-		
 		_minimumOutput = minimumOutput;
 		_maximumOutput = maximumOutput;
 	}
@@ -67,8 +59,7 @@ public class PIDCalculator {
         return (Math.abs(_error) < _deadband);
     }
 	
-    // Reset all internal terms.
-    public void reset() {
+    public void reset() {   // Reset all internal terms.
         _prevError = 0;
         _totalError = 0;
         _result = 0;
@@ -77,9 +68,5 @@ public class PIDCalculator {
     
     public void resetTotalError() {
     	_totalError = 0;
-    }
-	
-	public double getError() {
-        return _error;
     }
 }

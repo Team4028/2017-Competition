@@ -1,15 +1,17 @@
 package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
-import org.usfirst.frc.team4028.robot.util.HopperToBoilerTrajectory;
+import org.usfirst.frc.team4028.robot.util.JTurn;
 import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
-import org.usfirst.frc.team4028.robot.util.MoveToHopperTrajectory;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperBlue_X;
+import org.usfirst.frc.team4028.robot.util.MoveToHopperRed_X;
+import org.usfirst.frc.team4028.robot.util.MoveToHopper_Y;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
-import org.usfirst.frc.team4028.robot.util.TurnAndShootTrajectory;
 import org.usfirst.frc.team4028.robot.util.TwoGearLong;
 import org.usfirst.frc.team4028.robot.util.TwoGearShort;
 import org.usfirst.frc.team4028.robot.util.TwoGearSuperShort;
+import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import java.util.TimerTask;
 
@@ -37,8 +39,10 @@ public class TrajectoryDriveController {
 	private double _heading;
 	private double _kTurnGyro;
 	private double _kTurnVision = -0.006;
-	private double _leftPower;
-	private double _rightPower;
+	private double _leftCommand;
+	private double _rightCommand;
+	private double _leftOutput;
+	private double _rightOutput;
 	private double _setVisionError;
 	private double _turn;
 	private double _visionTurnThreshold = 0.15;
@@ -57,18 +61,18 @@ public class TrajectoryDriveController {
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
 		_roboRealm = roboRealm;
-		startTrajectoryController();
+		setIsFeedbackDisabled(false);
 	}
 	
 	public void configureIsHighGear(boolean isHighGear) {
 		if(isHighGear) {
-			_leftFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
-			_rightFollower.configure(0.18, 0.0, 0.0, 0.15, 0.0);
+			_leftFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0); // High Gear Constants
+			_rightFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0);
 			_kTurnGyro = -0.01;
 		} else {
-			_leftFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
-			_rightFollower.configure(0.27,  0.0,  0.0,  0.29,  0.0);
-			_kTurnGyro = -0.01;
+			_leftFollower.configure(0.2,  0.0,  0.0,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
+			_rightFollower.configure(0.2,  0.0,  0.0,  0.174,  0.025);
+			_kTurnGyro = -0.013;
 		}
 	}
 	
@@ -105,7 +109,7 @@ public class TrajectoryDriveController {
 					_heading = -1.0;
 				}
 				_direction = 1.0;
-				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = SideGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -115,19 +119,25 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = CenterGearTrajectory.LeftPoints;
 				_direction = 1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = CenterGearTrajectory.kNumPoints;
+				_trajectoryNumPoints = CenterGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
-			case HOPPER_TO_SHOOTING_POSITION:
-				_leftMotionProfile = HopperToBoilerTrajectory.LeftPoints;
-				_rightMotionProfile = HopperToBoilerTrajectory.RightPoints;
+			case J_TURN:
+				if (isBlueAlliance) {
+					_leftMotionProfile = JTurn.RightPoints;
+					_rightMotionProfile = JTurn.LeftPoints;
+					_heading = 1.0;
+				} else {
+					_leftMotionProfile = JTurn.LeftPoints;
+					_rightMotionProfile = JTurn.RightPoints;
+					_heading = -1.0;
+				}
 				_direction = -1.0;
-				_heading = 1.0;
-				_trajectoryNumPoints = HopperToBoilerTrajectory.kNumPoints;
+				_trajectoryNumPoints = JTurn.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case MOVE_TO_BOILER:
@@ -141,19 +151,43 @@ public class TrajectoryDriveController {
 					_heading = 1.0;
 				}
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToBoilerTrajectory.kNumPoints;
+				_trajectoryNumPoints = MoveToBoilerTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
-			case MOVE_TO_HOPPER:
-				_leftMotionProfile = MoveToHopperTrajectory.LeftPoints;
-				_leftMotionProfile = MoveToHopperTrajectory.RightPoints;
+			case MOVE_TO_HOPPER_BLUE_X:
+				_leftMotionProfile = MoveToHopperBlue_X.LeftPoints;
+				_rightMotionProfile = MoveToHopperBlue_X.RightPoints;
+				_heading = -1.0;
+				_direction = -1.0;
+				_trajectoryNumPoints = MoveToHopperBlue_X.LeftPoints.length;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				break;
+				
+			case MOVE_TO_HOPPER_RED_X:
+				_leftMotionProfile = MoveToHopperRed_X.RightPoints;
+				_rightMotionProfile = MoveToHopperRed_X.LeftPoints;
 				_heading = 1.0;
 				_direction = -1.0;
-				_trajectoryNumPoints = MoveToHopperTrajectory.kNumPoints;
+				_trajectoryNumPoints = MoveToHopperRed_X.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				break;
+				
+			case MOVE_TO_HOPPER_Y:
+				_leftMotionProfile = MoveToHopper_Y.LeftPoints;
+				_rightMotionProfile = MoveToHopper_Y.RightPoints;
+				_heading = 1.0;
+				if (isBlueAlliance) {
+					_direction = -1.0;
+				} else {
+					_direction = 1.0;
+				}
+				_trajectoryNumPoints = MoveToHopper_Y.LeftPoints.length;
+				
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case RETRIEVAL_GEAR:
@@ -167,17 +201,7 @@ public class TrajectoryDriveController {
 					_heading = 1.0;
 				}
 				_direction = 1.0;
-				_trajectoryNumPoints = SideGearTrajectory.kNumPoints;
-				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-				break;
-				
-			case TURN_AND_SHOOT:
-				_leftMotionProfile = TurnAndShootTrajectory.LeftPoints;
-				_rightMotionProfile = TurnAndShootTrajectory.RightPoints;
-				_direction = 1.0;
-				_heading = 1.0;
-				_trajectoryNumPoints = TurnAndShootTrajectory.kNumPoints;
+				_trajectoryNumPoints = SideGearTrajectory.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -187,17 +211,23 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = TwoGearLong.RightPoints;
 				_direction = 1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearLong.kNumPoints;
+				_trajectoryNumPoints = TwoGearLong.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case TWO_GEAR_SHORT_FWD:
-				_leftMotionProfile = TwoGearShort.LeftPoints;
-				_rightMotionProfile = TwoGearShort.RightPoints;
+				if (isBlueAlliance) {
+					_leftMotionProfile = TwoGearShort.RightPoints;
+					_rightMotionProfile = TwoGearShort.LeftPoints;
+					_heading = -1.0;
+				} else {
+					_leftMotionProfile = TwoGearShort.LeftPoints;
+					_rightMotionProfile = TwoGearShort.RightPoints;
+					_heading = 1.0;
+				}
 				_direction = 1.0;
-				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -207,7 +237,7 @@ public class TrajectoryDriveController {
 				_rightMotionProfile = TwoGearShort.RightPoints;
 				_direction = -1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -215,9 +245,9 @@ public class TrajectoryDriveController {
 			case TWO_GEAR_SUPER_SHORT:
 				_leftMotionProfile = TwoGearSuperShort.LeftPoints;
 				_rightMotionProfile = TwoGearSuperShort.RightPoints;
-				_direction = 1.0;
+				_direction = -1.0;
 				_heading = 1.0;
-				_trajectoryNumPoints = TwoGearSuperShort.kNumPoints;
+				_trajectoryNumPoints = TwoGearSuperShort.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
@@ -231,12 +261,12 @@ public class TrajectoryDriveController {
 	
 	public void update(int currentSegment) {
 		if (!_isEnabled) {
-			DriverStation.reportError("Not Enabled", false);
+			DriverStation.reportWarning("Not Enabled", false);
 			_chassis.TankDrive(0, 0);
 		}
 		
 		if (onTarget()) {
-			DriverStation.reportError("At Target", false);
+			DriverStation.reportWarning("At Target", false);
 			_chassis.TankDrive(0, 0);
 		} else {
 			double distanceL = _direction * _chassis.getLeftEncoderCurrentPosition();
@@ -269,19 +299,25 @@ public class TrajectoryDriveController {
 			
 			if(_isAutoStopEnabled && _roboRealm.get_isVisionDataValid()) {
 				if (!_roboRealm.get_isInGearHangPosition()) {
-					_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
-					_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+					_leftCommand = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+					_rightCommand = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 				} else {
-					_leftPower = 0.0;
-					_rightPower = 0.0;
+					_leftCommand = 0.0;
+					_rightCommand = 0.0;
 					DriverStation.reportError("AUTO STOP!", false);
 				}
 			} else {
-				_leftPower = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
-				_rightPower = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
+				_leftCommand = _direction * _leftFollower.calculate(distanceL, _leftMotionProfile, currentSegment);
+				_rightCommand = _direction * _rightFollower.calculate(distanceR, _rightMotionProfile, currentSegment);
 			}
-			
-			_chassis.TankDrive(_leftPower - _turn, _rightPower + _turn);
+			if (_direction == 1.0) {
+				_leftOutput = GeneralUtilities.ClampValue(_leftCommand - _turn, 0.0, 1.0);
+				_rightOutput = GeneralUtilities.ClampValue(_rightCommand + _turn, 0.0, 1.0);
+			} else if (_direction == -1.0) {
+				_leftOutput = GeneralUtilities.ClampValue(_leftCommand - _turn, -1.0, 0.0);
+				_rightOutput = GeneralUtilities.ClampValue(_rightCommand + _turn, -1.0, 0.0);
+			}
+			_chassis.TankDrive(_leftOutput, _rightOutput);
 		}
 	}
 	
@@ -291,9 +327,10 @@ public class TrajectoryDriveController {
 		_leftFollower.reset();
 		_rightFollower.reset();
 		_chassis.ZeroDriveEncoders();
+		_chassis.FullStop();
 		_navX.zeroYaw();
-		_isEnabled = true;
 		_currentSegment = 0;
+		_isEnabled = true;
 		DriverStation.reportError("Enabled", false);
 	}
 	
@@ -321,6 +358,10 @@ public class TrajectoryDriveController {
 		return _navX.getYaw();
 	}
 	
+	public double getDirection() {
+		return _direction;
+	}
+	
 	public int getFollowerCurrentSegment() {
 		return _currentSegment;
 	}
@@ -335,10 +376,17 @@ public class TrajectoryDriveController {
 		_updaterTimer.scheduleAtFixedRate(_updaterTask, 0, 20);
 	}
 	
+	public void stopTrajectoryController() {
+		_isUpdaterTaskRunning = false;
+		//_updaterTimer.cancel();
+	}
+	
 	public void OutputToSmartDashboard() {
 		if(_roboRealm.get_isVisionDataValid()) {
-			SmartDashboard.putNumber("Vision Error", _roboRealm.get_Angle());
+			SmartDashboard.putNumber("Vision ", _roboRealm.get_Angle());
 		}
+		
+		SmartDashboard.putNumber("Motor Output", _leftOutput);
 	}
 	
 	private class UpdaterTask extends TimerTask {

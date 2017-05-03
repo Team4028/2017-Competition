@@ -16,12 +16,10 @@ public class NavXGyro {
 	public NavXGyro(SPI.Port port) {
         try {          
         	_navXSensor = new AHRS(port); // Communication via RoboRIO MXP (SPI) 
-        } 
-        catch (RuntimeException ex ) {
+        } catch (RuntimeException ex ) {
             DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
         }
 	}
-	
 	//============================================================================================
 	// Methods follow
 	//============================================================================================

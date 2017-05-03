@@ -35,6 +35,7 @@ public class GearHandler {
 	
 	// define class level private working variables
 	private double _targetPositionRotations;
+	private long _beaverTailWagReentrantRunningMsec;
 	
 	// --------------------------------------------------------
 	// define Tilt Motor PID constants
@@ -70,7 +71,7 @@ public class GearHandler {
 	private static final double GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS = 00.48;
 	private static final double TARGET_DEADBAND = 00.03;
 	
-	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.25;   //set
+	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.40;   //set
 	private static final long GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC = 5000;
 	private String _gearTiltState;
 	
@@ -98,7 +99,6 @@ public class GearHandler {
 		_gearTiltMotor.setPID(TILT_PID_P_CONSTANT, TILT_PID_I_CONSTANT, TILT_PID_D_CONSTANT);
 		_gearTiltMotor.configNominalOutputVoltage(0.0f, -0.0f);
 		_gearTiltMotor.configPeakOutputVoltage(TILT_MAX_V_DOWN_TILT, TILT_MAX_V_UP_TILT);
-    	//_gearTiltMotor.reverseOutput(true);
 		
 		// Infeed Motor
 		_gearInfeedMotor = new CANTalon(talonInfeedCanBusAddr);
@@ -171,11 +171,11 @@ public class GearHandler {
     			break;
     			
     		case TIMEOUT:
-    			DriverStation.reportError("Gear Tilt Zero Timed Out", false);
+    			DriverStation.reportWarning("Gear Tilt Zero Timed Out", false);
     			break;
     			
     		case UNDEFINED:
-    			DriverStation.reportError("Gear Tilt Zero State Undefined", false);
+    			DriverStation.reportWarning("Gear Tilt Zero State Undefined", false);
     			break;
     	}
     }
@@ -267,6 +267,25 @@ public class GearHandler {
 	public void FullStop() {
 		MoveTiltAxisVBus(0.0);
 		_gearInfeedMotor.set(0.0);
+	}
+	
+	public void WagBeaverTailReentrant()
+	{	
+		if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 2000)	{		// 800 ; 500
+			MoveGearToHomePosition();
+		}
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 4000) {	// 800 ; 500
+			// pause
+		}
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 6000) {	// 40; 20; 40
+			MoveGearToScorePosition();
+		} 
+		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 8000) {	// 800 ; 500
+			// pause
+		}
+		else {
+			_beaverTailWagReentrantRunningMsec = System.currentTimeMillis();
+		}
 	}
 	
 	// update the Dashboard with any Climber specific data values
