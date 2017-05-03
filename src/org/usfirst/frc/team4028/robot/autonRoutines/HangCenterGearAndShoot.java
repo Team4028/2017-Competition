@@ -35,7 +35,7 @@ public class HangCenterGearAndShoot {
 
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 140;
-	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 141;
+	private static final int BLUE_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 145;
 
 	private enum AUTON_STATE {
 		UNDEFINED, 
