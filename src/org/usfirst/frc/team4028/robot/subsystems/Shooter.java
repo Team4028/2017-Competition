@@ -121,8 +121,9 @@ public class Shooter {
 	// define class level Ball Infeed Motor Constants
 	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
 	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = 0.7;
-	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
+	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.85;
 
+	private static final double SHOOTER_WHEEL_WITHIN_SPEED_PERCENT_THRESHHOLD = 3.0;  // was 2.0
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
 	//============================================================================================
@@ -250,8 +251,8 @@ public class Shooter {
 		
 		ShooterMotorsReentrant();
 		// we use a 2% error threshhold
-		if((Math.abs(getStg2RPMErrorPercent()) <= 2.0)
-				&& (Math.abs(getStg1RPMErrorPercent()) <= 2.0 )) {
+		if((Math.abs(getStg2RPMErrorPercent()) <= SHOOTER_WHEEL_WITHIN_SPEED_PERCENT_THRESHHOLD)			
+				&& (Math.abs(getStg1RPMErrorPercent()) <= SHOOTER_WHEEL_WITHIN_SPEED_PERCENT_THRESHHOLD)) {
 			return true;
 		} else {
 			return false;

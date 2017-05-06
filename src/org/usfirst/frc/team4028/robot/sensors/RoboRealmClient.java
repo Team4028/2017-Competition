@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.opencv.core.Mat;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
+import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
 import org.usfirst.frc.team4028.robot.vision.RoboRealmAPI;
@@ -73,6 +74,9 @@ public class RoboRealmClient {
  	private static final double BOILER_CAMERA_CALIBRATION_FACTOR = 0.0;
  	 	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
+ 	
+ 	private static final double BOILER_DISTANCE_OFFSET_INCHES = 2.0;	
+ 	
  	// =============================================================
  	
  	
@@ -377,10 +381,11 @@ public class RoboRealmClient {
  	    	fovDimensions.height = Double.parseDouble((String)vector.elementAt(RAW_HEIGHT_IDX));
  	    	pollingThreadWorkingTargetRawData.FOVDimensions = fovDimensions;
  	    	
- 	    	double estDistance = CalcDistanceUsingPolynomial(pollingThreadWorkingTargetRawData.HighMiddleY);
- 	    	double estDistance2 = CalcDistanceUsingCameraAngle(pollingThreadWorkingTargetRawData.HighMiddleY);
+ 	    	//double estDistance = CalcDistanceUsingPolynomial(pollingThreadWorkingTargetRawData.HighMiddleY);
+ 	    	double estDistanceRaw = GeneralUtilities.RoundDouble(CalcDistanceUsingCameraAngle(pollingThreadWorkingTargetRawData.HighMiddleY), 2);
+ 	    	double estDistanceAdj = estDistanceRaw + BOILER_DISTANCE_OFFSET_INCHES;
  	    	
- 	    	pollingThreadWorkingTargetRawData.EstimatedDistance = estDistance2;
+ 	    	pollingThreadWorkingTargetRawData.EstimatedDistance = estDistanceAdj;
  	    	
  	    	pollingThreadWorkingTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
  	
@@ -402,15 +407,14 @@ public class RoboRealmClient {
  	    	
  	    	// limit spamming
  	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
-	    		System.out.println("Vision Data Valid? " + get_isVisionDataValid()
+	    		System.out.println("Vision Data Valid? " + pollingThreadWorkingTargetRawData.IsVisionDataValid
 	    							+ " |Camera= " + pollingThreadWorkingTargetRawData.CameraType 
-	    							+ " |Angle= " + fovCenterToTargetXAngleRawDegrees 
+	    							+ " |Angle= " + pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees
 	    							+ " |HiMidY= " + pollingThreadWorkingTargetRawData.HighMiddleY
-	    							+ " |DistInches= " + pollingThreadWorkingTargetRawData.EstimatedDistance
-	    							+ " |DistInchesCA= " + estDistance2
+	    							+ " |DistInchesAdj= " + pollingThreadWorkingTargetRawData.EstimatedDistance
 	    							+ " |mSec=" + pollingThreadWorkingTargetRawData.ResponseTimeMSec
-	    							+ " |BlobCnt= " + pollingThreadWorkingTargetRawData.BlobCount 
-	    							+ " |IsGearOnTarget= " + Boolean.toString(get_isInGearHangPosition()));
+	    							+ " |BlobCnt= " + pollingThreadWorkingTargetRawData.BlobCount
+	    							+ " |DistInchesRaw= " + estDistanceRaw);
 	    		// reset last time
 	    		_lastDebugWriteTimeMSec = new Date().getTime();
  	    	}

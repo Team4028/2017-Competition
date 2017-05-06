@@ -7,16 +7,20 @@ import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTableEntry;
 
 public class AutoShootController {
+	
 	ChassisAutoAimController _chassisAutoAim;
 	Shooter _shooter;
 	ShooterTable _shooterTable;
 	ShooterTableEntry _shooterTableEntry;
 	RoboRealmClient _roboRealm;
+	
 	private long _onTargetStartTime;
-	private double _visionAimingDeadband = 1.2;
 	private boolean _isOnTarget;
 	private boolean _isOnTargetLastCycle;
 	private boolean _isShooterAtTargetSpeed;
+	
+	public static final double VISION_AIMING_DEADBAND = 1.2;
+	
 	
 	public AutoShootController(ChassisAutoAimController chassisAutoAim, RoboRealmClient roboRealm, Shooter shooter, ShooterTable shooterTable){
 		_chassisAutoAim = chassisAutoAim;
@@ -61,13 +65,17 @@ public class AutoShootController {
 	}
 	
 	public void AimWithVision(double bias) {
+		// Auto AIM
 		_chassisAutoAim.motionMagicMoveToTarget(_chassisAutoAim.currentHeading() - (_roboRealm.get_Angle()/3.5) + bias);
-		if (Math.abs(_roboRealm.get_Angle()/1.5226 + bias) < _visionAimingDeadband) { // On target if under vision aiming deadband
+		
+		// check if we are "on target" within the deadbad
+		if (Math.abs(_roboRealm.get_Angle()/1.5226 + bias) < VISION_AIMING_DEADBAND) { 
 			_isOnTarget = true;
 		} else {
 			_isOnTarget = false;
 		}
 		
+		// reset on target timer
 		if (_isOnTarget && !_isOnTargetLastCycle) {
 			_onTargetStartTime = System.currentTimeMillis();
 		}
@@ -76,7 +84,10 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 600) && _isOnTarget && _isShooterAtTargetSpeed && _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 600) 
+				&& _isOnTarget 
+				&& _isShooterAtTargetSpeed 
+				&& _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time
 			return true;
 		} else {
 			return false;

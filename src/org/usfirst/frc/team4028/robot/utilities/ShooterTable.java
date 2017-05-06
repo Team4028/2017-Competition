@@ -273,13 +273,18 @@ public class ShooterTable {
 		*/
 		
 		// Cleveland
-		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3400, -3100, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .59, -3067, -2767, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3400, -3100, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3400, -3100, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3617, -3317, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
-		
+		// Mod Cleveland (Sat)
+		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .53, -3017, -2717, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3225, -2925, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3350, -3050, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3517, -3217, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3800, -3500, false));
 		
 		// Reference
 		//table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));

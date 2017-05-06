@@ -35,7 +35,7 @@ public class GearHandler {
 	
 	// define class level private working variables
 	private double _targetPositionRotations;
-	private long _beaverTailWagReentrantRunningMsec;
+	private long _flapAnnReentrantRunningMsec;
 	
 	// --------------------------------------------------------
 	// define Tilt Motor PID constants
@@ -269,22 +269,22 @@ public class GearHandler {
 		_gearInfeedMotor.set(0.0);
 	}
 	
-	public void WagBeaverTailReentrant()
+	public void FlapAnnReentrant()
 	{	
-		if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 2000)	{		// 800 ; 500
-			MoveGearToHomePosition();
-		}
-		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 4000) {	// 800 ; 500
-			// pause
-		}
-		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 6000) {	// 40; 20; 40
+		if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 1600)	{		// 800 ; 500
 			MoveGearToScorePosition();
-		} 
-		else if((System.currentTimeMillis() - _beaverTailWagReentrantRunningMsec) < 8000) {	// 800 ; 500
-			// pause
 		}
+		//else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 4000) {	// 800 ; 500
+			// pause
+		//}
+		else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 2000) {	// 40; 20; 40
+			MoveGearToHomePosition();
+		} 
+		//else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 8000) {	// 800 ; 500
+			// pause
+		//}
 		else {
-			_beaverTailWagReentrantRunningMsec = System.currentTimeMillis();
+			_flapAnnReentrantRunningMsec = System.currentTimeMillis();
 		}
 	}
 	

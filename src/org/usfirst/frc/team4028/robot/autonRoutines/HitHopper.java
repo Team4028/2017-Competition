@@ -162,7 +162,11 @@ public class HitHopper {
 				
 			case VISION_TURN:
 				_autoShootController.AimWithVision(0);
-      			
+				
+				// need to keep calling this so is motor at speed gets updated so IsReadyToShoot can pass
+				_autoShootController.LoadTargetDistanceUsingVision();
+				_autoShootController.RunShooterAtTargetSpeed();
+				
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
       				_shooter.ToggleRunShooterFeeder();
@@ -176,6 +180,7 @@ public class HitHopper {
 			case SHOOT:
 				_autoShootController.AimWithVision(0);
 				_shooter.RunShooterFeederReentrant();
+				_gearHandler.FlapAnnReentrant();
 				
 			case UNDEFINED:
 				break;
