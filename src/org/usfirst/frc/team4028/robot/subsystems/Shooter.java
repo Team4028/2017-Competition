@@ -120,7 +120,7 @@ public class Shooter {
 	
 	// define class level Ball Infeed Motor Constants
 	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
-	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = 0.7;
+	private static final double HIGH_ROLLER_TARGET_VOLTAGE_COMMAND = 10.2;
 	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.7;
 
 	//============================================================================================
@@ -175,7 +175,7 @@ public class Shooter {
 		
 		// High Speed Infeed Lane Motor
 		_highSpeedInfeedLaneMtr = new CANTalon(highSpeedInfeedLaneMtrCanBusAddr);
-		_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+		_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.Voltage);
 		_highSpeedInfeedLaneMtr.enableBrakeMode(false);
 		_highSpeedInfeedLaneMtr.enableLimitSwitch(false, false);
 		
@@ -480,7 +480,7 @@ public class Shooter {
 			// 1800 mSec fwd
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND);
-			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND);
+			RunHighRoller(HIGH_ROLLER_TARGET_VOLTAGE_COMMAND);
 		}
 		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1840) {	// 40; 20; 40
 			// 40 mSec pause
@@ -492,7 +492,7 @@ public class Shooter {
 			// 40 mSec rev
 			RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND);
 			RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
-			RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
+			RunHighRoller(HIGH_ROLLER_TARGET_VOLTAGE_COMMAND * -1.0);
 		}
 		else if((System.currentTimeMillis() - _shooterInfeedReentrantRunningMsec) < 1920) {	// 40; 20; 40
 			// 40 mSec pause
@@ -507,7 +507,7 @@ public class Shooter {
 	public void RunShooterFeederInReverse() {
 		RunHighSpeedInfeedLane(HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND * -1.0);
 		RunMagicCarpet(MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND * -1.0);
-		RunHighRoller(HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0);
+		RunHighRoller(HIGH_ROLLER_TARGET_VOLTAGE_COMMAND * -1.0);
 	}
 	
 	public void CleanupRunShooterFeederInReverse() {
@@ -632,9 +632,9 @@ public class Shooter {
 		}
 		
 		String highRollerMtrInOut = "?";
-		if(_highRollerMtrTargetVBus == HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND) {
+		if(_highRollerMtrTargetVBus == HIGH_ROLLER_TARGET_VOLTAGE_COMMAND) {
 			highRollerMtrInOut = "IN";
-		} else if (_highRollerMtrTargetVBus == (HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND * -1.0)){
+		} else if (_highRollerMtrTargetVBus == (HIGH_ROLLER_TARGET_VOLTAGE_COMMAND * -1.0)){
 			highRollerMtrInOut = "OUT";
 		} else if (_highRollerMtrTargetVBus == 0.0){
 			highRollerMtrInOut = "off";
