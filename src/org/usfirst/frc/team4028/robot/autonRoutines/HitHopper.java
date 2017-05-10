@@ -178,7 +178,7 @@ public class HitHopper {
 				break;
 				
 			case SHOOT:
-				_autoShootController.AimWithVision(0);
+				//_autoShootController.AimWithVision(0);
 				_shooter.RunShooterFeederReentrant();
 				_gearHandler.FlapAnnReentrant();
 				
