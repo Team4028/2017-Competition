@@ -192,7 +192,10 @@ public class Chassis {
 	}
 	
 	// stop the motors
-	public void FullStop() { ArcadeDrive(0.0, 0.0); }
+	public void FullStop() { 
+		EnableBrakeMode(true);
+		ArcadeDrive(0.0, 0.0);
+	}
 	
 	public void EnableBrakeMode(boolean isEnabled) {
 		_leftDriveMaster.enableBrakeMode(isEnabled);
@@ -334,7 +337,7 @@ public class Chassis {
 	}
 	
 	public double getLeftEncoderCurrentVelocity() {
-		return _leftDriveMaster.getEncVelocity();
+		return (_leftDriveMaster.getEncVelocity()/7.5);
 	}
 	
 	public double getRightEncoderCurrentPosition() {
@@ -342,7 +345,7 @@ public class Chassis {
 	}
 	
 	public double getRightEncoderCurrentVelocity() {
-		return _rightDriveMaster.getEncVelocity();
+		return (_rightDriveMaster.getEncVelocity()/7.5);
 	}
 	
 	public double getRightEncoderCurrentAccDec() {

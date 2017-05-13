@@ -53,6 +53,7 @@ public class Shooter {
 	
 	private Servo _linearActuator;
 	private Servo _hopperCarousel;
+	private Servo _hopperServo;
 	
 	// define class level working variables
 	private ShooterTable _shooterTable;
@@ -78,9 +79,7 @@ public class Shooter {
 	
 	//==============================================================================================
 	//define class level PID constants					// new	// clev
-	
-	// Worlds
-
+	// Post Worlds
 	/*
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.027; //0.033; //
 	private static final double FIRST_STAGE_MTG_P_GAIN = 0.5; //0.45; // 0.4; //0.35; //0.30; // 0.25;// 0.325;    
@@ -104,7 +103,7 @@ public class Shooter {
 	private static final double SECOND_STAGE_MTG_P_GAIN =  0.175; 	//0.3; // .250; //0.175; //
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
 	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; 	//3.0; //6.0; // 
-	
+
 	//==============================================================================================
 	
 	//define class level Actuator Constants
@@ -123,7 +122,7 @@ public class Shooter {
 	// define class level Ball Infeed Motor Constants
 	private static final double MAGIC_CARPET_TARGET_PERCENTVBUS_COMMAND = -0.7;
 	private static final double HIGH_ROLLER_TARGET_PERCENTVBUS_COMMAND = 0.7;
-	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.85;
+	private static final double HIGH_SPEED_INFEED_LANE_TARGET_PERCENTVBUS_COMMAND = -0.85; //-9.0; //-0.85;
 
 	private static final double SHOOTER_WHEEL_WITHIN_SPEED_PERCENT_THRESHHOLD = 3.0;  // was 2.0
 	//============================================================================================
@@ -150,7 +149,7 @@ public class Shooter {
 		_firstStgMtr.setP(FIRST_STAGE_MTG_P_GAIN); 
 		_firstStgMtr.setI(FIRST_STAGE_MTG_I_GAIN); 
 		_firstStgMtr.setD(FIRST_STAGE_MTG_D_GAIN);
-		_firstStgMtr.SetVelocityMeasurementPeriod(VelocityMeasurementPeriod.Period_20Ms);
+		_firstStgMtr.SetVelocityMeasurementPeriod(VelocityMeasurementPeriod.Period_100Ms);
 		//_firstStgMtr.SetVelocityMeasurementWindow(windowSize);
 		
 		// Second Stage Motor
@@ -181,6 +180,8 @@ public class Shooter {
 		// High Speed Infeed Lane Motor
 		_highSpeedInfeedLaneMtr = new CANTalon(highSpeedInfeedLaneMtrCanBusAddr);
 		_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+		//_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.Voltage);
+		//_highSpeedInfeedLaneMtr.setVoltageCompensationRampRate(24.0);
 		_highSpeedInfeedLaneMtr.enableBrakeMode(false);
 		_highSpeedInfeedLaneMtr.enableLimitSwitch(false, false);
 		
@@ -195,6 +196,7 @@ public class Shooter {
 		
 		// Hopper Carousel
 		_hopperCarousel = new Servo(8);
+		_hopperServo = new Servo(7);
 		
 		// Default Feeder Subsystem working variables
 		_magicCarpetMtrTargetVBus = 0;
@@ -439,6 +441,7 @@ public class Shooter {
 	//============================================================================================
 	public void ResetHopperCarousel() {
 		_hopperCarousel.setPosition(1.0);
+		_hopperServo.setPosition(1.0);
 	}
 	
 	public void ToggleHopperCarousel() {
@@ -448,8 +451,10 @@ public class Shooter {
 	public void RunHopperCarousel() {
 		if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 750) {
 			_hopperCarousel.setPosition(0.0);
+			_hopperServo.setPosition(0.0);
 		} else if ((System.currentTimeMillis() - _hopperCarouselReentrantRunningMsec) < 1500) {
 			_hopperCarousel.setPosition(1.0);
+			_hopperServo.setPosition(1.0);
 		} else {
 			_hopperCarouselReentrantRunningMsec = System.currentTimeMillis();
 		}
