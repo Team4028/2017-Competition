@@ -163,7 +163,7 @@ public class TrajectoryDriveController {
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToHopperBlue_X.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case MOVE_TO_HOPPER_RED_X:
