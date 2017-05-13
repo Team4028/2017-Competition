@@ -76,7 +76,7 @@ public class RoboRealmClient {
  	 	
  	private double _cameraCalibrationFactor = GEAR_CAMERA_CALIBRATION_FACTOR;
  	
- 	private static final double BOILER_DISTANCE_OFFSET_INCHES = 2.0;	
+ 	private static final double BOILER_DISTANCE_OFFSET_INCHES = 0.0;	
  	
  	// =============================================================
  	
@@ -433,11 +433,11 @@ public class RoboRealmClient {
  	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 	    		System.out.println("Vision Data Valid? " + pollingThreadWorkingTargetRawData.IsVisionDataValid
 	    							+ " | Camera= " + pollingThreadWorkingTargetRawData.CameraType 
-	    							+ " | Angle= " + pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees
+	    							+ " | Angle= " + GeneralUtilities.RoundDouble(pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees, 2)
 	    							+ " | DistAdjIn= " + pollingThreadWorkingTargetRawData.EstimatedDistance
 	    							+ " | HiMidY= " + pollingThreadWorkingTargetRawData.HighMiddleY
-	    							+ " | FOV HxW= " + pollingThreadWorkingTargetRawData.FOVDimensions.height
-	    											+ "x" + pollingThreadWorkingTargetRawData.FOVDimensions.width
+	    							+ " | FOV WxH= " + pollingThreadWorkingTargetRawData.FOVDimensions.width
+	    											+ "x" + pollingThreadWorkingTargetRawData.FOVDimensions.height
 	    							+ " | mSec=" + pollingThreadWorkingTargetRawData.ResponseTimeMSec
 	    							+ " | DistRawIn= " + estDistanceRaw);
 	    		// reset last time
@@ -543,14 +543,14 @@ public class RoboRealmClient {
     // this method uses the actual camera angle to estimate the distance
     private double CalcDistanceUsingCameraAngle(double highMiddleYInPixels)
     {
-    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 23.4425175; //23.5672121;			// 23.5645549; 
+    	final double HALF_FIELD_OF_VIEW_IN_DEGREES = 20.0; //23.5672121;			// 23.5645549; 
     	final double TARGET_HEIGHT_IN_INCHES = 87.875;					// 87.875; 	
-    	final double SENSOR_HEIGHT_PIXELS = 472.273487; //477.511871;					// 479.115486; 
-    	final double FOCAL_LENGTH_IN_INCHES = 0.14407609; //0.13916669;					// 0.14362022; 
-    	final double OFFSET_0_IN_INCHES = 9.04908729;	//9.43578495;						// 9.99997139; 	
-    	final double OFFSET_1_IN_INCHES = 0.17265693;	//0.13906082;						// 0.1409929;
+    	final double SENSOR_HEIGHT_PIXELS = 473.722; //472.273487; //477.511871;					// 479.115486; 
+    	final double FOCAL_LENGTH_IN_INCHES = 0.15249726; //.14407609; //0.13916669;					// 0.14362022; 
+    	final double OFFSET_0_IN_INCHES = 3.5277308 ;//9.04908729;	//9.43578495;						// 9.99997139; 	
+    	final double OFFSET_1_IN_INCHES = -0.0183358; //0.17265693;	//0.13906082;						// 0.1409929;
     	
-     	final double CAMERA_ANGLE_IN_DEGREES = 38.5;	//38.76;	// <====== SET ME BASED ON CALIB PROCEDURE ============
+     	final double CAMERA_ANGLE_IN_DEGREES = 38.5;	// <====== SET ME BASED ON CALIB PROCEDURE ============
 
 
     	double sensorHeightInInches = Math.tan(Math.toRadians(HALF_FIELD_OF_VIEW_IN_DEGREES)) * FOCAL_LENGTH_IN_INCHES * 2.0;

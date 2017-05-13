@@ -272,7 +272,7 @@ public class Chassis {
 		SmartDashboard.putNumber("Right AccDec", GeneralUtilities.RoundDouble(_lastScanPerfMetricsSnapShot.RightDriveMtrRPMPerSec, 2));
 		
     	// limit spamming
-    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
+    	/*if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 			System.out.println("LEFT:"
 								//+ " | Pos= " + getLeftEncoderCurrentPosition()
 								+ " | Pos= " + GeneralUtilities.RoundDouble(_lastScanPerfMetricsSnapShot.LeftDriveMtrPos, 2)
@@ -287,7 +287,7 @@ public class Chassis {
 								+ " | AccDec= " + GeneralUtilities.RoundDouble(_lastScanPerfMetricsSnapShot.RightDriveMtrRPMPerSec, 2));
 			// reset last time
 			_lastDebugWriteTimeMSec = new Date().getTime();
-    	}
+    	}*/
 	}
 	
 	public void UpdateLogData(LogData logData) {
