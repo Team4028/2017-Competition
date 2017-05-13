@@ -19,7 +19,7 @@ public class AutoShootController {
 	private boolean _isOnTargetLastCycle;
 	private boolean _isShooterAtTargetSpeed;
 	
-	public static final double VISION_AIMING_DEADBAND = 1.2;
+	public static final double VISION_AIMING_DEADBAND = 0.5;
 	
 	
 	public AutoShootController(ChassisAutoAimController chassisAutoAim, RoboRealmClient roboRealm, Shooter shooter, ShooterTable shooterTable){

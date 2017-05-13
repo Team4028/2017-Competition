@@ -66,6 +66,7 @@ public class RoboRealmClient {
  	private static final int EXPECTED_BOILER_BLOB_COUNT = 1;
  	
  	private static final double CAMERA_FOV_HORIZONTAL_DEGREES = 83.0; // 58.5;
+ 	private static final double CAMERA_TO_SHOOTER_OFFSET_IN_DEGREES = 0.7;
  	
  	// =============================================================
  	// Camera Adjustment Factor
@@ -401,7 +402,7 @@ public class RoboRealmClient {
  	    	// round to 2 decimal places
  	    	fovCenterToTargetXAngleRawDegrees = Math.round(fovCenterToTargetXAngleRawDegrees * 100) / 100.0;	
  	    
- 	    	pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees = fovCenterToTargetXAngleRawDegrees;
+ 	    	pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees = fovCenterToTargetXAngleRawDegrees + CAMERA_TO_SHOOTER_OFFSET_IN_DEGREES;
  	    	
  	    	pollingThreadWorkingTargetRawData.IsVisionDataValid = true;
  	    	

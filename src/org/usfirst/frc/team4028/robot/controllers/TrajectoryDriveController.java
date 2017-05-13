@@ -66,8 +66,8 @@ public class TrajectoryDriveController {
 	
 	public void configureIsHighGear(boolean isHighGear) {
 		if(isHighGear) {
-			_leftFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0); // High Gear Constants
-			_rightFollower.configure(0.5, 0.0, 0.0, 0.15, 0.0);
+			_leftFollower.configure(1.0, 0.0, 0.0, 0.095, 0.08); // High Gear Constants
+			_rightFollower.configure(1.0, 0.0, 0.0, 0.095, 0.08);
 			_kTurnGyro = -0.01;
 		} else {
 			_leftFollower.configure(0.2,  0.0,  0.0,  0.174,  0.025); // Low Gear Constants // 0.3, 0.0, 0.0, 0.174, 0.032
@@ -121,7 +121,7 @@ public class TrajectoryDriveController {
 				_heading = 1.0;
 				_trajectoryNumPoints = CenterGearTrajectory.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 				break;
 				
 			case J_TURN:
@@ -163,7 +163,7 @@ public class TrajectoryDriveController {
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToHopperBlue_X.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 				break;
 				
 			case MOVE_TO_HOPPER_RED_X:
@@ -336,6 +336,7 @@ public class TrajectoryDriveController {
 	
 	public void disable() { 
 		_isEnabled = false; 
+		_chassis.FullStop();
 	}
 	
 	public boolean isEnable() { 

@@ -49,7 +49,7 @@ public class HitHopper {
 	private AUTON_STATE _autonState;
 	
 	// define class level constants
-	private static final int WAIT_TIME_MSEC = 1300;
+	private static final int WAIT_TIME_MSEC = 1100;
 	
 	//============================================================================================
 	// constructors follow
@@ -161,7 +161,7 @@ public class HitHopper {
 				break;
 				
 			case VISION_TURN:
-				_autoShootController.AimWithVision(0);
+				_autoShootController.AimWithVision(0.0);
 				
 				// need to keep calling this so is motor at speed gets updated so IsReadyToShoot can pass
 				_autoShootController.LoadTargetDistanceUsingVision();

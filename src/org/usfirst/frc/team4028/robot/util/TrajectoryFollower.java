@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4028.robot.util;
 
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 public class TrajectoryFollower {
 	private boolean _isFeedbackDisabled;
@@ -45,11 +46,13 @@ public class TrajectoryFollower {
 	    	  if (motionProfile[currentSegment][2] > 0.0) {
 		    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
 		      } else {
-		    	  _velocityOutput = _kv * motionProfile[currentSegment][1];
+		    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
 		      }
 	      } else {
 	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
 	      }
+	      
+	      _velocityOutput = GeneralUtilities.ClampValue(_velocityOutput, -1.0, 1.0);
 	      
 	      double output = _positionOutput + _velocityOutput;
 	
