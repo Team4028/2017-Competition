@@ -881,12 +881,11 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	// Step N: Finish up 
     	// =====================================
+    	// Optionally Log Data  (call this one 1st to calc drive metrics)
+    	WriteLogData();
     	
     	// Refresh Dashboard
     	OutputAllToSmartDashboard();
-    	
-    	// Optionally Log Data
-    	WriteLogData();
 	}
 		
 	@Override
@@ -963,7 +962,10 @@ public class Robot extends IterativeRobot {
     }
          
     // this method optionally calls the UpdateLogData on each subsystem and then logs the data
-    private void WriteLogData() {    	
+    private void WriteLogData() {  
+    	// always call this 1st to calc drive metrics
+    	if(_chassis != null) 			{ _chassis.UpdateDriveTrainPerfMetrics(); }
+    	
     	if(_dataLogger != null) {    	
 	    	// create a new, empty logging class
         	LogData logData = new LogData();

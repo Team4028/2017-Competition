@@ -122,7 +122,9 @@ public class RoboRealmClient {
 		    	_isConnected = false;
 		    } else {
 		    	DriverStation.reportWarning("Connected to RoboRealm!", false);
-		    	System.out.println("====> Connected to RoboRealm!");
+	 			System.out.println("=============================================");
+	 			System.out.println("====> Success..RoboRealm is connected! ======");
+	 			System.out.println("=============================================");
 		    	
 		    	_isConnected = true;
 		    }
@@ -140,6 +142,11 @@ public class RoboRealmClient {
 			// start the camera thread
 			Thread visionThread = new Thread(RoboRealmUpdater);
 			visionThread.start();
+		}
+		else {
+ 			System.out.println("=============================================");
+ 			System.out.println("====> Warning..RoboRealm not connected! =====");
+ 			System.out.println("=============================================");
 		}
 		
 		//Initialize counter to indicate bad data until proved good
@@ -325,15 +332,18 @@ public class RoboRealmClient {
 	//=========================================================================	
  	
 	// poll RoboRealm to read current values
- 	public void update() { 
- 		// get the Field Of View Dimensions
- 		//_fovDimensions = _rrAPI.getDimension();
+ 	public void update() 
+ 	{ 
+ 		// working variables
  	 	Vector vector;
  	 	RawImageData pollingThreadWorkingTargetRawData;
  	 	
  	    // get data from RoboRealm
- 		// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
+ 		
  	    try {
+ 	    	// get the field of view dimensions
+ 	    	//fovDimensions = _rrAPI.getDimension();
+ 	    	// This must match what is in the config of the "Point Location" pipeline step in RoboRealm
  	    	vector = _rrAPI.getVariables("SW_X,SW_Y,SE_X,SE_Y,HI_MID_Y,SCREEN_WIDTH,SCREEN_HEIGHT,BLOB_COUNT,CamType");
  	    }
  	    catch(Exception ex) {
@@ -343,29 +353,34 @@ public class RoboRealmClient {
  	    _callElapsedTimeMSec = new Date().getTime() - _lastCallTimestamp;
  
  	    if (vector==null) {
- 	    	//Increment bad data counter 	    	
+ 	    	//Increment bad data counter 
+ 	    	long badDataCounter = 0;
  			try {
  				if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
  					_pollingThreadPrivateTargetRawData.BadDataCounter += 1; 
+ 					badDataCounter = _pollingThreadPrivateTargetRawData.BadDataCounter;
  				}
  			} catch (InterruptedException e) {
  				e.printStackTrace();
- 			}finally{
+ 			} finally {
  				//release lock
  				lock.unlock();
  			}
  	    	
  	    	// write 1st 10 errors then every 50
  	    	if(_pollingThreadPrivateTargetRawData.BadDataCounter <= 10 
- 	    			|| _pollingThreadPrivateTargetRawData.BadDataCounter % 50 == 0) {
- 	    		System.out.println("Error in GetVariables, did not return any results [" 
- 	    							+ _pollingThreadPrivateTargetRawData.BadDataCounter + "]");
+ 	    			|| _pollingThreadPrivateTargetRawData.BadDataCounter % 50 == 0) 
+ 	    	{
+ 	    		System.out.println("Vision Data NOT available, getVariables call did not return any results [" 
+ 	    							+ badDataCounter+ "]");
  	    	}
  	    }
  	    else if(vector.size() == EXPECTED_ARRAY_SIZE) {
  	    	pollingThreadWorkingTargetRawData = new RawImageData();
  	    	
+ 	    	// ==================================
  	    	// parse the results and build the image data
+ 	    	// ==================================
  	    	pollingThreadWorkingTargetRawData.Timestamp = new Date().getTime();
  	    	pollingThreadWorkingTargetRawData.CameraType = (String)vector.elementAt(CAMERA_TYPE_IDX);	    	
  	    	pollingThreadWorkingTargetRawData.SouthWestX = Double.parseDouble((String)vector.elementAt(SOUTHWEST_X_IDX));
@@ -381,14 +396,18 @@ public class RoboRealmClient {
  	    	fovDimensions.height = Double.parseDouble((String)vector.elementAt(RAW_HEIGHT_IDX));
  	    	pollingThreadWorkingTargetRawData.FOVDimensions = fovDimensions;
  	    	
+ 	    	// ==================================
+ 	    	// **** Calc Distance to Boiler *****
+ 	    	// ==================================
  	    	//double estDistance = CalcDistanceUsingPolynomial(pollingThreadWorkingTargetRawData.HighMiddleY);
  	    	double estDistanceRaw = GeneralUtilities.RoundDouble(CalcDistanceUsingCameraAngle(pollingThreadWorkingTargetRawData.HighMiddleY), 2);
  	    	double estDistanceAdj = estDistanceRaw + BOILER_DISTANCE_OFFSET_INCHES;
  	    	
  	    	pollingThreadWorkingTargetRawData.EstimatedDistance = estDistanceAdj;
  	    	
- 	    	pollingThreadWorkingTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	    	
- 	
+ 	    	// ==================================
+ 	    	// **** Calc Angle to Center of Target *****
+ 	    	// ==================================
  	    	// calc the horiz center of the image
  	    	double fovXCenterPoint = fovDimensions.width / 2.0;
  	    	
@@ -403,18 +422,23 @@ public class RoboRealmClient {
  	    
  	    	pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees = fovCenterToTargetXAngleRawDegrees;
  	    	
+ 	    	// ==================================
+ 	    	// **** all done ! *****
+ 	    	// ==================================
+ 	    	pollingThreadWorkingTargetRawData.ResponseTimeMSec = _callElapsedTimeMSec; 	
  	    	pollingThreadWorkingTargetRawData.IsVisionDataValid = true;
  	    	
  	    	// limit spamming
  	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
 	    		System.out.println("Vision Data Valid? " + pollingThreadWorkingTargetRawData.IsVisionDataValid
-	    							+ " |Camera= " + pollingThreadWorkingTargetRawData.CameraType 
-	    							+ " |Angle= " + pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees
-	    							+ " |HiMidY= " + pollingThreadWorkingTargetRawData.HighMiddleY
-	    							+ " |DistInchesAdj= " + pollingThreadWorkingTargetRawData.EstimatedDistance
-	    							+ " |mSec=" + pollingThreadWorkingTargetRawData.ResponseTimeMSec
-	    							+ " |BlobCnt= " + pollingThreadWorkingTargetRawData.BlobCount
-	    							+ " |DistInchesRaw= " + estDistanceRaw);
+	    							+ " | Camera= " + pollingThreadWorkingTargetRawData.CameraType 
+	    							+ " | Angle= " + pollingThreadWorkingTargetRawData.FovCenterToTargetXAngleRawDegrees
+	    							+ " | DistAdjIn= " + pollingThreadWorkingTargetRawData.EstimatedDistance
+	    							+ " | HiMidY= " + pollingThreadWorkingTargetRawData.HighMiddleY
+	    							+ " | FOV HxW= " + pollingThreadWorkingTargetRawData.FOVDimensions.height
+	    											+ "x" + pollingThreadWorkingTargetRawData.FOVDimensions.width
+	    							+ " | mSec=" + pollingThreadWorkingTargetRawData.ResponseTimeMSec
+	    							+ " | DistRawIn= " + estDistanceRaw);
 	    		// reset last time
 	    		_lastDebugWriteTimeMSec = new Date().getTime();
  	    	}
@@ -452,21 +476,27 @@ public class RoboRealmClient {
  			
  	    	_lastCallTimestamp = new Date().getTime();
  	    } else {
- 	    	//Increment bad data counter 	    	
+ 	    	//Increment bad data counter 
+ 	    	long badDataCounter = 0;
+ 	    	
  			try {
  				if(lock.tryLock(MAX_LOCK_WAIT_TIME_MSEC, TimeUnit.MILLISECONDS)){
  					_pollingThreadPrivateTargetRawData.BadDataCounter += 1; 
+ 					badDataCounter = _pollingThreadPrivateTargetRawData.BadDataCounter;
  				}
  			} catch (InterruptedException e) {
  				e.printStackTrace();
- 			}finally{
+ 			}finally {
  				//release lock
  				lock.unlock();
  			}
  			
- 			//limitspamming
+ 			//limit spamming
  	    	if((new Date().getTime() - _lastDebugWriteTimeMSec) > 1000) {
-	 	    	System.out.println("Vision Data Recieved But Unexpected Array Size: " + vector.size());
+	 	    	System.out.println("Vision Data Recieved" + " [" + badDataCounter + "]"
+	 	    							+ " | No target in FOV"
+	 	    							+ " | Unexpected Array Size: [" + vector.size() + "]"
+	 	    							+ " | Recvd Data: " + vector);
 	    		// reset last time
 	    		_lastDebugWriteTimeMSec = new Date().getTime();
  	    	}
@@ -646,6 +676,9 @@ public class RoboRealmClient {
 		@Override
 		public void run() {   
             
+			// default to boiler camera
+			ChangeToCamera(VISION_CAMERAS.BOILER);
+			
             // =============================================================================
             // start looping
             // =============================================================================

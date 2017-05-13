@@ -81,6 +81,7 @@ public class Shooter {
 	
 	// Worlds
 
+	/*
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.027; //0.033; //
 	private static final double FIRST_STAGE_MTG_P_GAIN = 0.5; //0.45; // 0.4; //0.35; //0.30; // 0.25;// 0.325;    
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
@@ -90,10 +91,10 @@ public class Shooter {
 	private static final double SECOND_STAGE_MTG_P_GAIN = 0.5; // 0.175; 	//0.3; // .250; //0.175; //
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
 	private static final double SECOND_STAGE_MTG_D_GAIN = 3.0; //6.0; 	//3.0; //6.0; // 
-
+	*/
 	
 	// Cleveland	
-	/*
+	
 	private static final double FIRST_STAGE_MTG_FF_GAIN = 0.033; //
 	private static final double FIRST_STAGE_MTG_P_GAIN = 0.325;         // 0.3125; // 0.275; //0.225; //0.325; //
 	private static final double FIRST_STAGE_MTG_I_GAIN = 0.0;
@@ -103,8 +104,7 @@ public class Shooter {
 	private static final double SECOND_STAGE_MTG_P_GAIN =  0.175; 	//0.3; // .250; //0.175; //
 	private static final double SECOND_STAGE_MTG_I_GAIN = 0.0;
 	private static final double SECOND_STAGE_MTG_D_GAIN = 6.0; 	//3.0; //6.0; // 
-		*/
-
+	
 	//==============================================================================================
 	
 	//define class level Actuator Constants
