@@ -72,7 +72,7 @@ public class BallInfeed {
 			ballInfeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
 		}
 		
-		SmartDashboard.putString( "Fuel Infeed", ballInfeedMtrData);
+		SmartDashboard.putString("Fuel Infeed", ballInfeedMtrData);
 	}
 	
 	public void UpdateLogData(LogData logData) {}

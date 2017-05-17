@@ -87,7 +87,7 @@ public class HitHopper {
 		_autoShootController.LoadTargetDistanceInInches(_targetShootingDistanceInInches);
 		_autoShootController.StopShooter();
 		
-		_trajController.configureIsHighGear(false);
+		_trajController.configureIsHighGear(true);
 		switch(_allianceColor) {
 			case BLUE_ALLIANCE:
 				_trajController.loadProfile(MOTION_PROFILE.MOVE_TO_HOPPER_BLUE_X, true);
