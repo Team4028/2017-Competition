@@ -280,11 +280,23 @@ public class ShooterTable {
 		//table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3850, -3550, false));
 		
 		// Mod Cleveland (Sat)
-		table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .53, -3017, -2717, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3225, -2925, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3350, -3050, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3517, -3217, false));
-		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3800, -3500, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 84, " 7ft", .53, -3017, -2717, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .59, -3225, -2925, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .65, -3350, -3050, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .68, -3517, -3217, false));
+		//table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3800, -3500, false));
+		
+		// Drew's Email Thr 5/18
+		table.add(new ShooterTableEntry(_indexCounter++, 72,  " 6ft", .49, -3167, -2867, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 84,  " 7ft", .52, -3117, -2817, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 96,  " 8ft", .56, -3168, -2868, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 108, " 9ft", .588, -3243, -2943, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 120, "10ft", .619, -3306, -3006, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 132, "11ft", .649, -3348, -3048, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 144, "12ft", .664, -3426, -3126, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .678, -3516, -3216, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .689, -3626, -3326, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3748, -3448, false));
 		
 		// Reference
 		//table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));
