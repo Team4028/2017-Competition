@@ -180,6 +180,7 @@ public class Robot extends IterativeRobot {
 		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
+		_trajController.startTrajectoryController();
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
@@ -281,8 +282,6 @@ public class Robot extends IterativeRobot {
     	_gearHandler.ZeroGearTiltAxisInit();
     	
     	_hangGearController.setIsChassisControlEnabled(false);
-    	
-    	_trajController.startTrajectoryController();
     	
     	// start the lidar polling
     	if(_lidar != null)	{

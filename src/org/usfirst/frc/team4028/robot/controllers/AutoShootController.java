@@ -19,7 +19,7 @@ public class AutoShootController {
 	private boolean _isOnTargetLastCycle;
 	private boolean _isShooterAtTargetSpeed;
 	
-	public static final double VISION_AIMING_DEADBAND = 0.5;
+	public static final double VISION_AIMING_DEADBAND = 1.0;
 	
 	
 	public AutoShootController(ChassisAutoAimController chassisAutoAim, RoboRealmClient roboRealm, Shooter shooter, ShooterTable shooterTable){
@@ -84,7 +84,7 @@ public class AutoShootController {
 	}
 	
 	public boolean IsReadyToShoot() {
-		if (((System.currentTimeMillis() - _onTargetStartTime) > 600) 
+		if (((System.currentTimeMillis() - _onTargetStartTime) > 100) 
 				&& _isOnTarget 
 				&& _isShooterAtTargetSpeed 
 				&& _roboRealm.get_isVisionDataValid()) { // Ready to shoot if within deadband for longer than target time

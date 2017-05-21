@@ -42,14 +42,10 @@ public class TrajectoryFollower {
 	    	  _positionOutput = _kp * error + _kd * ((error - _lastError) / motionProfile[currentSegment][4] - motionProfile[currentSegment][1]);
 	      }
 	      
-	      if (motionProfile[currentSegment][0] > 0.0) {
-	    	  if (motionProfile[currentSegment][2] > 0.0) {
-		    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
-		      } else {
-		    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
-		      }
-	      } else {
+    	  if (motionProfile[currentSegment][2] > 0.0) {
 	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + _ka * motionProfile[currentSegment][2];
+	      } else {
+	    	  _velocityOutput = _kv * motionProfile[currentSegment][1] + 0.0 * _ka * motionProfile[currentSegment][2];
 	      }
 	      
 	      _velocityOutput = GeneralUtilities.ClampValue(_velocityOutput, -1.0, 1.0);

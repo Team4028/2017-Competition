@@ -124,6 +124,7 @@ public class HitHopper {
 					_trajController.disable();
 					_waitStartedTimeStamp = System.currentTimeMillis();
 					DriverStation.reportWarning("Starting to Wait", false);
+					DriverStation.reportWarning("Profile Duration: " + Long.toString(System.currentTimeMillis() -_autonStartedTimeStamp), false);
 					_autonState = AUTON_STATE.WAIT;
 				}
 				break;
@@ -145,6 +146,7 @@ public class HitHopper {
 							_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SHORT_FWD, false);
 							break;
 					}
+					_trajController.configureIsHighGear(false);
 					_trajController.enable();
 					_autonState = AUTON_STATE.MOVE_TO_SHOOTING_POSITION;
 					DriverStation.reportWarning("Moving to Shoot", false);
