@@ -277,9 +277,9 @@ public class GearHandler {
 		//else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 4000) {	// 800 ; 500
 			// pause
 		//}
-		else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 2000) {	// 40; 20; 40
-			MoveGearToHomePosition();
-		} 
+		//else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 2000) {	// 40; 20; 40
+			//MoveGearToHomePosition();
+		//}
 		//else if((System.currentTimeMillis() - _flapAnnReentrantRunningMsec) < 8000) {	// 800 ; 500
 			// pause
 		//}

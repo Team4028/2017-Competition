@@ -5,6 +5,7 @@ import org.usfirst.frc.team4028.robot.constants.GeneralEnums.MOTION_PROFILE;
 import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
 import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
 import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
+import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
@@ -27,6 +28,7 @@ public class HitHopper {
 	private Shooter _shooter;
 	private TrajectoryDriveController _trajController;
 	private ALLIANCE_COLOR _allianceColor;
+	private BallInfeed _ballInfeed;
 	
 	private int _targetShootingDistanceInInches;
 	private static final int RED_BOILER_TARGET_SHOOTING_DISTANCE_IN_INCHES = 124;
@@ -54,7 +56,7 @@ public class HitHopper {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HitHopper(AutoShootController autoShoot, Chassis chassis, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor) {
+	public HitHopper(AutoShootController autoShoot, Chassis chassis, ChassisAutoAimController autoAim, GearHandler gearHandler, Shooter shooter, TrajectoryDriveController trajController, ALLIANCE_COLOR allianceColor, BallInfeed ballInfeed) {
 		// these are the subsystems that this auton routine needs to control
 		_autoShootController = autoShoot;
 		_autoAim = autoAim;
@@ -63,6 +65,7 @@ public class HitHopper {
 		_shooter = shooter;
 		_trajController = trajController;
 		_allianceColor = allianceColor;
+		_ballInfeed = ballInfeed;
 		
 		switch(_allianceColor) {
 		case BLUE_ALLIANCE:
@@ -108,6 +111,15 @@ public class HitHopper {
 	// This is a LONG RUNNING method (it spans multiple scan cycles)
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
+		if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10000)
+				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 10500))
+		{
+			_ballInfeed.InfeedFuelAndExtendSolenoid(.75);
+		}
+		else if (System.currentTimeMillis() - _autonStartedTimeStamp >= 10500)
+		{
+			_ballInfeed.FullStop();
+		}
 		switch(_autonState) {
 			case MOVE_TO_BOILER_HELLA_FAST_X:
 				if(!_gearHandler.hasTiltAxisBeenZeroed()) {

@@ -338,7 +338,7 @@ public class Robot extends IterativeRobot {
 				break;
 				
 			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_autoShootController, _chassis, _chassisAutoAimGyro, _gearHandler, _shooter, _trajController, _allianceColor);
+				_hitHopper = new HitHopper(_autoShootController, _chassis, _chassisAutoAimGyro, _gearHandler, _shooter, _trajController, _allianceColor, _ballInfeed);
 				_hitHopper.Initialize();
 				break;
 				
