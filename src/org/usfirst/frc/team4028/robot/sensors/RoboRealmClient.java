@@ -311,6 +311,8 @@ public class RoboRealmClient {
 		SmartDashboard.putString("VIsion", dashboardMsg);
 		String distanceString = String.format("%.2f", publicTargetRawData.EstimatedDistance);
 		SmartDashboard.putString("VIsion Distance", distanceString);
+		String angleString = String.format("%.2f", publicTargetRawData.FovCenterToTargetXAngleRawDegrees);
+		SmartDashboard.putString("VIsion Angle", angleString);
 	} 	
 	
 	public void UpdateLogData(LogData logData) {
