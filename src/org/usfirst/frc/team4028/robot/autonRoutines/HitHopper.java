@@ -111,15 +111,26 @@ public class HitHopper {
 	// This is a LONG RUNNING method (it spans multiple scan cycles)
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
-		if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10000)
-				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 10500))
+		if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10000)			// 10.0 -> 10.75secs
+				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 10750))
 		{
 			_ballInfeed.InfeedFuelAndExtendSolenoid(.75);
 		}
-		else if (System.currentTimeMillis() - _autonStartedTimeStamp >= 10500)
+		else if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10750)		// 10.75 -> 11.75 secs
+				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 11750))
 		{
 			_ballInfeed.FullStop();
 		}
+		else if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 11750)		// 11.75 -> 12.5 secs
+				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 12500))
+		{
+			_ballInfeed.InfeedFuelAndExtendSolenoid(.75);
+		}
+		else if (System.currentTimeMillis() - _autonStartedTimeStamp >= 12500)		// 12.5 secs ->
+		{
+			_ballInfeed.FullStop();
+		}
+		
 		switch(_autonState) {
 			case MOVE_TO_BOILER_HELLA_FAST_X:
 				if(!_gearHandler.hasTiltAxisBeenZeroed()) {
