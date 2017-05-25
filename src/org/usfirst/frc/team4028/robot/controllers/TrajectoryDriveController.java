@@ -336,7 +336,7 @@ public class TrajectoryDriveController {
 	
 	public void disable() { 
 		_isEnabled = false; 
-		_chassis.FullStop();
+		//_chassis.FullStop();
 	}
 	
 	public boolean isEnable() { 

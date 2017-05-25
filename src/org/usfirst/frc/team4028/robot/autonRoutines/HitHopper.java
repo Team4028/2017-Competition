@@ -9,6 +9,7 @@ import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis;
 import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
 import org.usfirst.frc.team4028.robot.subsystems.Shooter;
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -153,7 +154,8 @@ public class HitHopper {
 				break;
 				
 			case WAIT:
-				_chassis.ArcadeDrive(-0.35, 0.0);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				_chassis.ArcadeDrive(-0.6, 0.0);
 				
 				if((System.currentTimeMillis() - _waitStartedTimeStamp) > 800) {
 					_autoShootController.RunShooterAtTargetSpeed();
