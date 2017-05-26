@@ -60,6 +60,8 @@ public class Shooter {
 	private ShooterTableEntry _currentShooterTableEntry;
 	private ShooterTableEntry _lastShooterTableEntry;
 	
+	private double _distanceInInchesVision;
+	
 	private double _stg1MtrTargetRPM;
 	private double _stg2MtrTargetRPM;
 	private boolean _isStg1MtrTargetRPMBumpingUp;
@@ -351,11 +353,20 @@ public class Shooter {
 	}
 	public void CalcAutomaticShooter (double distanceInInches)
 	{
-		// full calc from formulas
-		//_currentShooterTableEntry = _shooterTable.CalcShooterValues(distanceInInches);
+		_distanceInInchesVision = distanceInInches;
 		
 		// linear interpolation between shooter table values
-		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(distanceInInches);
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(_distanceInInchesVision);
+	}
+	
+	public void IndexShooterTableUpInch() {
+		_distanceInInchesVision++;
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(_distanceInInchesVision);
+	}
+	
+	public void IndexShooterTableDownInch() {
+		_distanceInInchesVision--;
+		_currentShooterTableEntry = _shooterTable.CalcShooterValues2(_distanceInInchesVision);
 	}
 	
 	public void BumpStg1MtrRPMDown() {

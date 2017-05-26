@@ -636,23 +636,23 @@ public class Robot extends IterativeRobot {
     			{
     				_shooter.CalcAutomaticShooter(_roboRealmClient.get_DistanceToBoilerInches());
     			}
-    			else if(_driversStation.getIsOperator_IndexShooterSettingsUp_BtnJustPressed()) {
-    				_shooter.IndexShooterTableUp();
+    			else if(_driversStation.getIsOperator_MoveShooterSliderUp_BtnJustPressed()) {
+    				_shooter.IndexShooterTableUpInch();
     			} 
-    			else if (_driversStation.getIsOperator_IndexShooterSettingsDown_BtnJustPressed()) {
-    				_shooter.IndexShooterTableDown();
+    			else if (_driversStation.getIsOperator_MoveShooterSliderDown_BtnJustPressed()) {
+    				_shooter.IndexShooterTableDownInch();
     			}
     			
     			//=====================
     			// Shooter Slider (manual control)
     			//=====================		
-    			if(_driversStation.getIsOperator_MoveShooterSliderUp_BtnJustPressed()) {
+    			/*if(_driversStation.getIsOperator_MoveShooterSliderUp_BtnJustPressed()) {
     				_shooter.MoveActuatorUp();
     			} 
     			else if (_driversStation.getIsOperator_MoveShooterSliderDown_BtnJustPressed()) {
     				_shooter.MoveActuatorDown();
-    			}
-    			else if(_driversStation.getIsEngineering_MoveShooterSliderUp_BtnJustPressed()) {
+    			} */
+    			if(_driversStation.getIsEngineering_MoveShooterSliderUp_BtnJustPressed()) {
     				_shooter.MoveActuatorUp();
     			} 
     			else if (_driversStation.getIsEngineering_MoveShooterSliderDown_BtnJustPressed()) {
