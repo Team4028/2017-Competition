@@ -112,22 +112,12 @@ public class HitHopper {
 	// This is a LONG RUNNING method (it spans multiple scan cycles)
 	// It is the resonsibility of the caller to repeatable call it until it completes
 	public boolean ExecuteRentrant() {
-		if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10000)			// 10.0 -> 10.75secs
-				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 10750))
+		if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 12750)		// 11.75 -> 12.5 secs
+				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 13500))
 		{
 			_ballInfeed.InfeedFuelAndExtendSolenoid(.75);
 		}
-		else if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 10750)		// 10.75 -> 11.75 secs
-				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 11750))
-		{
-			_ballInfeed.FullStop();
-		}
-		else if ((System.currentTimeMillis() - _autonStartedTimeStamp >= 11750)		// 11.75 -> 12.5 secs
-				&& (System.currentTimeMillis() - _autonStartedTimeStamp < 12500))
-		{
-			_ballInfeed.InfeedFuelAndExtendSolenoid(.75);
-		}
-		else if (System.currentTimeMillis() - _autonStartedTimeStamp >= 12500)		// 12.5 secs ->
+		else if (System.currentTimeMillis() - _autonStartedTimeStamp >= 13500)		// 12.5 secs ->
 		{
 			_ballInfeed.FullStop();
 		}
@@ -141,7 +131,6 @@ public class HitHopper {
       	    		_gearHandler.ZeroGearTiltAxisReentrant();
       	    	} else {
       	    		DriverStation.reportWarning("Gear Tilt Zero completed!", false);
-      	    		_gearHandler.MoveGearToScorePosition();
       	    	}
 				
 				if(_trajController.onTarget()) {
@@ -205,9 +194,10 @@ public class HitHopper {
 				break;
 				
 			case SHOOT:
+  	    		_gearHandler.MoveGearToScorePosition();
 				_autoShootController.ChassisFullStop();
 				_shooter.RunShooterFeederReentrant();
-				_gearHandler.FlapAnnReentrant();
+				//_gearHandler.FlapAnnReentrant();
 				
 			case UNDEFINED:
 				break;

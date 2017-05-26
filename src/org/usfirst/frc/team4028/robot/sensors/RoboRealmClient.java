@@ -57,7 +57,7 @@ public class RoboRealmClient {
  	private static final int BLOB_COUNT_IDX = 7;
  	private static final int CAMERA_TYPE_IDX = 8;
  	
- 	private static final int BAD_DATA_COUNTER_THRESHOLD = 10;
+ 	private static final int BAD_DATA_COUNTER_THRESHOLD = 2;
  	private static final int POLLING_CYCLE_IN_MSEC = 50; //100;
  	private static final int MAX_LOCK_WAIT_TIME_MSEC = 5;
 
