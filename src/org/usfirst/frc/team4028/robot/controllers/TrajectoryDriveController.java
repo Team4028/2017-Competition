@@ -121,7 +121,7 @@ public class TrajectoryDriveController {
 				_heading = 1.0;
 				_trajectoryNumPoints = CenterGearTrajectory.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;
 				
 			case J_TURN:

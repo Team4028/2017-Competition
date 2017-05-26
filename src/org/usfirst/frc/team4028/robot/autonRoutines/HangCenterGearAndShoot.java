@@ -156,7 +156,7 @@ public class HangCenterGearAndShoot {
       			}
       			break;
       			
-      		case GYRO_TURN:
+      		/*case GYRO_TURN:
       			_autoShootController.RunShooterAtTargetSpeed();
       			
       			// call turn controller
@@ -169,10 +169,10 @@ public class HangCenterGearAndShoot {
       				_autonState = AUTON_STATE.VISION_TURN;
       				DriverStation.reportWarning("===> Chg state from GYRO_TURN to VISION_TURN", false);
       			}
-      			break;
+      			break; */
       			
       		case VISION_TURN:
-      			//_autoShootController.LoadTargetDistanceUsingVision();
+      			_autoShootController.LoadTargetDistanceUsingVision();
       			_autoShootController.RunShooterAtTargetSpeed();
       			_autoShootController.AimWithVision(0.0);			// Aim robot to the boiler
       			
