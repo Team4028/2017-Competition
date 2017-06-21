@@ -918,7 +918,6 @@ public class Robot extends IterativeRobot {
     // utility method that calls the outputToSmartDashboard method on all subsystems
     private void OutputAllToSmartDashboard() {
     	// limit spamming
-    	
     	long scanCycleDeltaInMSecs = new Date().getTime() - _lastScanEndTimeInMSec;
     	_scanTimeSamples.add(new BigDecimal(scanCycleDeltaInMSecs));
     	

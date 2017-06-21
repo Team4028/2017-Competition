@@ -172,7 +172,7 @@ public class HangCenterGearAndShoot {
       			break; */
       			
       		case VISION_TURN:
-      			_autoShootController.LoadTargetDistanceUsingVision();
+      			_autoShootController.LoadTargetDistanceUsingVision(0.0);
       			_autoShootController.RunShooterAtTargetSpeed();
       			_autoShootController.AimWithVision(0.0);			// Aim robot to the boiler
       			

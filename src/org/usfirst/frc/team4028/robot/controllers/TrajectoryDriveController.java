@@ -111,7 +111,7 @@ public class TrajectoryDriveController {
 				_direction = 1.0;
 				_trajectoryNumPoints = SideGearTrajectory.LeftPoints.length;
 				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
+				_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);
 				break;
 				
 			case CENTER_GEAR:
@@ -336,7 +336,7 @@ public class TrajectoryDriveController {
 	
 	public void disable() { 
 		_isEnabled = false; 
-		//_chassis.FullStop();
+		_chassis.FullStop();
 	}
 	
 	public boolean isEnable() { 

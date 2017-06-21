@@ -26,8 +26,8 @@ public class GearHandler {
 	// =====================================================================
 	
 	// define class level public constants
-	public static final double INFEED_TARGET_CMD = -0.5;
-	public static final double OUTFEED_TARGET_CMD = 0.5;
+	//public static final double INFEED_TARGET_CMD = -0.5;
+	//public static final double OUTFEED_TARGET_CMD = 0.5;
 	
 	// define class level variables for Robot objects
 	private CANTalon _gearTiltMotor;
@@ -67,7 +67,7 @@ public class GearHandler {
 	}
 	
 	private static final double GEAR_TILT_AXIS_HOME_POSITION_IN_ROTATIONS = 00.00;
-	private static final double GEAR_TILT_SCORING_POSITION_IN_ROTATIONS = 0.1;
+	private static final double GEAR_TILT_SCORING_POSITION_IN_ROTATIONS = 0.1; 
 	private static final double GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS = 00.48;
 	private static final double TARGET_DEADBAND = 00.03;
 	

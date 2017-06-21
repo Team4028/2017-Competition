@@ -180,9 +180,17 @@ public class HitHopper {
 				_autoShootController.AimWithVision(0.0);
 				
 				// need to keep calling this so is motor at speed gets updated so IsReadyToShoot can pass
-				_autoShootController.LoadTargetDistanceUsingVision();
-				_autoShootController.RunShooterAtTargetSpeed();
-				
+				if (_allianceColor == ALLIANCE_COLOR.RED_ALLIANCE) {
+					_autoShootController.LoadTargetDistanceUsingVision(0.0);
+				}
+				else if (_allianceColor == ALLIANCE_COLOR.BLUE_ALLIANCE) {
+					_autoShootController.LoadTargetDistanceUsingVision(6.0);
+				} 
+				else {
+					_autoShootController.LoadTargetDistanceUsingVision(0.0);
+				}
+				_shooter.ShooterMotorsReentrant();
+		
       			if(_autoShootController.IsReadyToShoot()) {
       				// start shooter feeder motors
       				_shooter.ToggleRunShooterFeeder();
@@ -197,6 +205,7 @@ public class HitHopper {
   	    		_gearHandler.MoveGearToScorePosition();
 				_autoShootController.ChassisFullStop();
 				_shooter.RunShooterFeederReentrant();
+				_shooter.ShooterMotorsReentrant();
 				//_gearHandler.FlapAnnReentrant();
 				
 			case UNDEFINED:

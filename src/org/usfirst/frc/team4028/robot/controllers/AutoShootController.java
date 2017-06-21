@@ -44,6 +44,10 @@ public class AutoShootController {
 		_shooter.CalcAutomaticShooter(_roboRealm.get_DistanceToBoilerInches());
 	}
 	
+	public void LoadTargetDistanceUsingVision(double bias) {
+		_shooter.CalcAutomaticShooter(_roboRealm.get_DistanceToBoilerInches() + bias);
+	}
+	
 	public void RunShooterAtTargetSpeed() {
 		_isShooterAtTargetSpeed = _shooter.ShooterMotorsReentrant(_shooterTableEntry);
 	}
