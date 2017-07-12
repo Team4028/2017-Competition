@@ -297,6 +297,9 @@ public class ShooterTable {
 		table.add(new ShooterTableEntry(_indexCounter++, 156, "13ft", .678, -3516, -3216, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 168, "14ft", .689, -3626, -3326, false));
 		table.add(new ShooterTableEntry(_indexCounter++, 180, "15ft", .70, -3748, -3448, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 228, "19ft", .71, -4028, -4028, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 240, "20ft", .71, -4128, -4128, false));
+		table.add(new ShooterTableEntry(_indexCounter++, 252, "21ft", .71, -4228, -4228, false));
 		
 		// Reference
 		//table.add(new ShooterTableEntry(_indexCounter++, 36, " 3ft", .40, -2800, -2600, false));

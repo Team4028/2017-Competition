@@ -79,6 +79,8 @@ public class Shooter {
 	private long _hopperCarouselReentrantRunningMsec;
 	private long _lastDebugWriteTimeMSec;
 	
+	private boolean _isShooterRunning = false;
+	
 	//==============================================================================================
 	//define class level PID constants					// new	// clev
 	// Post Worlds
@@ -246,8 +248,10 @@ public class Shooter {
 		// base on Stg 2 since since it starts first
 		if (_stg2MtrTargetRPM == 0.0) {
 			ShooterMotorsReentrant();
+			_isShooterRunning = true;
 		} else {
 			FullStop();
+			_isShooterRunning = false;
 		}
 	}
 	
@@ -731,7 +735,7 @@ public class Shooter {
 		SmartDashboard.putString("Distance", _currentShooterTableEntry.Description);
 		
 		// Light will come on when the shooter is turned on. To keep Mikey from running it the whole match!! :) 
-		SmartDashboard.putBoolean("Is Shooter Running?", _isShooterMotorsReentrantRunning);
+		SmartDashboard.putBoolean("Is Shooter Running?", _isShooterRunning);
 	}
 	
 	//============================================================================================

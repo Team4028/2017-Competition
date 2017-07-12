@@ -53,7 +53,7 @@ public class HangCenterGear {
 		_isStillRunning = true;
 		_autonState = AUTON_STATE.MOVE_TO_TARGET;
 		
-		_trajController.configureIsHighGear(true);
+		_trajController.configureIsHighGear(false);
 		_trajController.loadProfile(MOTION_PROFILE.CENTER_GEAR, false);
 		_trajController.enable();
 		//DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
@@ -86,8 +86,8 @@ public class HangCenterGear {
       				//_trajController.loadProfile(MOTION_PROFILE.TWO_GEAR_SUPER_SHORT, false);
       				//_trajController.enable();
       				DriverStation.reportWarning(Double.toString(_trajController.getCurrentHeading()), false);
-      				//_hangGearController.Initialize();
-      				//_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
+      				_hangGearController.Initialize();
+      				_autonState = AUTON_STATE.RUN_GEAR_SEQUENCE;
       			}
       			break;
       			
